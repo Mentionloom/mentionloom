@@ -85,7 +85,7 @@ export function renderChart(svg, series, key, compare, onDay) {
       month: "short",
       day: "numeric",
     });
-  svg.innerHTML = `<defs><linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#918df6" stop-opacity=".16"/><stop offset="1" stop-color="#918df6" stop-opacity="0"/></linearGradient></defs>${Array.from(
+  svg.innerHTML = `<defs><linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--chart-fill)" stop-opacity=".16"/><stop offset="1" stop-color="var(--chart-fill)" stop-opacity="0"/></linearGradient></defs>${Array.from(
     { length: 5 },
     (_, i) => {
       const v = (i * max) / 4;

@@ -1,0 +1,42 @@
+/* Application theme extending the installed Orbit 0.2 semantic tokens.
+   The palette, spacing scale, font faces and motion come from Orbit runtime/. */
+:root {
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2rem;
+  --text-display-sm: 2.25rem;
+  --text-display: 2.75rem;
+  --leading-body: 1.6;
+  --leading-heading: 1.3;
+  --control-height: 2.75rem;
+  --icon-size: 1.25rem;
+  --radius-input: 10px;
+  --radius-panel: 13px;
+  --radius-badge: var(--radius-3);
+  --radius-row: var(--radius-4);
+  --border-width: 1px;
+  --focus-width: 2px;
+  --focus-offset: 3px;
+  --focus-color: var(--accent-text);
+  /* Stronger semantic foregrounds pass on Orbit's tinted status surfaces. */
+  --success-text: #197333;
+  --border-control: #888891;
+  --chart-stroke: var(--accent-text);
+  --chart-previous: var(--muted);
+  --chart-fill: var(--accent);
+  --chart-grid: var(--bg-a2);
+  --engine-claude: #b86743;
+  --engine-perplexity: #247e89;
+  --sticky-surface: #ffffffef;
+  --overlay-surface: #fffffff5;
+  --overlay-backdrop: #18192528;
+  --shadow-drawer: -10px 0 60px #1819250a;
+  --shadow-command: 0 20px 80px #1819251a;
+  --shadow-panel: 0 3px 8px #0000000b, 0 12px 32px #00000013;
+  --metric-size: var(--text-display);
+  --content-width: 1160px;
+}

@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm } from "node:fs/promises";
+import { copyFile, cp, mkdir, rm } from "node:fs/promises";
 
 const output = new URL("./dist/", import.meta.url);
 const files = [
@@ -10,7 +10,8 @@ const files = [
   "app/index.html",
   "app/app.css",
   "app/app.js",
-  "app/orbit.css",
+  "app/tokens.css",
+  "app/foundation.css",
   "app/lib/data.js",
   "app/lib/model.js",
   "app/lib/ui.js",
@@ -34,4 +35,11 @@ await Promise.all(
     copyFile(new URL(file, import.meta.url), new URL(file, output)),
   ),
 );
-console.log(`Built ${files.length} public files in dist/.`);
+await cp(
+  new URL("./app/components/", import.meta.url),
+  new URL("app/components/", output),
+  { recursive: true },
+);
+console.log(
+  `Built ${files.length} application files and the complete installed Orbit source in dist/.`,
+);

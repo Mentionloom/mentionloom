@@ -5,7 +5,8 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 ## Reference decisions
 
 - **Connected interactions:** one reporting scope, clickable ranked rows, concise metrics, and progressively revealed detail.
-- **Orbit:** https://github.com/giovanitier/orbit at `07b99c7`. Reused the existing light palette and semantic tokens in `orbit-tokens.css`; adapted the original `controls.css`, `styles.css`, `numbers.css`, and `motion.js` patterns into `app/orbit.css` and `app/lib/ui.js`. Orbit is a vanilla HTML/CSS/JS component gallery, not a framework dependency. Controls use a comfortable 14px/40px variant with the original surface, radius, focus and elevation language. OpenRunde is shared with the landing page.
+- **Orbit 0.2.0:** installed using the [official getting-started guide](https://giovanitier.github.io/orbit/guides/getting-started/) and its versioned source CLI. The actual runtime, component templates, Lucide icons and OpenRunde fonts live in `app/components/orbit`. The former hand-adapted `app/orbit.css` has been removed. See [installation notes](app/components/orbit/INSTALLATION.md) for the pinned package, component list and local extension.
+- **Comfortable density:** the app extends Orbit's semantic tokens with a shared rem-based type scale: 16px body, 14px supporting text, 12px chart axes/eyebrows, 44px primary controls and minimum button targets. Light mode is explicit. Color and spacing continue to originate in Orbit's installed token file.
 
 ## Information architecture
 
@@ -20,7 +21,10 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 
 - `app/lib/data.js`: a deterministic 180-day fixture, four engines, twelve questions, separate answer/session records, sample crawler snapshot and improvement plans.
 - `app/lib/model.js`: pure scope selection, correct denominators, comparisons and CSV encoding.
-- `app/lib/ui.js` + `app/orbit.css`: shared primitives, icons, menus, rolling numbers, motion and local persistence.
+- `app/components/orbit/runtime`: the installed Orbit 0.2.0 runtime, tokens, control behaviors, fonts and overlay templates.
+- `app/lib/ui.js`: a thin Orbit initializer/adapter plus product-specific persistence and export helpers.
+- `app/tokens.css`: the application density scale and accessible semantic foregrounds.
+- `app/foundation.css`: the documented comfortable-density theme, focus styles and responsive controls.
 - `app/lib/charts.js`: responsive zero-based charts, monotone curves, previous-period comparison, pointer/keyboard exploration. Ninety-day charts group three days without changing the daily export.
 - `app/app.js`: dashboard composition and interaction coordination.
 - `app/app.css`: domain layout and mobile adaptations.
@@ -35,7 +39,8 @@ To connect real data, implement tenant authentication and domain verification, a
 
 ## Verification
 
-- `npm run build` bundles all app modules; the ignore rule was corrected so `app/app.js` is tracked by Git.
-- `npm test`: seven dashboard data tests plus the ten existing waitlist tests.
-- Browser review at desktop and 390px mobile: composed filters, 90-day range, responsive chart labels, keyboard day drill-down, question/page/back flow, persisted question and shipped state, search, setup-plan save, CSV trigger, no horizontal overflow and no reported browser errors.
-- Animation respects reduced-motion preferences; the sample replay can be paused and does not advance while offscreen or in a background tab.
+- `npm test`: 19 passing checks, including the existing dashboard/waitlist suites, complete Orbit production asset copying, and semantic text/control contrast.
+- Lighthouse 12.8.2 accessibility audit: **96 before, 100 after** on the default dashboard. Fixed the measured green-text contrast failures and engine-row accessible name mismatches. This automated result is not a claim of complete WCAG conformance.
+- Browser checks: native Orbit filter selection with arrow keys and Enter; focus restoration; Escape closes the drawer and returns focus; the app owns Cmd+K without opening Orbit's sample command palette; inline form errors focus and describe the invalid field.
+- Responsive checks at 320px, 390px and desktop. Larger labels contract before control targets shrink; the page has no horizontal overflow at 320px. Section navigation remains intentionally horizontally scrollable.
+- The runtime's reduced-motion branch and the app's reduced-motion CSS disable animation; replay has a visible pause action. Full screen-reader and forced-colors testing still require manual assistive-technology review.

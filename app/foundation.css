@@ -1,0 +1,484 @@
+/* Orbit 0.2 is the foundation. This is the product's documented comfortable
+   density and accessibility theme, loaded AFTER the installed runtime styles. */
+html {
+  font-size: 100%;
+  color-scheme: light;
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+body.discovery-app {
+  font: 400 var(--text-base) / var(--leading-body) var(--font-sans);
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+:where(
+  .discovery-app h1,
+  .discovery-app h2,
+  .discovery-app h3,
+  .discovery-app p
+) {
+  margin: 0;
+}
+.discovery-app :is(h1, h2, h3) {
+  font-weight: 500;
+  line-height: var(--leading-heading);
+  text-wrap: balance;
+}
+.discovery-app p {
+  text-wrap: pretty;
+}
+.discovery-app svg {
+  display: block;
+}
+.discovery-app .icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  stroke-width: 1.7;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.discovery-app span[data-app-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.discovery-app :is(button, input, select, textarea) {
+  font-family: inherit;
+}
+.discovery-app :is(button, a) {
+  touch-action: manipulation;
+}
+.discovery-app :focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+.discovery-app :focus {
+  scroll-margin-top: 6rem;
+  scroll-margin-bottom: var(--space-5);
+}
+.discovery-app [hidden] {
+  display: none !important;
+}
+.discovery-app .button {
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  gap: var(--space-2);
+  white-space: normal;
+}
+.discovery-app .button.small {
+  min-height: var(--control-height);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+}
+.discovery-app .icon-button {
+  width: var(--control-height);
+  height: var(--control-height);
+  min-width: var(--control-height);
+  min-height: var(--control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  flex-shrink: 0;
+}
+.discovery-app .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--muted);
+}
+.discovery-app .text-button:hover {
+  color: var(--accent-text);
+}
+.discovery-app .text-button .icon {
+  width: 1rem;
+  height: 1rem;
+}
+.discovery-app .control-trigger {
+  width: auto;
+  min-height: var(--control-height);
+  font-size: var(--text-base);
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+  border-radius: var(--radius-input);
+  line-height: 1.5;
+}
+.discovery-app .control-trigger .icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted);
+}
+.discovery-app .control-trigger[aria-expanded="true"] {
+  border-color: var(--focus-color);
+}
+.discovery-app .dropdown-panel {
+  border-radius: var(--radius-panel);
+  padding: var(--space-1);
+  box-shadow: var(--shadow-panel);
+}
+.discovery-app .control-panel {
+  min-width: min(15rem, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  margin: 0;
+}
+.discovery-app .dropdown-panel button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  border-radius: var(--radius-row);
+  text-align: left;
+}
+.discovery-app .dropdown-panel .option-check {
+  margin-left: auto;
+}
+.discovery-app .menu-label {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+}
+.discovery-app .menu-note {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  padding: var(--space-3);
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-1);
+}
+.discovery-app .segmented {
+  max-width: 100%;
+  padding: var(--space-1);
+  gap: var(--space-1);
+}
+.discovery-app .segmented > button {
+  min-height: var(--control-height);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  padding: var(--space-2) var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+.discovery-app .segmented > button > span {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.discovery-app .segmented.has-indicator > button.active {
+  background: transparent;
+  box-shadow: none;
+}
+.discovery-app .badge {
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  line-height: 1.5;
+  border-radius: var(--radius-badge);
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+.discovery-app .badge.neutral {
+  color: var(--muted);
+  background: var(--bg-a1);
+}
+.discovery-app .choice {
+  min-height: var(--control-height);
+  font-size: var(--text-sm);
+  gap: var(--space-2);
+  line-height: 1.5;
+}
+.discovery-app .choice input {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-color: var(--border-control);
+}
+.discovery-app .choice input:checked {
+  background: var(--accent-text);
+  border-color: var(--accent-text);
+}
+.discovery-app .search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-control);
+  background: var(--subtle);
+  border-radius: var(--radius-input);
+}
+.discovery-app .search-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  outline: none;
+}
+.discovery-app .search-field:focus-within {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+.discovery-app .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-5) 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+}
+.discovery-app .form-field :is(input, textarea, select) {
+  min-height: var(--control-height);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  border: 1px solid var(--border-control);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-input);
+  background: var(--subtle);
+  color: var(--text);
+  width: 100%;
+}
+.discovery-app .form-field textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+.discovery-app .form-field [aria-invalid="true"] {
+  border-color: var(--danger-text);
+}
+.discovery-app .form-error {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--danger-text);
+  margin-top: var(--space-2);
+}
+.discovery-app kbd {
+  font: 400 var(--text-xs) / 1.5 var(--font-sans);
+  border: 1px solid var(--bg-a3);
+  border-radius: var(--radius-2);
+  padding: 0 var(--space-1);
+  color: var(--muted);
+}
+.discovery-app .brand {
+  height: auto;
+  padding: 0;
+  border: 0;
+}
+.discovery-app .brand img {
+  flex-shrink: 0;
+}
+.discovery-app .skip-link {
+  position: fixed;
+  top: -5rem;
+  left: var(--space-4);
+  z-index: 100;
+  padding: var(--space-3);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--focus-color);
+  border-radius: var(--radius-row);
+}
+.discovery-app .skip-link:focus {
+  top: var(--space-3);
+}
+.discovery-app .question-link {
+  min-height: var(--control-height);
+}
+.discovery-app .chart-axis {
+  font-size: var(--text-xs);
+}
+.discovery-app .chart-line {
+  stroke: var(--chart-stroke);
+}
+.discovery-app .chart-previous {
+  stroke: var(--chart-previous);
+}
+.discovery-app .chart-point {
+  fill: var(--chart-stroke);
+}
+.discovery-app .chart-crosshair {
+  stroke: var(--chart-stroke);
+}
+.discovery-app .funnel-step:last-of-type .funnel-track > span {
+  background: var(--chart-stroke);
+}
+.discovery-app .coverage-mini > span.on {
+  background: var(--chart-stroke);
+}
+.discovery-app #app-toast:empty {
+  visibility: hidden;
+}
+@media (max-width: 760px) {
+  .discovery-app .control-trigger {
+    font-size: var(--text-sm);
+  }
+  .discovery-app .button {
+    font-size: var(--text-sm);
+  }
+  .discovery-app .form-field :is(input, textarea, select) {
+    font-size: var(--text-base);
+  }
+  .discovery-app .segmented > button {
+    padding: var(--space-2);
+    font-size: var(--text-sm);
+  }
+}
+@media (forced-colors: active) {
+  .discovery-app .choice input {
+    appearance: auto;
+  }
+  .discovery-app .choice input:after {
+    display: none;
+  }
+  .discovery-app .chart-line,
+  .discovery-app .chart-previous,
+  .discovery-app .chart-point {
+    stroke: CanvasText;
+  }
+  .discovery-app
+    :is(.metric.active, .segmented > button.active, .rank-row.self) {
+    outline: 1px solid Highlight;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .discovery-app *,
+  .discovery-app *:before,
+  .discovery-app *:after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.discovery-app #workspace-menu {
+  min-width: 16rem;
+}
+.discovery-app .form-field .form-error {
+  margin: 0;
+}
+.discovery-app .chart-tools .choice {
+  color: var(--muted);
+}
+
+/* Long labels contract before typography or touch targets do. */
+.discovery-app .narrow-label {
+  display: none;
+}
+.discovery-app .segmented > button > .control-label {
+  font-size: inherit;
+  color: inherit;
+}
+.discovery-app .brand {
+  min-width: var(--control-height);
+  min-height: var(--control-height);
+}
+.discovery-app .filter-chip {
+  min-height: var(--control-height);
+}
+@media (max-width: 760px) {
+  .discovery-app .wide-label {
+    display: none;
+  }
+  .discovery-app .narrow-label {
+    display: inline;
+  }
+  .discovery-app .header-inner {
+    gap: var(--space-2);
+  }
+  .discovery-app .header-inner > .button.primary {
+    min-height: var(--control-height);
+    white-space: nowrap;
+  }
+  .discovery-app .page-heading {
+    display: block;
+    position: relative;
+  }
+  .discovery-app .page-heading > div {
+    padding-right: 0;
+  }
+  .discovery-app .page-heading h1 {
+    padding-right: var(--control-height);
+  }
+  .discovery-app .page-heading > .button {
+    position: absolute;
+    right: 0;
+    top: var(--space-6);
+    width: var(--control-height);
+    height: var(--control-height);
+    min-width: var(--control-height);
+    min-height: var(--control-height);
+    padding: 0;
+  }
+  .discovery-app .export-label {
+    display: none;
+  }
+  .discovery-app .question-controls .segmented {
+    width: 100%;
+  }
+  .discovery-app .question-controls .segmented > button {
+    flex: 1;
+    justify-content: center;
+    font-size: var(--text-sm);
+  }
+  .discovery-app .question-table td:last-child {
+    width: var(--control-height);
+  }
+  .discovery-app .mini-spark {
+    display: none;
+  }
+}
+
+/* Domain rows inherit the product scale, not the gallery's compact tables. */
+.discovery-app .rank-row {
+  min-height: var(--control-height);
+}
+.discovery-app .rank-row .rank-name {
+  display: block;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+.discovery-app :is(.small-label, .table-hint, .metric-comparison) {
+  font-size: var(--text-sm);
+}
+.discovery-app .card-tabs {
+  flex-wrap: wrap;
+}
+.discovery-app .card-tabs .table-hint {
+  margin-left: auto;
+}
+@media (max-width: 760px) {
+  .discovery-app .metric-label {
+    white-space: normal;
+    min-height: 2.8em;
+  }
+  .discovery-app .metric-comparison {
+    line-height: 1.6;
+  }
+  .discovery-app .question-table th .text-button {
+    font-size: var(--text-sm);
+    white-space: normal;
+  }
+  .discovery-app .rank-row {
+    gap: var(--space-2);
+  }
+  .discovery-app .rank-row > .icon:last-child {
+    display: none;
+  }
+}

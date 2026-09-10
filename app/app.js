@@ -21,6 +21,10 @@ import {
   store,
   load,
   reduced,
+  initializeOrbit,
+  enhance,
+  openDialog,
+  closeDialog,
 } from "./lib/ui.js";
 import { renderChart, sparkline, LABELS } from "./lib/charts.js";
 
@@ -59,8 +63,8 @@ const engine = (id) => ENGINES.find((e) => e.id === id);
 const format = (n, k) => (k === "visibility" ? pct(n) : fmt(n));
 function hydrate(root = document) {
   root
-    .querySelectorAll("[data-icon]")
-    .forEach((el) => (el.innerHTML = icon(el.dataset.icon)));
+    .querySelectorAll("[data-app-icon]")
+    .forEach((el) => (el.innerHTML = icon(el.dataset.appIcon)));
 }
 function syncURL() {
   const p = new URLSearchParams();
@@ -75,9 +79,19 @@ function syncURL() {
   );
 }
 function update(patch) {
+  const previousFocus = document.activeElement;
   Object.assign(state, patch);
   syncURL();
   render();
+  if (previousFocus && !previousFocus.isConnected) {
+    const menu =
+      "engine" in patch
+        ? "engine-menu"
+        : "topic" in patch
+          ? "topic-menu"
+          : "period-menu";
+    $(`[data-menu="${menu}"]`).focus({ preventScroll: true });
+  }
   $("#filter-status").textContent =
     `Showing ${state.days} days, ${state.engine ? engine(state.engine).name : "all engines"}, ${state.topic || "all topics"}. ${fmt(data.current.samples)} sampled answers.`;
 }
@@ -87,6 +101,7 @@ function render() {
   $("#engine-label").textContent = state.engine
     ? engine(state.engine).name
     : "All AI engines";
+  $("#topic-label").textContent = state.topic || "Add filter";
   $("#date-label").textContent =
     `${date(data.start)} – ${date(data.end)}, 2026`;
   $("#filter-chips").innerHTML =
@@ -101,7 +116,7 @@ function render() {
       : "");
   document.querySelectorAll("[data-days]").forEach((b) => {
     b.setAttribute(
-      "aria-pressed",
+      "aria-selected",
       String(Number(b.dataset.days) === state.days),
     );
     b.querySelector(".option-check").innerHTML =
@@ -112,7 +127,7 @@ function render() {
     [{ id: "", name: "All AI engines" }, ...ENGINES]
       .map(
         (e) =>
-          `<button data-engine="${e.id}" aria-pressed="${state.engine === e.id}">${e.id ? engineIcon(e) : icon("spark")}${e.name}<span class="option-check">${state.engine === e.id ? icon("check") : ""}</span></button>`,
+          `<button role="option" data-option="${e.name}" data-engine="${e.id}" aria-selected="${state.engine === e.id}">${e.id ? engineIcon(e) : icon("spark")}<span>${e.name}</span><span class="option-check">${state.engine === e.id ? icon("check") : ""}</span></button>`,
       )
       .join("");
   $("#topic-menu").innerHTML =
@@ -120,7 +135,7 @@ function render() {
     ["", ...TOPICS]
       .map(
         (t) =>
-          `<button data-topic="${t}" aria-pressed="${state.topic === t}">${icon(t ? "target" : "layers")}${t || "All topics"}<span class="option-check">${state.topic === t ? icon("check") : ""}</span></button>`,
+          `<button role="option" data-option="${t || "All topics"}" data-topic="${t}" aria-selected="${state.topic === t}">${icon(t ? "target" : "layers")}<span>${t || "All topics"}</span><span class="option-check">${state.topic === t ? icon("check") : ""}</span></button>`,
       )
       .join("") +
     '<div class="menu-note">Topics connect tracked answers with their related landing pages.</div>';
@@ -190,7 +205,7 @@ function renderEngines() {
     .sort((a, b) => b[engineView] - a[engineView])
     .map(
       (e) =>
-        `<button class="rank-row ${state.engine === e.id ? "self" : ""}" data-engine="${e.id}" style="--share:${(e[engineView] / max) * 100}%" aria-label="Filter by ${e.name}, ${format(e[engineView], engineView)}">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${format(e[engineView], engineView)}</span>${icon("filter")}</button>`,
+        `<button class="rank-row ${state.engine === e.id ? "self" : ""}" data-engine="${e.id}" style="--share:${(e[engineView] / max) * 100}%" aria-describedby="engine-filter-hint">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${format(e[engineView], engineView)}</span>${icon("filter")}</button>`,
     )
     .join("");
 }
@@ -211,7 +226,7 @@ function renderPages() {
       .slice(0, 5)
       .map(
         (p) =>
-          `<button class="rank-row" data-page="${esc(p.path)}" style="--share:${(p.citations / max) * 88}%">${icon(pageView === "own" ? "file" : "globe")}<span class="rank-name">${esc(p.path)}</span><span class="rank-value">${fmt(p.citations)}</span>${icon("arrow")}</button>`,
+          `<button class="rank-row" data-source-page="${esc(p.path)}" style="--share:${(p.citations / max) * 88}%">${icon(pageView === "own" ? "file" : "globe")}<span class="rank-name">${esc(p.path)}</span><span class="rank-value">${fmt(p.citations)}</span>${icon("arrow")}</button>`,
       )
       .join("") ||
     empty("No citations in this view", "Try a different engine or topic.");
@@ -346,20 +361,21 @@ function detail(title, eyebrow, html, replace = false) {
   if ($("#search-dialog").open) $("#search-dialog").close();
   if ($("#detail").open && !replace)
     detailHistory.push({
-      title: $("#detail-title").textContent,
+      title: $("#app-detail-title").textContent,
       eyebrow: $("#detail-eyebrow").textContent,
       html: $("#detail-body").innerHTML,
       scroll: $("#detail").scrollTop,
     });
   if (!$("#detail").open) detailHistory = [];
-  $("#detail-title").textContent = title;
+  $("#app-detail-title").textContent = title;
   $("#detail-eyebrow").textContent = eyebrow;
   $("#detail-body").innerHTML = html;
   $("#drawer-back").hidden = !detailHistory.length;
   $("#detail").scrollTop = 0;
-  if (!$("#detail").open) $("#detail").showModal();
+  if (!$("#detail").open) openDialog($("#detail"));
   hydrate($("#detail"));
-  $("#detail-title").focus({ preventScroll: true });
+  void enhance($("#detail-body"));
+  $("#app-detail-title").focus({ preventScroll: true });
 }
 $("#drawer-back").addEventListener("click", () => {
   const previous = detailHistory.pop();
@@ -412,7 +428,7 @@ function openQuestion(id, answerDate, answerEngine) {
   detail(
     q.text,
     q.topic + " · BUYER QUESTION",
-    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(rows.length ? (hits / rows.length) * 100 : 0)}</strong></div><div><span>Answers sampled</span><strong>${fmt(rows.length)}</strong></div></div><div class="notice">${date(data.start)} – ${date(data.end)} · ${state.engine ? engine(state.engine).name : "All AI engines"}. These are sample answers, not access to private conversations.</div><h3>${specific ? "Selected answer" : "Latest answer by engine"}</h3>${(specific ? [specific] : latest).map(answerCard).join("") || empty("No samples in this view", "Change the topic filter to see this question’s measurements.")}<h3>Make this answer easier to find</h3><p class="small-label">Related landing page</p><button class="rank-row self" data-page="${q.page}" style="--share:100%">${icon("file")}<span class="rank-name">acme.work${q.page}</span>${icon("arrow")}</button>${
+    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(rows.length ? (hits / rows.length) * 100 : 0)}</strong></div><div><span>Answers sampled</span><strong>${fmt(rows.length)}</strong></div></div><div class="notice">${date(data.start)} – ${date(data.end)} · ${state.engine ? engine(state.engine).name : "All AI engines"}. These are sample answers, not access to private conversations.</div><h3>${specific ? "Selected answer" : "Latest answer by engine"}</h3>${(specific ? [specific] : latest).map(answerCard).join("") || empty("No samples in this view", "Change the topic filter to see this question’s measurements.")}<h3>Make this answer easier to find</h3><p class="small-label">Related landing page</p><button class="rank-row self" data-source-page="${q.page}" style="--share:100%">${icon("file")}<span class="rank-name">acme.work${q.page}</span>${icon("arrow")}</button>${
       ACTIONS.some((a) => a.question === id)
         ? `<h3>A next move for this question</h3><div class="drawer-list">${ACTIONS.filter(
             (a) => a.question === id,
@@ -562,7 +578,7 @@ function setup() {
   detail(
     "Your website. Your next chapter.",
     "WORKSPACE SETUP · PREVIEW",
-    `<p>Start with your website and the question you want to answer first. We’ll save a setup plan for this browser.</p><form id="setup-form"><label class="form-field">Website URL<input name="website" type="url" placeholder="https://yourcompany.com" value="${esc(typeof saved.website === "string" ? saved.website : "")}" required maxlength="250"></label><label class="form-field">What do you want to understand?<select name="priority"><option value="visibility">Where AI recommends my brand</option><option value="traffic">Which AI engines send visitors</option><option value="conversions">Which visits turn into customers</option></select></label><button class="button primary" type="submit">Save my setup plan${icon("right")}</button></form><div class="notice">This saves locally in the demo. No tracking code is installed and no external account is connected.</div>`,
+    `<p>Start with your website and the question you want to answer first. We’ll save a setup plan for this browser.</p><form id="setup-form" novalidate><label class="form-field field">Website URL<input name="website" type="url" placeholder="https://yourcompany.com" value="${esc(typeof saved.website === "string" ? saved.website : "")}" required maxlength="250"></label><label class="form-field field">What do you want to understand?<select name="priority" aria-label="What do you want to understand?"><option value="visibility">Where AI recommends my brand</option><option value="traffic">Which AI engines send visitors</option><option value="conversions">Which visits turn into customers</option></select></label><p class="form-error" id="setup-error" role="alert" hidden></p><button class="button primary" type="submit">Save my setup plan${icon("right")}</button></form><div class="notice">This saves locally in the demo. No tracking code is installed and no external account is connected.</div>`,
   );
   if (["visibility", "traffic", "conversions"].includes(saved.priority))
     $("#setup-form select").value = saved.priority;
@@ -571,14 +587,14 @@ function addQuestion() {
   detail(
     "What should we listen for?",
     "TRACK A QUESTION",
-    `<p>Write a question your future customer would ask an AI assistant. Specific questions make the evidence more useful.</p><form id="question-form"><label class="form-field">Buyer question<textarea name="question" placeholder="What is the best project management tool for a design agency?" required minlength="10" maxlength="220"></textarea></label><label class="form-field">Topic<select name="topic">${TOPICS.map((t) => `<option>${t}</option>`).join("")}</select></label><button class="button primary" type="submit">Add to tracked questions${icon("plus")}</button></form><div class="notice">New questions are saved locally with a pending status. Results require a connected answer-sampling service.</div>`,
+    `<p>Write a question your future customer would ask an AI assistant. Specific questions make the evidence more useful.</p><form id="question-form" novalidate><label class="form-field field">Buyer question<textarea name="question" placeholder="What is the best project management tool for a design agency?" required minlength="10" maxlength="220"></textarea></label><label class="form-field field">Topic<select name="topic" aria-label="Topic">${TOPICS.map((t) => `<option>${t}</option>`).join("")}</select></label><p class="form-error" id="question-error" role="alert" hidden></p><button class="button primary" type="submit">Add to tracked questions${icon("plus")}</button></form><div class="notice">New questions are saved locally with a pending status. Results require a connected answer-sampling service.</div>`,
   );
 }
 function search() {
   closeMenus();
   $("#global-search").value = "";
   renderSearch("");
-  $("#search-dialog").showModal();
+  openDialog($("#search-dialog"));
   $("#global-search").focus();
 }
 function renderSearch(term) {
@@ -606,7 +622,7 @@ function renderSearch(term) {
       i: "bolt",
     })),
     ...data.pages.map((p) => ({
-      kind: "page",
+      kind: "source-page",
       id: p.path,
       title: "acme.work" + p.path,
       meta: "Your website · " + fmt(p.citations) + " citations",
@@ -684,7 +700,7 @@ const actions = {
     detail(
       "Follow the citations.",
       "SOURCES IN AI ANSWERS",
-      `<p>These are the pages cited in your filtered sample. Select a source to inspect the answers behind it.</p><h3>Your website</h3><div class="drawer-list">${data.pages.map((p) => `<button data-page="${esc(p.path)}">${icon("file")}<span>acme.work${esc(p.path)}<small>${fmt(p.citations)} citations · ${fmt(p.referrals)} referrals</small></span>${icon("right")}</button>`).join("")}</div><h3>External sources</h3><div class="drawer-list">${data.external.map((p) => `<button data-page="${esc(p.path)}">${icon("globe")}<span>${esc(p.path)}<small>${fmt(p.citations)} sampled citations</small></span>${icon("right")}</button>`).join("")}</div>`,
+      `<p>These are the pages cited in your filtered sample. Select a source to inspect the answers behind it.</p><h3>Your website</h3><div class="drawer-list">${data.pages.map((p) => `<button data-source-page="${esc(p.path)}">${icon("file")}<span>acme.work${esc(p.path)}<small>${fmt(p.citations)} citations · ${fmt(p.referrals)} referrals</small></span>${icon("right")}</button>`).join("")}</div><h3>External sources</h3><div class="drawer-list">${data.external.map((p) => `<button data-source-page="${esc(p.path)}">${icon("globe")}<span>${esc(p.path)}<small>${fmt(p.citations)} sampled citations</small></span>${icon("right")}</button>`).join("")}</div>`,
     ),
   attribution: () =>
     detail(
@@ -706,30 +722,29 @@ const actions = {
     ),
 };
 
+// Commit filter changes after Orbit finishes the native event dispatch.
+// A microtask can run between listeners and remove its selected option too early.
 document.addEventListener("click", (event) => {
   const b = event.target.closest("button,a");
   if (!b) return;
   if (b.hasAttribute("data-close")) {
-    b.closest("dialog").close();
+    closeDialog(b.closest("dialog"));
     return;
   }
   if (b.dataset.action) {
-    actions[b.dataset.action]?.();
+    setTimeout(() => actions[b.dataset.action]?.(), 0);
     return;
   }
   if (b.dataset.days) {
-    closeMenus();
-    update({ days: Number(b.dataset.days) });
+    setTimeout(() => update({ days: Number(b.dataset.days) }), 0);
     return;
   }
   if (b.hasAttribute("data-engine")) {
-    closeMenus();
-    update({ engine: b.dataset.engine });
+    setTimeout(() => update({ engine: b.dataset.engine }), 0);
     return;
   }
   if (b.hasAttribute("data-topic")) {
-    closeMenus();
-    update({ topic: b.dataset.topic });
+    setTimeout(() => update({ topic: b.dataset.topic }), 0);
     return;
   }
   if (b.dataset.clear) {
@@ -748,8 +763,8 @@ document.addEventListener("click", (event) => {
     );
     return;
   }
-  if (b.dataset.page) {
-    openPage(b.dataset.page);
+  if (b.dataset.sourcePage) {
+    openPage(b.dataset.sourcePage);
     return;
   }
   if (b.dataset.competitor) {
@@ -841,40 +856,59 @@ $("#search-results").addEventListener("keydown", (e) => {
       ]?.focus();
   }
 });
-document.addEventListener("keydown", (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-    e.preventDefault();
-    if ($("#detail").open) $("#detail").close();
-    search();
-  }
-});
-for (const d of document.querySelectorAll("dialog"))
-  d.addEventListener("click", (e) => {
-    if (e.target === d) {
-      const r = d.getBoundingClientRect();
-      if (
-        e.clientX < r.left ||
-        e.clientX > r.right ||
-        e.clientY < r.top ||
-        e.clientY > r.bottom
-      )
-        d.close();
+document.addEventListener(
+  "keydown",
+  (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if ($("#detail").open) $("#detail").close();
+      search();
     }
-  });
+  },
+  true,
+);
+function formError(form, field, message) {
+  const error = form.querySelector('[role="alert"]');
+  error.hidden = false;
+  error.textContent = message;
+  field.setAttribute("aria-invalid", "true");
+  field.setAttribute("aria-describedby", error.id);
+  field.focus();
+}
+document.addEventListener("input", (e) => {
+  const form = e.target.closest("#question-form,#setup-form");
+  if (!form) return;
+  e.target.removeAttribute("aria-invalid");
+  e.target.removeAttribute("aria-describedby");
+  const error = form.querySelector('[role="alert"]');
+  if (error) error.hidden = true;
+});
 document.addEventListener("submit", (e) => {
   if (e.target.id === "question-form") {
     e.preventDefault();
     const f = new FormData(e.target),
       text = String(f.get("question")).trim(),
       topic = String(f.get("topic"));
-    if (text.length < 10 || text.length > 220 || !TOPICS.includes(topic))
+    if (text.length < 10 || text.length > 220) {
+      formError(
+        e.target,
+        e.target.elements.question,
+        "Write a question between 10 and 220 characters.",
+      );
       return;
+    }
+    if (!TOPICS.includes(topic)) return;
     if (
       [...QUESTIONS, ...pending].some(
         (q) => q.text.toLowerCase() === text.toLowerCase(),
       )
     ) {
-      toast("You’re already tracking that question.");
+      formError(
+        e.target,
+        e.target.elements.question,
+        "You’re already tracking that question.",
+      );
       return;
     }
     if (pending.length >= 100) {
@@ -900,9 +934,31 @@ document.addEventListener("submit", (e) => {
     const f = new FormData(e.target);
     const website = String(f.get("website")),
       priority = String(f.get("priority"));
-    const url = new URL(website);
+    if (!e.target.elements.website.validity.valid) {
+      formError(
+        e.target,
+        e.target.elements.website,
+        "Enter a complete website URL, such as https://yourcompany.com.",
+      );
+      return;
+    }
+    let url;
+    try {
+      url = new URL(website);
+    } catch {
+      formError(
+        e.target,
+        e.target.elements.website,
+        "Enter a complete website URL, such as https://yourcompany.com.",
+      );
+      return;
+    }
     if (!["http:", "https:"].includes(url.protocol)) {
-      toast("Use a website beginning with https://.");
+      formError(
+        e.target,
+        e.target.elements.website,
+        "Use a website beginning with https://.",
+      );
       return;
     }
     if (store("setup", { website, priority })) {
@@ -975,9 +1031,26 @@ addEventListener("popstate", () => {
   Object.assign(state, parseState(location.search));
   render();
 });
+try {
+  await initializeOrbit();
+} catch (error) {
+  $("#filter-status").textContent =
+    "The interface could not load. Please reload to try again.";
+  const errorBox = document.createElement("div");
+  errorBox.className = "empty-state";
+  errorBox.setAttribute("role", "alert");
+  errorBox.innerHTML =
+    '<h2>The interface could not load.</h2><p>Please reload to try again.</p><button class="button primary" type="button">Reload dashboard</button>';
+  errorBox.querySelector("button").onclick = () => location.reload();
+  $("#main").prepend(errorBox);
+  throw error;
+}
 hydrate();
 installMenus();
 render();
+await enhance(document.querySelector(".question-controls"));
+await enhance(document.querySelector(".actions-section>.section-heading"));
+
 setPause(paused);
 const reveal = new IntersectionObserver(
   (entries) =>

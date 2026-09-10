@@ -1,4 +1,26 @@
-// Orbit primitives adapted from giovanitier/orbit: controls, rolling numbers and motion.
+// Product adapter for the installed Orbit 0.2 source runtime.
+import {
+  initialize,
+  prepare,
+  setTheme,
+} from "../components/orbit/runtime/orbit.js";
+export async function initializeOrbit() {
+  setTheme("light");
+  await initialize();
+}
+export async function enhance(root) {
+  await prepare(root);
+  // prepare enhances copied HTML. Its gallery specimen padding is not part of
+  // this application's layout; keep the runtime's component marker and behavior.
+  root.classList.remove("specimen-body");
+}
+export function openDialog(dialog) {
+  window.OrbitMotion.showDialog(dialog);
+}
+export function closeDialog(dialog) {
+  window.OrbitMotion.closeDialog(dialog);
+}
+
 export const paths = {
   arrow: "M7 17 17 7M7 7h10v10",
   right: "M5 12h14m-5-5 5 5-5 5",
@@ -40,8 +62,30 @@ export const paths = {
   perplexity: "M12 2v20M4 5l16 14V5L4 19Zm0 3h16v8H4Z",
   gemini: "M12 2c0 6-4 10-10 10 6 0 10 4 10 10 0-6 4-10 10-10-6 0-10-4-10-10Z",
 };
-export const icon = (name, cls = "") =>
-  `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name] || paths.spark}"/></svg>`;
+// Interface glyphs use Orbit's bundled Lucide icons. Engine marks and the few
+// domain glyphs absent from its catalog share the same SVG sizing/stroke contract.
+const iconAliases = {
+  arrow: "external",
+  right: "arrow",
+  close: "x",
+  filter: "sliders",
+  table: "grid",
+  chevrons: "down",
+  spark: "star",
+};
+const orbitIcons = new Set(
+  "grid palette chevron down external sun moon download search x copy plus code cursor type check circlecheck sliders chart layers bell layout list heart star link more mail lock arrow smile gauge funnel settings globe info folder trash edit upload chat send calendar minus eye eye-off clock file list-todo terminal bot rotate-ccw square paperclip image external-link thumbs-up circle".split(
+    " ",
+  ),
+);
+export const icon = (name, cls = "") => {
+  const mapped = iconAliases[name] || name;
+  if (window.OrbitIcon && orbitIcons.has(mapped))
+    return window
+      .OrbitIcon(mapped)
+      .replace('class="icon lucide', 'class="icon lucide ' + cls);
+  return `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name] || paths.spark}"/></svg>`;
+};
 export const escape = (value) =>
   String(value).replace(
     /[&<>"']/g,
@@ -53,98 +97,131 @@ export const escape = (value) =>
 export const engineIcon = (e) =>
   `<span class="engine-icon ${e.color}">${icon(e.symbol)}</span>`;
 export const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-export function animate(el, frames, duration = 240, extra = {}) {
-  if (!el || reduced.matches) return;
-  return el.animate(frames, {
-    duration,
-    easing: "cubic-bezier(.22,1,.36,1)",
-    ...extra,
-  });
+export function animate(el, frames, duration, extra = {}) {
+  const timing =
+    duration ??
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--motion-medium",
+      ),
+    );
+  return window.OrbitMotion?.animate(el, frames, timing, extra);
 }
 export function number(el, value) {
-  const last = el.dataset.value;
-  el.dataset.value = value;
-  el.setAttribute("aria-label", value);
-  el.innerHTML = [...value]
-    .map((c, i) =>
-      /\d/.test(c)
-        ? `<span class="number-digit" aria-hidden="true"><span class="number-track"><span>${last?.[i] && /\d/.test(last[i]) ? last[i] : c}</span><span>${c}</span></span></span>`
-        : `<span class="number-punctuation" aria-hidden="true">${escape(c)}</span>`,
-    )
-    .join("");
-  el.querySelectorAll(".number-track").forEach((track, i) => {
-    track.style.transform = "translateY(-50%)";
-    if (last !== value)
-      animate(
-        track,
-        [{ transform: "translateY(0)" }, { transform: "translateY(-50%)" }],
-        650,
-        { delay: i * 12 },
-      );
+  const percent = value.endsWith("%"),
+    numeric = Number(value.replace(/[,％%]/g, ""));
+  window.OrbitNumbers.set(el, percent ? numeric / 100 : numeric, {
+    kind: percent ? "percent" : "number",
   });
 }
 let toastTimer;
 export function toast(text) {
-  const el = document.querySelector("#toast");
+  const el = document.querySelector("#app-toast");
   el.textContent = text;
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), 4200);
 }
 export function segment(group, key) {
-  group
-    .querySelectorAll("button")
-    .forEach((b) =>
-      b.setAttribute("aria-pressed", String(b.dataset.value === key)),
-    );
+  group.querySelectorAll("button").forEach((b) => {
+    const selected = b.dataset.value === key;
+    b.classList.toggle("active", selected);
+    b.setAttribute("aria-pressed", String(selected));
+    b.tabIndex = selected ? 0 : -1;
+  });
+  requestAnimationFrame(() => window.OrbitMotion.indicator(group, true));
 }
 export function installMenus() {
   document.querySelectorAll("[data-menu]").forEach((trigger) => {
-    const panel = document.getElementById(trigger.dataset.menu);
-    trigger.addEventListener("click", () => {
-      if (panel.matches(":popover-open")) {
-        panel.hidePopover();
-        return;
-      }
-      panel.showPopover({ source: trigger });
-      const r = trigger.getBoundingClientRect();
-      const width = panel.offsetWidth;
-      panel.style.left = `${Math.max(12, Math.min(r.right - width, innerWidth - width - 12))}px`;
-      panel.style.top = `${Math.min(r.bottom + 8, innerHeight - panel.offsetHeight - 12)}px`;
-      panel.querySelector("button")?.focus();
-    });
-    panel.addEventListener("toggle", () =>
-      trigger.setAttribute(
-        "aria-expanded",
-        String(panel.matches(":popover-open")),
-      ),
+    const panel = document.getElementById(trigger.dataset.menu),
+      wrapper = document.createElement("div");
+    wrapper.className = "dropdown ds-select";
+    trigger.before(wrapper);
+    wrapper.append(trigger, panel);
+    trigger.classList.add("control-trigger");
+    trigger.setAttribute("data-select-toggle", "");
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-controls", panel.id);
+    let label = trigger.querySelector("#period-label,#engine-label");
+    if (!label) {
+      label = document.createElement("span");
+      const text = [...trigger.childNodes]
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .map((n) => n.textContent)
+        .join("")
+        .trim();
+      label.textContent = text || "Acme";
+      [...trigger.childNodes]
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .forEach((n) => n.remove());
+      if (trigger.dataset.menu === "workspace-menu")
+        trigger.insertBefore(
+          label,
+          trigger.querySelector('[data-app-icon="chevrons"]'),
+        );
+      else trigger.append(label);
+      if (trigger.dataset.menu === "topic-menu") label.id = "topic-label";
+    }
+    label.setAttribute("data-select-label", "");
+    panel.classList.add("dropdown-panel", "control-panel");
+    panel.removeAttribute("popover");
+    panel.hidden = true;
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute(
+      "aria-label",
+      {
+        "period-menu": "Reporting period",
+        "engine-menu": "AI engine",
+        "topic-menu": "Buyer intent",
+        "workspace-menu": "Workspace",
+      }[panel.id],
     );
-    panel.addEventListener("keydown", (e) => {
-      const bs = [...panel.querySelectorAll("button:not(:disabled)")];
-      const i = bs.indexOf(document.activeElement);
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        bs[
-          (i + (e.key === "ArrowDown" ? 1 : bs.length - 1)) % bs.length
-        ]?.focus();
-      }
-      if (e.key === "Home" || e.key === "End") {
-        e.preventDefault();
-        bs[e.key === "Home" ? 0 : bs.length - 1]?.focus();
-      }
+    if (trigger.dataset.menu === "workspace-menu") {
+      wrapper.className = "dropdown";
+      trigger.removeAttribute("data-select-toggle");
+      trigger.setAttribute("data-menu-toggle", "");
+      trigger.setAttribute("aria-haspopup", "menu");
+      panel.classList.remove("control-panel");
+      panel.setAttribute("role", "menu");
+      panel
+        .querySelectorAll("button")
+        .forEach((b) => b.setAttribute("role", "menuitem"));
+      wrapper.addEventListener("focusout", () =>
+        queueMicrotask(() => {
+          if (!wrapper.contains(document.activeElement)) {
+            trigger.setAttribute("aria-expanded", "false");
+            window.OrbitMotion.visibility(panel, false);
+          }
+        }),
+      );
+      return;
+    }
+    // The listbox's title and explanation belong outside the selectable options.
+    panel
+      .querySelectorAll(".menu-label,.menu-note")
+      .forEach((note) => note.setAttribute("role", "presentation"));
+    panel.querySelectorAll(":scope>button").forEach((b) => {
+      b.setAttribute("role", "option");
+      b.setAttribute(
+        "aria-selected",
+        b.getAttribute("aria-selected") ||
+          b.getAttribute("aria-pressed") ||
+          "false",
+      );
+      b.removeAttribute("aria-pressed");
+      b.dataset.option = b.textContent.trim();
     });
+    void enhance(wrapper);
   });
-  addEventListener("resize", () =>
-    document.querySelectorAll(":popover-open").forEach((p) => p.hidePopover()),
-  );
 }
 export function closeMenus() {
-  document.querySelectorAll(":popover-open").forEach((p) => {
-    p.hidePopover();
-    document
-      .querySelector(`[data-menu="${p.id}"]`)
-      ?.focus({ preventScroll: true });
-  });
+  document
+    .querySelectorAll(".dropdown>.dropdown-panel:not([hidden])")
+    .forEach((p) => {
+      p.previousElementSibling.setAttribute("aria-expanded", "false");
+      window.OrbitMotion.visibility(p, false);
+      p.previousElementSibling.focus({ preventScroll: true });
+    });
 }
 export function download(name, content, type = "text/csv") {
   const url = URL.createObjectURL(new Blob([content], { type }));

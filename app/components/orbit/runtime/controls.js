@@ -1,0 +1,35 @@
+(() => {
+ const months=new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric'}),display=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'});
+ const dateFrom=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12)};
+ const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ const triggerFor=panel=>panel.parentElement.querySelector('.control-trigger');
+ function place(panel){OrbitMotion.settleAncestors(panel);const r=triggerFor(panel).getBoundingClientRect(),w=panel.classList.contains('calendar-panel')?286:r.width;panel.style.width=`${Math.min(w,innerWidth-24)}px`;panel.style.left=`${Math.max(12,Math.min(r.left,innerWidth-w-12))}px`;panel.style.top=`${r.bottom+7}px`;const height=panel.getBoundingClientRect().height;if(r.bottom+7+height>innerHeight-12&&r.top-height-7>12)panel.style.top=`${r.top-height-7}px`;panel.style.maxHeight=`${Math.max(150,innerHeight-24)}px`;}
+ function close(panel,focus=false){if(panel.hidden)return;triggerFor(panel).setAttribute('aria-expanded','false');OrbitMotion.visibility(panel,false);if(focus)triggerFor(panel).focus()}
+ function closeAll(except){document.querySelectorAll('.control-panel').forEach(p=>{if(p!==except)close(p)})}
+ function renderCalendar(root,focusDate){const panel=root.querySelector('.calendar-panel'),selected=dateFrom(root.dataset.date),month=dateFrom(root.dataset.month||root.dataset.date);const year=month.getFullYear(),m=month.getMonth(),offset=(new Date(year,m,1).getDay()+6)%7,days=new Date(year,m+1,0).getDate();const focus=focusDate||iso(selected);const today=iso(new Date());
+ panel.innerHTML=`<div class="calendar-head"><button class="icon-button" aria-label="Previous month" data-month-step="-1">${icon('chevron').replace('class="icon lucide"','class="icon lucide" style="transform:rotate(180deg)"')}</button><h3 aria-live="polite">${months.format(month)}</h3><button class="icon-button" aria-label="Next month" data-month-step="1">${icon('chevron')}</button></div><div class="calendar-week" aria-hidden="true">${['M','T','W','T','F','S','S'].map(x=>`<span>${x}</span>`).join('')}</div><div class="calendar-days" role="grid" aria-label="${months.format(month)}">${Array.from({length:Math.ceil((offset+days)/7)},(_,week)=>`<div role="row">${Array.from({length:7},(_,weekday)=>{const day=week*7+weekday-offset+1;if(day<1||day>days)return '<span role="gridcell"></span>';const date=iso(new Date(year,m,day,12));return `<span role="gridcell" aria-selected="${date===root.dataset.date}"><button data-calendar-date="${date}" tabindex="${date===focus?0:-1}" class="${date===root.dataset.date?'selected':''} ${date===today?'today':''}" aria-label="${display.format(dateFrom(date))}" ${date===today?'aria-current="date"':''}>${day}</button></span>`}).join('')}</div>`).join('')}</div><div class="calendar-footer"><span>${display.format(selected)}</span><button class="button ghost small" data-calendar-today>Today</button></div>`;
+ if(!panel.querySelector('[data-calendar-date][tabindex="0"]'))panel.querySelector('[data-calendar-date]').tabIndex=0;
+ }
+ function open(trigger){const panel=trigger.nextElementSibling,wasOpen=trigger.getAttribute('aria-expanded')==='true';closeAll(panel);if(wasOpen){close(panel);return}if(trigger.hasAttribute('data-date-toggle')){const root=trigger.parentElement;root.dataset.month=root.dataset.date;renderCalendar(root)}trigger.setAttribute('aria-expanded','true');OrbitMotion.visibility(panel,true);place(panel);(panel.querySelector('[role=option][aria-selected=true]')||panel.querySelector('[data-calendar-date][tabindex="0"]'))?.focus({preventScroll:true});}
+ function selectDate(root,date){root.dataset.date=date;root.querySelector('[data-date-label]').textContent=display.format(dateFrom(date));close(root.querySelector('.calendar-panel'),true)}
+ function range(input){input.style.setProperty('--range-fill',`${(Number(input.value)-Number(input.min))/(Number(input.max)-Number(input.min))*100}%`)}
+ function prepare(root){root.querySelectorAll('.range').forEach(range);root.querySelectorAll('[data-select-toggle],[data-date-toggle]').forEach(b=>{if(!b.nextElementSibling.id)b.nextElementSibling.id='picker-'+Math.random().toString(36).slice(2,9);b.setAttribute('aria-controls',b.nextElementSibling.id)});}
+ document.addEventListener('input',e=>{if(e.target.matches('.range'))range(e.target)});
+ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!e.target.closest('.ds-select,.ds-date'))closeAll();if(!b)return;
+ if(b.matches('[data-select-toggle],[data-date-toggle]'))open(b);
+ if(b.hasAttribute('data-option')){const root=b.closest('.ds-select');root.querySelector('[data-select-label]').textContent=b.dataset.option;root.querySelectorAll('[role=option]').forEach(x=>x.setAttribute('aria-selected',x===b));close(root.querySelector('.control-panel'),true)}
+ if(b.hasAttribute('data-month-step')){const root=b.closest('.ds-date'),date=dateFrom(root.dataset.month||root.dataset.date);date.setDate(1);date.setMonth(date.getMonth()+Number(b.dataset.monthStep));root.dataset.month=iso(date);renderCalendar(root,iso(date));place(root.querySelector('.calendar-panel'));root.querySelector(`[data-month-step="${b.dataset.monthStep}"]`).focus()}
+ if(b.hasAttribute('data-calendar-date'))selectDate(b.closest('.ds-date'),b.dataset.calendarDate);
+ if(b.hasAttribute('data-calendar-today'))selectDate(b.closest('.ds-date'),iso(new Date()));
+ });
+ document.addEventListener('keydown',e=>{const panel=e.target.closest('.control-panel'),trigger=e.target.closest('[data-select-toggle],[data-date-toggle]');if(trigger&&['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();open(trigger);return}if(!panel)return;
+ if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close(panel,true);return}
+ if(e.key==='Tab'){close(panel);return}
+ const day=e.target.closest('[data-calendar-date]');
+ if(day&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();const d=dateFrom(day.dataset.calendarDate),root=day.closest('.ds-date');if(e.key==='PageUp'||e.key==='PageDown'){const old=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+(e.key==='PageUp'?-1:1));d.setDate(Math.min(old,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else d.setDate(d.getDate()+({ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7,Home:-(d.getDay()+6)%7,End:6-(d.getDay()+6)%7}[e.key]));root.dataset.month=iso(d);renderCalendar(root,iso(d));panel.querySelector(`[data-calendar-date="${iso(d)}"]`).focus();place(panel);}
+ },true);
+ document.addEventListener('focusin',e=>{document.querySelectorAll('.control-panel').forEach(p=>{if(!p.hidden&&!p.parentElement.contains(e.target))close(p)})});
+ addEventListener('resize',()=>document.querySelectorAll('.control-panel:not([hidden])').forEach(place));
+ addEventListener('scroll',()=>document.querySelectorAll('.control-panel:not([hidden])').forEach(place),true);
+ addEventListener('DOMContentLoaded',()=>prepare(document));window.OrbitControls={prepare};
+})();

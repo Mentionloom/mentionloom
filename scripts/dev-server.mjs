@@ -27,7 +27,8 @@ const allowed = new Set([
   "app/index.html",
   "app/app.css",
   "app/app.js",
-  "app/orbit.css",
+  "app/tokens.css",
+  "app/foundation.css",
   "app/lib/data.js",
   "app/lib/model.js",
   "app/lib/ui.js",
@@ -71,7 +72,12 @@ createServer(async (req, res) => {
       : pathname === "/app" || pathname === "/app/"
         ? "app/index.html"
         : pathname.slice(1);
-  if (!allowed.has(file)) {
+  if (
+    !allowed.has(file) &&
+    !/^app\/components\/orbit\/(?:[a-z0-9-]+\.(?:js|html|json)|runtime\/(?:[a-z-]+\.(?:js|css|html)|assets\/[A-Za-z0-9_.-]+))$/.test(
+      file,
+    )
+  ) {
     res.writeHead(404).end("Not found");
     return;
   }

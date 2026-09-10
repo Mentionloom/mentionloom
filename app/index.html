@@ -14,17 +14,26 @@
     <link rel="icon" href="../assets/mark.svg" type="image/svg+xml" />
     <link
       rel="preload"
-      href="../assets/OpenRunde-Regular.woff2"
+      href="./components/orbit/runtime/assets/OpenRunde-Regular.woff2"
       as="font"
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="../orbit-tokens.css" />
-    <link rel="stylesheet" href="./orbit.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/tokens.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/styles.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/motion.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/numbers.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/controls.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/starter.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/agents.css" />
+    <link rel="stylesheet" href="./components/orbit/runtime/extras.css" />
+    <link rel="stylesheet" href="./tokens.css" />
+
     <link rel="stylesheet" href="./app.css" />
+    <link rel="stylesheet" href="./foundation.css" />
     <script type="module" src="./app.js"></script>
   </head>
-  <body>
+  <body class="discovery-app">
     <a class="skip-link" href="#main">Skip to dashboard</a>
     <header class="app-header">
       <div class="header-inner">
@@ -39,39 +48,45 @@
           aria-expanded="false"
         >
           <span class="acme-mark">a</span> Acme
-          <span data-icon="chevrons"></span></button
+          <span data-app-icon="chevrons"></span></button
         ><span class="badge demo-badge">Demo workspace</span>
         <div class="header-spacer"></div>
         <button class="search-button button ghost" data-action="search">
-          <span data-icon="search"></span><span>Search anything</span
+          <span data-app-icon="search"></span><span>Search anything</span
           ><kbd>⌘ K</kbd></button
-        ><button class="button primary" data-action="setup">
-          Connect your website<span data-icon="plus"></span>
+        ><button
+          class="button primary"
+          data-action="setup"
+          aria-label="Connect your website"
+        >
+          <span class="wide-label">Connect your website</span
+          ><span class="narrow-label">Connect</span
+          ><span data-app-icon="plus"></span>
         </button>
       </div>
     </header>
     <nav class="section-nav" aria-label="Dashboard sections">
       <div class="nav-inner">
         <a class="active" href="#overview" data-section="overview"
-          ><span data-icon="chart"></span>Overview</a
+          ><span data-app-icon="chart"></span>Overview</a
         ><a href="#questions" data-section="questions"
-          ><span data-icon="spark"></span>Questions<span class="nav-count"
+          ><span data-app-icon="spark"></span>Questions<span class="nav-count"
             >12</span
           ></a
         ><a href="#actions" data-section="actions"
-          ><span data-icon="bolt"></span>Next moves<span
+          ><span data-app-icon="bolt"></span>Next moves<span
             class="nav-count"
             id="action-count"
             >3</span
           ></a
         ><button data-action="sources">
-          <span data-icon="layers"></span>Data sources</button
+          <span data-app-icon="layers"></span>Data sources</button
         ><span class="nav-note"
           ><span class="status-dot"></span>Explore with sample data</span
         >
       </div>
     </nav>
-    <main id="main">
+    <main id="main" tabindex="-1">
       <section id="overview" class="overview-section">
         <div class="page-heading">
           <div>
@@ -82,8 +97,9 @@
               move.
             </p>
           </div>
-          <button class="button" data-action="export">
-            <span data-icon="download"></span>Export
+          <button class="button" data-action="export" aria-label="Export">
+            <span data-app-icon="download"></span
+            ><span class="export-label">Export</span>
           </button>
         </div>
         <div class="filter-bar">
@@ -93,23 +109,23 @@
               data-menu="period-menu"
               aria-expanded="false"
             >
-              <span data-icon="calendar"></span
+              <span data-app-icon="calendar"></span
               ><span id="period-label">Last 30 days</span
-              ><span data-icon="down"></span></button
+              ><span data-app-icon="down"></span></button
             ><button
               class="control-trigger"
               data-menu="engine-menu"
               aria-expanded="false"
             >
-              <span data-icon="spark"></span
+              <span data-app-icon="spark"></span
               ><span id="engine-label">All AI engines</span
-              ><span data-icon="down"></span></button
+              ><span data-app-icon="down"></span></button
             ><button
               class="button ghost filter-trigger"
               data-menu="topic-menu"
               aria-expanded="false"
             >
-              <span data-icon="filter"></span>Add filter
+              <span data-app-icon="filter"></span>Add filter
             </button>
           </div>
           <span id="date-label" class="date-label"></span>
@@ -122,11 +138,7 @@
             aria-pressed="true"
           >
             <span class="metric-label"
-              ><span class="metric-dot"></span>Mention rate<span
-                class="metric-help"
-                title="Share of sampled answers that mention Acme"
-                >ⓘ</span
-              ></span
+              ><span class="metric-dot"></span>Mention rate</span
             ><span class="metric-value rolling-number" id="value-visibility"
               >—</span
             ><span class="metric-comparison" id="delta-visibility"></span
@@ -190,7 +202,7 @@
                 aria-label="View chart data table"
                 title="View data table"
               >
-                <span data-icon="table"></span>
+                <span data-app-icon="table"></span>
               </button>
             </div>
           </div>
@@ -216,15 +228,15 @@
               ><span class="legend-dot"></span
               ><span id="chart-legend">Mention rate</span></span
             ><button class="text-button" data-action="methodology">
-              <span id="sample-count"></span><span data-icon="info"></span>
+              <span id="sample-count"></span><span data-app-icon="info"></span>
             </button>
           </div>
         </div>
         <button class="insight-strip" id="insight" data-action="opportunities">
-          <span class="insight-icon" data-icon="spark"></span
+          <span class="insight-icon" data-app-icon="spark"></span
           ><span id="insight-text"></span
           ><span class="insight-link"
-            >Explore the gap<span data-icon="right"></span
+            >Explore the gap<span data-app-icon="right"></span
           ></span>
         </button>
         <div class="breakdown-grid">
@@ -239,12 +251,13 @@
                 data-action="methodology"
                 aria-label="How engine visibility is measured"
               >
-                <span data-icon="info"></span>
+                <span data-app-icon="info"></span>
               </button>
             </div>
             <div class="card-tabs">
               <div
                 class="segmented"
+                data-segment
                 id="engine-tabs"
                 role="group"
                 aria-label="Engine breakdown metric"
@@ -260,7 +273,7 @@
             <div id="engine-rows" class="rank-list"></div>
             <div class="card-footer">
               <span>Click an engine to filter the dashboard</span
-              ><span data-icon="filter"></span>
+              ><span data-app-icon="filter"></span>
             </div>
           </article>
           <article class="card competitors-card">
@@ -274,7 +287,7 @@
                 data-action="competitors"
                 aria-label="View competitor details"
               >
-                <span data-icon="arrow"></span>
+                <span data-app-icon="arrow"></span>
               </button>
             </div>
             <div class="card-tabs">
@@ -298,12 +311,13 @@
                 data-action="pages"
                 aria-label="View all cited pages"
               >
-                <span data-icon="arrow"></span>
+                <span data-app-icon="arrow"></span>
               </button>
             </div>
             <div class="card-tabs">
               <div
                 class="segmented"
+                data-segment
                 id="page-tabs"
                 role="group"
                 aria-label="Cited page ownership"
@@ -319,7 +333,7 @@
             <div id="page-rows" class="rank-list"></div>
             <div class="card-footer">
               <button class="text-button" data-action="pages">
-                Explore all sources<span data-icon="right"></span></button
+                Explore all sources<span data-app-icon="right"></span></button
               ><span id="pages-total"></span>
             </div>
           </article>
@@ -334,7 +348,9 @@
             <div id="funnel"></div>
             <div class="card-footer">
               <button class="text-button" data-action="attribution">
-                How we attribute visits<span data-icon="right"></span></button
+                How we attribute visits<span
+                  data-app-icon="right"
+                ></span></button
               ><span>UTM + referrer</span>
             </div>
           </article>
@@ -356,7 +372,7 @@
                 id="pause-pulse"
                 aria-label="Pause demo replay"
               >
-                <span data-icon="pause"></span>
+                <span data-app-icon="pause"></span>
               </button>
             </div>
             <div class="discovery-body">
@@ -364,13 +380,17 @@
                 <svg viewBox="0 0 440 185" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="signal-fade">
-                      <stop stop-color="#918df6" stop-opacity=".12" />
+                      <stop stop-color="var(--accent)" stop-opacity=".12" />
                       <stop
                         offset=".6"
-                        stop-color="#918df6"
+                        stop-color="var(--accent)"
                         stop-opacity=".7"
                       />
-                      <stop offset="1" stop-color="#918df6" stop-opacity=".2" />
+                      <stop
+                        offset="1"
+                        stop-color="var(--accent)"
+                        stop-opacity=".2"
+                      />
                     </linearGradient>
                   </defs>
                   <path
@@ -388,11 +408,11 @@
                     d="M215 92C310 92 300 36 398 36"
                     class="signal signal-three"
                   /></svg
-                ><span class="map-node map-gpt" data-icon="gpt"></span
-                ><span class="map-node map-claude" data-icon="claude"></span
+                ><span class="map-node map-gpt" data-app-icon="gpt"></span
+                ><span class="map-node map-claude" data-app-icon="claude"></span
                 ><span class="map-node map-center">a</span
-                ><span class="map-node map-answer" data-icon="link"></span
-                ><span class="map-node map-person" data-icon="people"></span
+                ><span class="map-node map-answer" data-app-icon="link"></span
+                ><span class="map-node map-person" data-app-icon="people"></span
                 ><span class="map-caption map-caption-left">AI engines</span
                 ><span class="map-caption map-caption-middle">acme.work</span
                 ><span class="map-caption map-caption-right">Discovery</span>
@@ -402,12 +422,12 @@
             <div class="card-footer">
               <span>Illustrative activity from this sample workspace</span
               ><button class="text-button" data-action="activity">
-                Explore answer feed<span data-icon="right"></span>
+                Explore answer feed<span data-app-icon="right"></span>
               </button>
             </div>
           </article>
           <article class="crawler-summary">
-            <span class="icon-tile" data-icon="globe"></span>
+            <span class="icon-tile" data-app-icon="globe"></span>
             <h2>Can AI reach you?</h2>
             <p>
               Search crawlers can access your site. Training crawlers are a
@@ -418,7 +438,7 @@
               ><strong>3 search bots allowed</strong>
             </div>
             <button class="button" data-action="crawlers">
-              Inspect crawler access<span data-icon="right"></span></button
+              Inspect crawler access<span data-app-icon="right"></span></button
             ><span class="small-label">Sample server-log data</span>
           </article>
         </div>
@@ -431,26 +451,32 @@
             <p>Explore the answers. Find the moments where you’re missing.</p>
           </div>
           <button class="button" data-action="add-question">
-            <span data-icon="plus"></span>Track a question
+            <span data-app-icon="plus"></span>Track a question
           </button>
         </div>
         <div class="question-controls">
           <div
             class="segmented"
+            data-segment
             id="question-tabs"
             role="group"
             aria-label="Question coverage"
           >
             <button data-value="all" aria-pressed="true">
-              All questions<span id="q-all-count">12</span></button
+              <span class="control-label wide-label">All questions</span
+              ><span class="control-label narrow-label">All</span
+              ><span id="q-all-count">12</span></button
             ><button data-value="opportunity" aria-pressed="false">
-              Opportunities<span id="q-gap-count"></span></button
+              <span class="control-label wide-label">Opportunities</span
+              ><span class="control-label narrow-label">Gaps</span
+              ><span id="q-gap-count"></span></button
             ><button data-value="strong" aria-pressed="false">
-              Strong presence
+              <span class="control-label wide-label">Strong presence</span
+              ><span class="control-label narrow-label">Strong</span>
             </button>
           </div>
           <label class="search-field"
-            ><span data-icon="search"></span
+            ><span data-app-icon="search"></span
             ><input
               type="search"
               id="question-search"
@@ -466,7 +492,7 @@
                 <th scope="col">Topic</th>
                 <th scope="col">
                   <button class="text-button" id="sort-questions">
-                    Mention rate<span data-icon="down"></span>
+                    Mention rate<span data-app-icon="down"></span>
                   </button>
                 </th>
                 <th scope="col">Coverage</th>
@@ -478,7 +504,7 @@
           <div class="table-bottom">
             <span id="questions-count"></span
             ><button class="text-button" id="more-questions">
-              Show all questions<span data-icon="down"></span>
+              Show all questions<span data-app-icon="down"></span>
             </button>
           </div>
         </div>
@@ -492,6 +518,7 @@
           </div>
           <div
             class="segmented"
+            data-segment
             id="action-tabs"
             role="group"
             aria-label="Improvement status"
@@ -510,7 +537,7 @@
           ><img src="../assets/mark.svg" alt="" width="19" height="19" /> Made
           for the way people discover now.</span
         ><button class="text-button" data-action="methodology">
-          About this data<span data-icon="info"></span></button
+          About this data<span data-app-icon="info"></span></button
         ><span>Light by design.</span>
       </footer>
     </main>
@@ -531,25 +558,25 @@
       <span class="menu-label">Your workspace</span
       ><button data-action="reset-workspace">
         <span class="acme-mark">a</span> Acme demo<span
-          data-icon="check"
+          data-app-icon="check"
         ></span></button
       ><button data-action="setup">
-        <span data-icon="plus"></span> Add your website
+        <span data-app-icon="plus"></span> Add your website
       </button>
       <div class="menu-note">
         Explore freely. Your changes stay in this browser.
       </div>
     </div>
-    <dialog id="detail" class="drawer" aria-labelledby="detail-title">
+    <dialog id="detail" class="drawer" aria-labelledby="app-detail-title">
       <div class="drawer-header">
         <div>
           <button class="text-button drawer-back" id="drawer-back" hidden>
             ← Back</button
           ><span id="detail-eyebrow" class="eyebrow"></span>
-          <h2 id="detail-title" tabindex="-1"></h2>
+          <h2 id="app-detail-title" tabindex="-1"></h2>
         </div>
         <button class="icon-button" data-close aria-label="Close detail panel">
-          <span data-icon="close"></span>
+          <span data-app-icon="close"></span>
         </button>
       </div>
       <div id="detail-body" class="drawer-body"></div>
@@ -560,14 +587,14 @@
       aria-label="Search workspace"
     >
       <div class="command-search">
-        <span data-icon="search"></span
+        <span data-app-icon="search"></span
         ><input
           type="search"
           id="global-search"
           placeholder="Search questions, pages, or actions…"
           aria-label="Search workspace"
         /><button class="icon-button" data-close aria-label="Close search">
-          <span data-icon="close"></span>
+          <span data-app-icon="close"></span>
         </button>
       </div>
       <div id="search-results"></div>
@@ -575,7 +602,7 @@
         Search this sample workspace<span>Esc to close</span>
       </div>
     </dialog>
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
     <div
       id="filter-status"
       class="sr-only"

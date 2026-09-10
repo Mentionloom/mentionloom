@@ -17,9 +17,11 @@ orbit-integration.css
 rebuild.py
 showcase.css
 showcase.js
-styles.css
+/styles.css
 DESIGN.md
 .vercel
 .env*
 exports/
 .local-data/
+
+checks/a11y-*.json
