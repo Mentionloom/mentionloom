@@ -4,7 +4,7 @@ Light-only interactive landing-page draft. Static HTML, CSS, and JavaScript; no 
 
 Run from this directory: `python3 -m http.server 4321 --bind 127.0.0.1`
 
-Production build: `npm run build`. This copies only the current page, styles, script, and licensed assets into `dist/`. Vercel uses `vercel.json` to build and publish that directory. The GitHub repository is private; the deployed landing page is public. Connect the repository to Vercel with `main` as the production branch for automatic deployments.
+Production build: `npm run build`. This copies only the current page, styles, script, and licensed assets into `dist/`. Vercel uses `vercel.json` to build and publish that directory. The [GitHub repository](https://github.com/giovanitier/mentionloom) is private; the deployed landing page is public. The repository is connected to the `mentionloom` project in the Vercel `tier` workspace, with automatic production deployments from `main`.
 
 Open http://127.0.0.1:4321. The workspace has four views: Overview, AI visits, Answers, and Opportunities. It includes selectable metrics, date ranges, question examples, opportunity completion/reset, and mouse/keyboard chart inspection. Feature cards include replayable sample crawler activity. The early-access request stays local and can be downloaded; it does not submit anything or charge a payment. All dashboard data is illustrative.
 
