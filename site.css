@@ -463,7 +463,7 @@
   width: 13px;
   height: 13px;
 }
-.marketing-app .motion-paused * {
+.marketing-app.motion-paused * {
   animation-play-state: paused !important;
 }
 .marketing-app .provider-strip {
