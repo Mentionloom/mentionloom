@@ -5,9 +5,14 @@
   "description": "Mentionloom AI discovery landing page",
   "type": "module",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "test": "node --test checks/waitlist.test.mjs checks/waitlist-api.test.mjs",
+    "waitlist:export": "node --env-file=.env.local scripts/export-waitlist.mjs"
   },
   "engines": {
     "node": "22.x"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
   }
 }

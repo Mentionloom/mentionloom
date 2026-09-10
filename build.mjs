@@ -6,6 +6,8 @@ const files = [
   'orbit-tokens.css',
   'site.css',
   'site.js',
+  'waitlist.css',
+  'waitlist.js',
   'assets/mark.svg',
   'assets/woven-light.png',
   'assets/OpenRunde-Regular.woff2',

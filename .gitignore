@@ -21,3 +21,5 @@ styles.css
 DESIGN.md
 .vercel
 .env*
+exports/
+.local-data/
