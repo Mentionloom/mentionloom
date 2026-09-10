@@ -5,8 +5,11 @@ const files = [
   'index.html',
   'orbit-tokens.css',
   'site.css',
-  'dashboard.css',
+  'product-portal.css',
   'site.js',
+  'app/index.html',
+  'app/app.css',
+  'app/app.js',
   'waitlist.css',
   'waitlist.js',
   'assets/mark.svg',
@@ -19,5 +22,6 @@ const files = [
 
 await rm(output, { recursive: true, force: true });
 await mkdir(new URL('assets/', output), { recursive: true });
+await mkdir(new URL('app/', output), { recursive: true });
 await Promise.all(files.map(file => copyFile(new URL(file, import.meta.url), new URL(file, output))));
 console.log(`Built ${files.length} public files in dist/.`);

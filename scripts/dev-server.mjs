@@ -6,7 +6,7 @@ import { memoryStore } from '../checks/memory-store.mjs';
 const mock = process.argv.includes('--test-storage');
 const handler = mock ? createHandler({ store: memoryStore(), secret: () => 'local-test-only-'.repeat(4) }) : createHandler();
 const types = { html:'text/html', css:'text/css', js:'text/javascript', png:'image/png', svg:'image/svg+xml', woff2:'font/woff2', txt:'text/plain' };
-const allowed = new Set(['index.html','orbit-tokens.css','site.css','dashboard.css','site.js','waitlist.css','waitlist.js','assets/mark.svg','assets/woven-light.png','assets/OpenRunde-Regular.woff2','assets/OpenRunde-Medium.woff2','assets/OpenRunde-Semibold.woff2','assets/OFL.txt']);
+const allowed = new Set(['index.html','orbit-tokens.css','site.css','product-portal.css','app/index.html','app/app.css','app/app.js','site.js','waitlist.css','waitlist.js','assets/mark.svg','assets/woven-light.png','assets/OpenRunde-Regular.woff2','assets/OpenRunde-Medium.woff2','assets/OpenRunde-Semibold.woff2','assets/OFL.txt']);
 createServer(async (req,res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (pathname === '/api/waitlist') {
@@ -16,7 +16,7 @@ createServer(async (req,res) => {
     res.json = body => { res.setHeader('Content-Type','application/json'); res.end(JSON.stringify(body)); };
     await handler(req,res); return;
   }
-  const file = pathname === '/' ? 'index.html' : pathname.slice(1);
+  const file = pathname === '/' ? 'index.html' : pathname === '/app' || pathname === '/app/' ? 'app/index.html' : pathname.slice(1);
   if (!allowed.has(file)) { res.writeHead(404).end('Not found'); return; }
   try { res.setHeader('Content-Type', types[file.split('.').pop()] || 'application/octet-stream'); res.setHeader('Cache-Control','no-store'); res.end(await readFile(new URL('../'+file,import.meta.url))); }
   catch { res.writeHead(404).end('Not found'); }
