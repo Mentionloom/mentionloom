@@ -1,0 +1,10 @@
+Brand SVGs: Simple Icons 16.30.0, distributed by @iconify-json/simple-icons 1.2.95.
+Source: https://github.com/simple-icons/simple-icons
+Icon collection license: CC0 1.0.
+License: https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md
+
+Files are generated without redrawing paths from the collection's OpenAI,
+Claude, Perplexity, Google Gemini, Asana, Notion, and ClickUp marks.
+Brand names and logos remain the property of their respective owners.
+They identify providers and a clearly labeled sample competitor set, not
+customers, endorsements, or partnerships.

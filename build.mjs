@@ -1,4 +1,5 @@
 import { copyFile, cp, mkdir, rm } from "node:fs/promises";
+import { marketingAssets } from "./scripts/marketing-assets.mjs";
 
 const output = new URL("./dist/", import.meta.url);
 const files = [
@@ -38,6 +39,12 @@ await Promise.all(
 await cp(
   new URL("./app/components/", import.meta.url),
   new URL("app/components/", output),
+  { recursive: true },
+);
+await marketingAssets(output);
+await cp(
+  new URL("./assets/licenses/", import.meta.url),
+  new URL("assets/licenses/", output),
   { recursive: true },
 );
 console.log(

@@ -74,6 +74,7 @@ createServer(async (req, res) => {
         : pathname.slice(1);
   if (
     !allowed.has(file) &&
+    !/^assets\/(?:globe\.js|brands\/[a-z]+\.svg|icons\/lucide\.svg)$/.test(file) &&
     !/^app\/components\/orbit\/(?:[a-z0-9-]+\.(?:js|html|json)|runtime\/(?:[a-z-]+\.(?:js|css|html)|assets\/[A-Za-z0-9_.-]+))$/.test(
       file,
     )

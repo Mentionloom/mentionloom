@@ -7,12 +7,19 @@
   "scripts": {
     "build": "node build.mjs",
     "test": "node --test checks/waitlist.test.mjs checks/waitlist-api.test.mjs checks/dashboard.test.mjs checks/orbit.test.mjs",
-    "waitlist:export": "node --env-file=.env.local scripts/export-waitlist.mjs"
+    "waitlist:export": "node --env-file=.env.local scripts/export-waitlist.mjs",
+    "dev": "node scripts/marketing-assets.mjs && node scripts/dev-server.mjs"
   },
   "engines": {
     "node": "22.x"
   },
   "dependencies": {
-    "@vercel/blob": "^2.8.0"
+    "@vercel/blob": "^2.8.0",
+    "cobe": "2.0.1"
+  },
+  "devDependencies": {
+    "@iconify-json/simple-icons": "1.2.95",
+    "esbuild": "0.28.2",
+    "lucide-static": "1.44.0"
   }
 }
