@@ -6,7 +6,7 @@ import { memoryStore } from '../checks/memory-store.mjs';
 const mock = process.argv.includes('--test-storage');
 const handler = mock ? createHandler({ store: memoryStore(), secret: () => 'local-test-only-'.repeat(4) }) : createHandler();
 const types = { html:'text/html', css:'text/css', js:'text/javascript', png:'image/png', svg:'image/svg+xml', woff2:'font/woff2', txt:'text/plain' };
-const allowed = new Set(['index.html','orbit-tokens.css','site.css','site.js','waitlist.css','waitlist.js','assets/mark.svg','assets/woven-light.png','assets/OpenRunde-Regular.woff2','assets/OpenRunde-Medium.woff2','assets/OpenRunde-Semibold.woff2','assets/OFL.txt']);
+const allowed = new Set(['index.html','orbit-tokens.css','site.css','dashboard.css','site.js','waitlist.css','waitlist.js','assets/mark.svg','assets/woven-light.png','assets/OpenRunde-Regular.woff2','assets/OpenRunde-Medium.woff2','assets/OpenRunde-Semibold.woff2','assets/OFL.txt']);
 createServer(async (req,res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (pathname === '/api/waitlist') {

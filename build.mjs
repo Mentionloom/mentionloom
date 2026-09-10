@@ -5,6 +5,7 @@ const files = [
   'index.html',
   'orbit-tokens.css',
   'site.css',
+  'dashboard.css',
   'site.js',
   'waitlist.css',
   'waitlist.js',
