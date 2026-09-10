@@ -10,7 +10,7 @@ checks/*.png
 checks/*.webm
 checks/verify.cjs
 checks/showcase.cjs
-app.js
+/app.js
 experience.css
 experience.js
 orbit-integration.css
