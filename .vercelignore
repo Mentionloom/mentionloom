@@ -1,0 +1,7 @@
+.git
+node_modules
+checks
+archive-v3
+archive-v4
+.env*
+*.md
