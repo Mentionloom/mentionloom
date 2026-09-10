@@ -1,0 +1,13 @@
+{
+  "name": "mentionloom",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mentionloom AI discovery landing page",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
