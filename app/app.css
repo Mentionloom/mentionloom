@@ -1292,7 +1292,7 @@ main {
 .drawer-list > button:hover {
   background: var(--subtle);
 }
-.drawer-list > button > span {
+.drawer-list > button > span:not(.engine-icon):not(.brand-initial) {
   flex: 1;
 }
 .drawer-list small {

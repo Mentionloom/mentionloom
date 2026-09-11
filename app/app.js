@@ -664,10 +664,19 @@ function openCompetitor(name) {
     name === "Acme" ? r.mention : r.competitors.includes(name),
   );
   const gaps = rows.filter((r) => !r.mention);
+  const grouped = QUESTIONS.map((q) => ({
+    ...q,
+    evidence: (name === "Acme" ? rows : gaps).filter((r) => r.question === q.id),
+  })).filter((q) => q.evidence.length).sort((a, b) => b.evidence.length - a.evidence.length);
+  const evidence = grouped.map((q) => {
+    const latest = q.evidence.at(-1);
+    const providers = [...new Set(q.evidence.map((r) => r.engine))];
+    return `<button class="benchmark-question" data-question="${q.id}" data-answer-date="${latest.date}" data-answer-engine="${latest.engine}"><span class="benchmark-question-copy"><strong>${esc(q.text)}</strong><span class="benchmark-meta">${providers.map((id) => `<img src="/assets/brands/${id}.svg" width="16" height="16" alt="${esc(engine(id).name)}">`).join("")}<span>Latest ${date(latest.date)}</span></span></span><span class="benchmark-count"><strong>${fmt(q.evidence.length)}</strong><small>${name === "Acme" ? "mentions" : "missed"}</small></span>${icon("right")}</button>`;
+  }).join("");
   detail(
     name,
     name === "Acme" ? "YOUR BRAND" : "COMPETITOR BENCHMARK",
-    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(c.share)}</strong></div><div><span>Answers mentioning ${esc(name)}</span><strong>${fmt(c.count)}</strong></div></div><div class="notice">Calculated across the same ${fmt(data.current.samples)} sampled answers. Multiple brands can be mentioned in one answer, so rates do not add to 100%.</div><h3>${name === "Acme" ? "Recent mentions" : "Answers where " + esc(name) + " appears without Acme"}</h3><div class="drawer-list">${answersList(name === "Acme" ? rows : gaps) || empty("No missing mentions here", "Acme appears alongside this brand in the current sample.")}</div>`,
+    `<p class="benchmark-scope">${state.engine ? esc(engine(state.engine).name) : "All engines"} · ${date(data.start)} – ${date(data.end)} · Sample data</p><div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(c.share)}</strong></div><div><span>${name === "Acme" ? "Answers mentioning you" : "Answers without Acme"}</span><strong>${fmt(name === "Acme" ? c.count : gaps.length)}</strong></div></div><div class="benchmark-heading"><h3>${name === "Acme" ? "Questions mentioning you" : "Where you’re missing"}</h3><span>${grouped.length} questions</span></div><p class="benchmark-description">${name === "Acme" ? "Ranked by sampled mentions." : esc(name) + " appears in these answers without Acme. Open a question to inspect the latest sample."}</p><div class="benchmark-list">${evidence || empty("No missing mentions here", "Acme appears alongside this brand in the current sample.")}</div><details class="benchmark-method"><summary>How this is measured</summary><p>${fmt(c.count)} of ${fmt(data.current.samples)} sampled answers mention ${esc(name)}. Each question groups its matching answers across this reporting period. Multiple brands can appear in one answer; rates do not add to 100%.</p></details>`,
   );
 }
 function openAction(id, replace = false) {

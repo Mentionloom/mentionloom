@@ -1,5 +1,24 @@
 /* Orbit 0.2 component dimensions, matching runtime/styles.css and controls.css.
    Product compositions use the same scale; touch input expands hit targets. */
+.benchmark-scope { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+.benchmark-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 24px; }
+.benchmark-heading h3 { margin: 0; font-size: 15px; }
+.benchmark-heading > span { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.benchmark-description { color: var(--muted); font-size: 12px; margin: 8px 0 16px; }
+.benchmark-list { border-top: 1px solid var(--border); }
+.benchmark-question { display: grid; grid-template-columns: minmax(0, 1fr) 48px 16px; gap: 16px; align-items: center; width: 100%; padding: 16px 8px; border: 0; border-bottom: 1px solid var(--border); background: transparent; text-align: left; color: var(--text); cursor: pointer; border-radius: 6px; transition: background 140ms ease; }
+.benchmark-question:hover { background: var(--subtle); }
+.benchmark-question-copy > strong { display: block; font-size: 14px; line-height: 1.5; font-weight: 500; }
+.benchmark-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 11px; }
+.benchmark-meta img { flex: 0 0 16px; object-fit: contain; }
+.benchmark-meta > span { margin-left: 4px; }
+.benchmark-count { text-align: right; font-variant-numeric: tabular-nums; }
+.benchmark-count strong { display: block; font-size: 18px; font-weight: 500; }
+.benchmark-count small { display: block; color: var(--muted); font-size: 10px; }
+.benchmark-question > .icon { width: 16px; color: var(--muted); }
+.benchmark-method { margin-top: 24px; color: var(--muted); font-size: 12px; }
+.benchmark-method summary { min-height: 36px; cursor: pointer; }
+.benchmark-method p { line-height: 1.6; }
 .discovery-app .button {
   min-height: 36px;
   padding: 8px 14px;
