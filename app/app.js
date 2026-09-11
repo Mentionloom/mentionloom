@@ -721,6 +721,7 @@ function renderGrowth() {
   const context = growthContext(data),
     items = priorities(data, growthWork, shipped);
   const next = items.find((a) => !a.completed);
+  $("#overview-next").disabled = false;
   $("#overview-next").innerHTML =
     `${next ? (growthWork[next.id] ? "Continue plan" : "Your next move") : items.length ? "Review results" : "Explore questions"}${icon("right")}`;
   $("#next-move").innerHTML = nextMoveHTML(items, growthWork, context);
@@ -1005,7 +1006,7 @@ const actions = {
 // A microtask can run between listeners and remove its selected option too early.
 document.addEventListener("click", (event) => {
   const b = event.target.closest("button,a");
-  if (!b) return;
+  if (!b || !data) return;
   if (b.dataset.route) {
     if (
       event.button !== 0 ||

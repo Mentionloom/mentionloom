@@ -75,7 +75,7 @@
         ><a href="/app/questions/" data-route="questions"
           >Questions<span class="nav-count" id="q-nav-count">12</span></a
         ><a href="/app/opportunities/" data-route="opportunities"
-          >Opportunities<span class="nav-count" id="action-count">3</span></a
+          >Opportunities<span class="nav-count" id="action-count">6</span></a
         ><a href="/app/sources/" data-route="sources">Sources</a>
       </div>
     </nav>
@@ -90,6 +90,7 @@
           <button
             class="button primary"
             id="overview-next"
+            disabled
             data-action="growth-next"
             hidden
           >
@@ -615,13 +616,19 @@
           </div>
         </div>
         <div id="action-cards" class="action-grid"></div>
-        <details class="opportunity-evidence"><summary>Explore the underlying visibility gaps <span data-app-icon="down"></span></summary>        <article class="gap-chart">
-          <div class="card-heading">
-            <h2>Visibility gaps</h2>
-            <span class="small-label">Answers without Acme</span>
-          </div>
-          <div id="gap-rows"></div>
-        </article></details>
+        <details class="opportunity-evidence">
+          <summary>
+            Explore the underlying visibility gaps
+            <span data-app-icon="down"></span>
+          </summary>
+          <article class="gap-chart">
+            <div class="card-heading">
+              <h2>Visibility gaps</h2>
+              <span class="small-label">Answers without Acme</span>
+            </div>
+            <div id="gap-rows"></div>
+          </article>
+        </details>
         <button class="text-button review-link" data-action="growth-review">
           Review shipped changes <span data-app-icon="right"></span>
         </button>
