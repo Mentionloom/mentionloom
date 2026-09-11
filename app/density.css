@@ -11,6 +11,13 @@
 .tour-progress { display: flex; gap: 4px; margin-top: 10px; }
 .tour-progress span { height: 3px; flex: 1; border-radius: 3px; background: var(--subtle); }
 .tour-progress .complete { background: var(--accent); }
+.tour-progress span { transition: background-color 180ms ease; }
+.tour-try { width: 100%; border: 1px solid var(--purple-2); text-align: left; color: var(--accent-text); cursor: pointer; align-items: center; }
+.tour-try > span { flex: 1; }
+.tour-try:hover { background: var(--purple-2); }
+@media (prefers-reduced-motion: reduce) {
+  .tour-progress span { transition: none; }
+}
 .tour-highlight { outline: 2px solid var(--purple-3); outline-offset: 4px; }
 body:has(.demo-tour:not([hidden])) main { padding-bottom: 360px; }
 @media (max-width: 600px) {

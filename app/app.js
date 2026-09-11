@@ -1115,6 +1115,12 @@ document.addEventListener("click", (event) => {
   if (!b || !data) return;
   if (b.dataset.tour) {
     const choice = b.dataset.tour;
+    if (choice === "try") {
+      const step = tourSteps[tourStep];
+      if (step.view === "traffic") actions.attribution();
+      else $(step.target)?.querySelector("button")?.click();
+      return;
+    }
     if (choice === "close" || choice === "finish") {
       endTour(choice === "finish" ? "complete" : "dismissed");
     } else showTour(choice === "start" ? 0 : tourStep + (choice === "back" ? -1 : 1));
@@ -1524,12 +1530,12 @@ document
 let resizeTimer;
 let tourStep = -1;
 const tourSteps = [
-  { view: "overview", target: ".metrics", title: "Start with your position", copy: "Mention rate tells you how often Acme appears in sampled answers. Citations count links; referrals count website visits. They measure different parts of discovery.", task: "Try opening a metric to explore its report." },
-  { view: "questions", target: ".question-table-wrap", title: "Understand the buyer’s question", copy: "These are questions your team chooses to sample—not private customer conversations. Low mention rates reveal where your brand is missing.", task: "Open a question to read its answer evidence." },
-  { view: "opportunities", target: "#action-cards", title: "Turn evidence into a change", copy: "Each opportunity connects a coverage gap to a page you can improve. Start a plan to save a baseline, then follow its checklist.", task: "Open an improvement and inspect the suggested work." },
-  { view: "traffic", target: "#funnel", title: "Follow what happens after the click", copy: "AI referrals use a known referrer or UTM source. The funnel follows those sessions into engagement and leads. Some AI visits lose their source and cannot be attributed.", task: "Compare referrals with leads in the funnel." },
-  { view: "sources", target: ".connections", title: "Know what makes the numbers real", copy: "This workspace uses sample data. Real measurement needs connected answer sampling, website analytics, conversion events, or server logs. Each source answers a different question.", task: "Open a source to see its requirements." },
-  { view: "addons", target: "#addon-focus", title: "Choose your next tool", copy: "Add-ons extend the workflow with content briefs, competitor monitoring, and summaries. Each explains the data it needs. Demo activations stay in your browser.", task: "Explore an add-on—or return to Overview to begin your first improvement." },
+  { view: "overview", target: ".metrics", title: "See your visibility", copy: "How often AI mentions your brand in sampled answers.", task: "Explore a metric" },
+  { view: "questions", target: ".question-table-wrap", title: "Find the gaps", copy: "Buyer questions where your brand is missing.", task: "Read an answer" },
+  { view: "opportunities", target: "#action-cards", title: "Make your next move", copy: "One page. One improvement. A saved baseline.", task: "Open a plan" },
+  { view: "traffic", target: "#funnel", title: "Follow the click", copy: "Attributed AI visits → engagement → leads.", task: "Explore attribution" },
+  { view: "sources", target: ".connections", title: "Connect your signals", copy: "Sample data today. Your own sources next.", task: "Explore a source" },
+  { view: "addons", target: "#addon-focus", title: "Build your toolkit", copy: "Opt into tools that fit your workflow.", task: "Preview an add-on" },
 ];
 function endTour(result) {
   $("#demo-tour").hidden = true;
@@ -1548,7 +1554,8 @@ function showTour(index) {
   target?.scrollIntoView({ behavior: "instant", block: "center" });
   const panel = $("#demo-tour");
   panel.hidden = false;
-  panel.innerHTML = `<div class="tour-top"><span>GUIDED DEMO · ${tourStep + 1} / ${tourSteps.length}</span><button class="icon-button" data-tour="close" aria-label="Close guided tour">${icon("close")}</button></div><div class="tour-progress" aria-hidden="true">${tourSteps.map((_, i) => `<span class="${i <= tourStep ? "complete" : ""}"></span>`).join("")}</div><h2 tabindex="-1">${step.title}</h2><p>${step.copy}</p><div class="tour-task">${icon("cursor")}<span>${step.task}</span></div><div class="tour-actions"><button class="button ghost" data-tour="back" ${tourStep === 0 ? "disabled" : ""}>Back</button><button class="button primary" data-tour="${tourStep === tourSteps.length - 1 ? "finish" : "next"}">${tourStep === tourSteps.length - 1 ? "Start exploring" : "Next"}${icon("right")}</button></div>`;
+  panel.innerHTML = `<div class="tour-top"><span>GUIDED DEMO · ${tourStep + 1} / ${tourSteps.length}</span><button class="icon-button" data-tour="close" aria-label="Close guided tour">${icon("close")}</button></div><div class="tour-progress" aria-hidden="true">${tourSteps.map((_, i) => `<span class="${i <= tourStep ? "complete" : ""}"></span>`).join("")}</div><h2 tabindex="-1">${step.title}</h2><p>${step.copy}</p><button class="tour-task tour-try" data-tour="try">${icon("cursor")}<span>${step.task}</span>${icon("right")}</button><div class="tour-actions"><button class="button ghost" data-tour="back" ${tourStep === 0 ? "disabled" : ""}>Back</button><button class="button primary" data-tour="${tourStep === tourSteps.length - 1 ? "finish" : "next"}">${tourStep === tourSteps.length - 1 ? "Start exploring" : "Next"}${icon("right")}</button></div>`;
+  animate(panel, [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }], 180);
   panel.querySelector("h2").focus({ preventScroll: true });
 }
 $("#demo-tour").addEventListener("keydown", (event) => {
@@ -1556,7 +1563,7 @@ $("#demo-tour").addEventListener("keydown", (event) => {
 });
 if (!load("education-tour", null)) {
   $("#demo-tour").hidden = false;
-  $("#demo-tour").innerHTML = `<div class="tour-top"><span>WELCOME TO MENTIONLOOM</span><button class="icon-button" data-tour="close" aria-label="Dismiss tour invitation">${icon("close")}</button></div><h2>Your first look at AI discovery</h2><p>Learn what the numbers mean, find a visibility gap, and turn it into your next improvement.</p><div class="tour-task">${icon("info")}<span>2-minute tour · Sample data · Explore at your own pace</span></div><div class="tour-actions"><button class="button ghost" data-tour="close">Explore on my own</button><button class="button primary" data-tour="start">Show me around${icon("right")}</button></div>`;
+  $("#demo-tour").innerHTML = `<div class="tour-top"><span>WELCOME TO MENTIONLOOM</span><button class="icon-button" data-tour="close" aria-label="Dismiss tour invitation">${icon("close")}</button></div><h2>See it. Understand it. Grow.</h2><p>Six quick stops through AI discovery.</p><div class="tour-task">${icon("info")}<span>2 minutes · Interactive demo</span></div><div class="tour-actions"><button class="button ghost" data-tour="close">Explore on my own</button><button class="button primary" data-tour="start">Show me around${icon("right")}</button></div>`;
 }
 addEventListener("resize", () => {
   clearTimeout(resizeTimer);
