@@ -107,7 +107,7 @@
 }
 .discovery-app .next-move {
   background: var(--accent-soft);
-  border: 1px solid var(--purple-a3);
+  border: 1px solid var(--sky-a3);
   border-radius: var(--radius-card);
   padding: var(--space-5);
   display: flex;
@@ -192,7 +192,7 @@
 .discovery-app .evidence-track,
 .discovery-app .work-progress {
   height: 5px;
-  background: var(--purple-a3);
+  background: var(--sky-a3);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -284,7 +284,7 @@
 .discovery-app .journey-marker.current {
   color: var(--accent-text);
   background: var(--accent-soft);
-  border-color: var(--purple-a3);
+  border-color: var(--sky-a3);
 }
 .discovery-app .journey-marker.complete {
   color: var(--success-text);

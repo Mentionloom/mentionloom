@@ -6,8 +6,8 @@
   --hero-size: clamp(3.25rem, 7.2vw, 5.75rem);
   --heading-size: clamp(2.25rem, 4.4vw, 3.5rem);
   --marketing-shadow:
-    0 2px 4px #18192503, 0 12px 40px #18192508, 0 32px 80px #6558bd06;
-  --scene-line: #918df628;
+    0 2px 4px #18192503, 0 12px 40px #18192508, 0 32px 80px #2457c506;
+  --scene-line: #2c78fc28;
 }
 .marketing-app {
   overflow-x: clip;
@@ -210,7 +210,7 @@
   contain: layout paint;
   background: radial-gradient(
     ellipse at 50% 70%,
-    var(--purple-1) 0%,
+    var(--sky-1) 0%,
     #f9f8ff 38%,
     #fff 73%
   );
@@ -251,18 +251,18 @@
   background: radial-gradient(
     circle at 35% 30%,
     #fff,
-    var(--purple-1) 65%,
-    var(--purple-2)
+    var(--sky-1) 65%,
+    var(--sky-2)
   );
   box-shadow:
-    inset -25px -25px 60px #918df625,
-    0 0 75px #918df621;
+    inset -25px -25px 60px #2c78fc25,
+    0 0 75px #2c78fc21;
   overflow: hidden;
 }
 .marketing-app .css-globe span {
   position: absolute;
   inset: 0;
-  border: 1px solid #918df642;
+  border: 1px solid #2c78fc42;
   border-radius: 50%;
   transform: rotate(25deg) scaleX(0.5);
 }
@@ -358,7 +358,7 @@
 }
 .marketing-app .question-tags span:last-child {
   color: var(--accent-text);
-  background: var(--purple-1);
+  background: var(--sky-1);
 }
 .marketing-app .answer-float {
   right: 0;
@@ -368,7 +368,7 @@
   animation-delay: -4s;
 }
 .marketing-app mark {
-  background: var(--purple-2);
+  background: var(--sky-2);
   color: var(--accent-text);
   border-radius: 5px;
   padding: 1px 5px;
@@ -779,7 +779,7 @@
   transition: width var(--motion-data) var(--ease-out);
 }
 .marketing-app .competitor-row.self:before {
-  background: var(--purple-1);
+  background: var(--sky-1);
 }
 .marketing-app .competitor-row > span {
   display: flex;
@@ -854,7 +854,7 @@
 }
 .marketing-app .question-row:hover,
 .marketing-app .question-row[aria-pressed="true"] {
-  background: var(--purple-1);
+  background: var(--sky-1);
 }
 .marketing-app .question-row > span:last-child {
   color: var(--accent-text);
@@ -909,7 +909,7 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  background: var(--purple-1);
+  background: var(--sky-1);
   color: var(--accent-text);
   border-radius: 11px;
 }
@@ -1085,7 +1085,7 @@
   gap: 10px;
 }
 .marketing-app .funnel-bar {
-  background: var(--purple-1);
+  background: var(--sky-1);
   border-radius: 5px;
   padding: 9px 12px;
   font-size: 11px;
@@ -1096,7 +1096,7 @@
   color: var(--accent-text);
 }
 .marketing-app .funnel-bar:nth-child(2) {
-  background: var(--purple-2);
+  background: var(--sky-2);
 }
 .marketing-app .funnel-bar:last-child {
   background: var(--accent-text);
@@ -1190,7 +1190,7 @@
   margin: 30px 24px 24px;
   padding: 22px 0;
   min-height: 352px;
-  background: radial-gradient(ellipse, var(--purple-1), transparent 74%);
+  background: radial-gradient(ellipse, var(--sky-1), transparent 74%);
 }
 .marketing-app .shortlist-question {
   display: flex;
@@ -1219,7 +1219,7 @@
   position: absolute;
   width: 80%;
   height: 50px;
-  border: 1px dashed var(--purple-3);
+  border: 1px dashed var(--sky-3);
   border-bottom: 0;
   left: 10%;
   top: -25px;
@@ -1241,10 +1241,10 @@
   height: 28px;
 }
 .marketing-app .shortlist-brands > span.your-brand {
-  background: var(--purple-2);
+  background: var(--sky-2);
   transform: translateY(-7px);
-  outline: 5px solid var(--purple-1);
-  border-color: var(--purple-3);
+  outline: 5px solid var(--sky-1);
+  border-color: var(--sky-3);
 }
 .marketing-app .your-brand-caption {
   display: flex;
@@ -1308,7 +1308,7 @@
   transform: translateX(22px);
 }
 .marketing-app .insight-visual {
-  background: var(--purple-1);
+  background: var(--sky-1);
 }
 .marketing-app .insight-visual > span {
   font-size: var(--text-xs);
@@ -1334,7 +1334,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: linear-gradient(125deg, #faf9ff, var(--purple-1));
+  background: linear-gradient(125deg, #faf9ff, var(--sky-1));
   padding: 75px 30px 65px;
   text-align: center;
   border: 1px solid var(--border);
@@ -1368,7 +1368,7 @@
   top: 40px;
   left: 50%;
   transform: translateX(-50%);
-  border: 1px solid var(--purple-2);
+  border: 1px solid var(--sky-2);
   border-radius: 50%;
 }
 .marketing-app .early-decoration span:nth-child(2) {
@@ -2236,7 +2236,7 @@
 .marketing-app .marketing-funnel-track > span {
   display: block;
   height: 100%;
-  background: var(--purple-2);
+  background: var(--sky-2);
   border-radius: 4px;
 }
 .marketing-app

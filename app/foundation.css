@@ -231,7 +231,7 @@ body.discovery-app {
   outline: none;
 }
 .discovery-app .search-field:focus-within {
-  outline: 3px solid var(--purple-3);
+  outline: 3px solid var(--sky-3);
   outline-offset: var(--focus-offset);
 }
 .discovery-app .form-field {
@@ -259,7 +259,7 @@ body.discovery-app {
   opacity: 1;
 }
 .discovery-app .form-field :is(input, textarea, select):focus-visible {
-  outline: 2px solid var(--purple-3);
+  outline: 2px solid var(--sky-3);
   outline-offset: 3px;
 }
 .discovery-app .search-field > [data-app-icon] .icon {

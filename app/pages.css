@@ -276,7 +276,7 @@
 }
 .discovery-app .coverage-track .mid,
 .discovery-app .coverage-key i.mid {
-  background: var(--purple-3);
+  background: var(--sky-3);
 }
 .discovery-app .coverage-track .strong,
 .discovery-app .coverage-key i.strong {
@@ -325,7 +325,7 @@
   padding: 5px 6px;
   border-radius: var(--radius-3);
   font-size: 11px;
-  background: var(--purple-1);
+  background: var(--sky-1);
   white-space: nowrap;
 }
 .discovery-app .engine-coverage > span.gap {

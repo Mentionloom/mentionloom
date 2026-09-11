@@ -58,7 +58,7 @@ function chart() {
       })
       .join(
         "",
-      )}<path d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--purple-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg><div class="chart-scrubber"><label for="chart-day" class="sr-only">Inspect a date on the visibility chart</label><input id="chart-day" type="range" min="0" max="29" step="1" value="29"><output id="chart-readout" for="chart-day"></output></div>`;
+      )}<path d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg><div class="chart-scrubber"><label for="chart-day" class="sr-only">Inspect a date on the visibility chart</label><input id="chart-day" type="range" min="0" max="29" step="1" value="29"><output id="chart-readout" for="chart-day"></output></div>`;
   function inspect(index) {
     const r = report.series[index];
     const [x, y] = point(r.visibility, index);

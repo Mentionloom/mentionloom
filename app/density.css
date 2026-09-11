@@ -20,31 +20,31 @@
 .context-total > span,.context-axis { font-size: 12px; color: var(--muted); }
 .context-bars { height: 100px; display: flex; align-items: end; gap: 4px; }
 .context-bars button { height: 100%; flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; display: flex; align-items: end; cursor: pointer; }
-.context-bars button > span { width: 100%; border-radius: 4px 4px 0 0; background: var(--purple-3); transition: background 140ms; }
+.context-bars button > span { width: 100%; border-radius: 4px 4px 0 0; background: var(--sky-3); transition: background 140ms; }
 .context-bars button:hover > span { background: var(--accent-text); }
 .context-axis { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
 .context-ratio { height: 24px; margin-top: 76px; background: var(--subtle); border-radius: 6px; overflow: hidden; }
 .context-ratio > span { display: block; height: 100%; background: var(--accent); }
 @media (max-width: 600px) { .discovery-app .header-inner { width: calc(100% - 32px); } }
-.demo-tour { position: fixed; z-index: 30; right: 16px; bottom: 16px; width: min(360px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--purple-2); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-panel); }
+.demo-tour { position: fixed; z-index: 30; right: 16px; bottom: 16px; width: min(360px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--sky-2); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-panel); }
 .tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tour-top > span { font-size: 10px; letter-spacing: .06em; color: var(--accent-text); }
 .demo-tour h2 { font-size: 18px; margin: 12px 0 8px; }
 .demo-tour p { font-size: 13px; line-height: 1.6; color: var(--muted); }
-.tour-task { display: flex; gap: 8px; margin-top: 16px; padding: 12px; border-radius: 9px; background: var(--purple-1); font-size: 12px; line-height: 1.5; }
+.tour-task { display: flex; gap: 8px; margin-top: 16px; padding: 12px; border-radius: 9px; background: var(--sky-1); font-size: 12px; line-height: 1.5; }
 .tour-task .icon { width: 16px; height: 16px; color: var(--accent-text); }
 .tour-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
 .tour-progress { display: flex; gap: 4px; margin-top: 10px; }
 .tour-progress span { height: 3px; flex: 1; border-radius: 3px; background: var(--subtle); }
 .tour-progress .complete { background: var(--accent); }
 .tour-progress span { transition: background-color 180ms ease; }
-.tour-try { width: 100%; border: 1px solid var(--purple-2); text-align: left; color: var(--accent-text); cursor: pointer; align-items: center; }
+.tour-try { width: 100%; border: 1px solid var(--sky-2); text-align: left; color: var(--accent-text); cursor: pointer; align-items: center; }
 .tour-try > span { flex: 1; }
-.tour-try:hover { background: var(--purple-2); }
+.tour-try:hover { background: var(--sky-2); }
 @media (prefers-reduced-motion: reduce) {
   .tour-progress span { transition: none; }
 }
-.tour-highlight { outline: 2px solid var(--purple-3); outline-offset: 4px; }
+.tour-highlight { outline: 2px solid var(--sky-3); outline-offset: 4px; }
 body:has(.demo-tour:not([hidden])) main { padding-bottom: 360px; }
 @media (max-width: 600px) {
   .demo-tour { right: 8px; bottom: 8px; width: calc(100vw - 16px); padding: 16px; max-height: 45dvh; overflow: auto; }
