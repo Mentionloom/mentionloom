@@ -215,43 +215,57 @@ body.discovery-app {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--control-height);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-control);
-  background: var(--subtle);
-  border-radius: var(--radius-input);
+  min-height: 37px;
+  padding: 9px 11px;
+  border: 1px solid var(--bg-a3);
+  background: var(--surface);
+  border-radius: 9px;
 }
 .discovery-app .search-field input {
   width: 100%;
   min-width: 0;
   border: 0;
   background: transparent;
-  font-size: var(--text-base);
+  font-size: 12px;
   line-height: 1.5;
   outline: none;
 }
 .discovery-app .search-field:focus-within {
-  outline: var(--focus-width) solid var(--focus-color);
+  outline: 3px solid var(--purple-3);
   outline-offset: var(--focus-offset);
 }
 .discovery-app .form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 7px;
   margin: var(--space-5) 0;
-  font-size: var(--text-base);
+  font-size: 11px;
   line-height: var(--leading-body);
 }
 .discovery-app .form-field :is(input, textarea, select) {
-  min-height: var(--control-height);
-  font-size: var(--text-base);
+  min-height: 37px;
+  font-size: 12px;
   line-height: var(--leading-body);
-  border: 1px solid var(--border-control);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-input);
-  background: var(--subtle);
+  border: 1px solid var(--bg-a3);
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: var(--surface);
   color: var(--text);
   width: 100%;
+}
+.discovery-app .form-field :is(input, textarea)::placeholder,
+.discovery-app .search-field input::placeholder {
+  color: var(--fg-2);
+  opacity: 1;
+}
+.discovery-app .form-field :is(input, textarea, select):focus-visible {
+  outline: 2px solid var(--purple-3);
+  outline-offset: 3px;
+}
+.discovery-app .search-field > [data-app-icon] .icon {
+  width: 15px;
+  height: 15px;
+  color: var(--fg-2);
 }
 .discovery-app .form-field textarea {
   min-height: 7rem;

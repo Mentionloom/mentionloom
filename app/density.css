@@ -75,7 +75,8 @@
   .discovery-app .control-panel [role=option],
   .discovery-app .page-nav-inner > a { min-height: 44px; }
   .discovery-app .icon-button { min-width: 44px; min-height: 44px; }
-  .discovery-app input,
-  .discovery-app textarea,
-  .discovery-app select { font-size: 16px; }
+  .discovery-app .form-field :is(input, textarea, select),
+  .discovery-app .search-field input { font-size: 16px; }
+  .discovery-app .form-field :is(input, select),
+  .discovery-app .search-field { min-height: 44px; }
 }
