@@ -6,7 +6,7 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 
 - **Connected interactions:** one reporting scope, clickable ranked rows, concise metrics, and progressively revealed detail.
 - **Orbit 0.2.0:** installed using the [official getting-started guide](https://giovanitier.github.io/orbit/guides/getting-started/) and its versioned source CLI. The actual runtime, component templates, Lucide icons and OpenRunde fonts live in `app/components/orbit`. The former hand-adapted `app/orbit.css` has been removed. See [installation notes](app/components/orbit/INSTALLATION.md) for the pinned package, component list and local extension.
-- **Comfortable density:** the app extends Orbit's semantic tokens with a shared rem-based type scale: 16px body, 14px supporting text, 12px chart axes/eyebrows, 44px primary controls and minimum button targets. Light mode is explicit. Color and spacing continue to originate in Orbit's installed token file.
+- **Orbit density:** body text is 14px; buttons use 12px text and 36px minimum height; filter triggers use 38px minimum height; badges use 10px text; metric values use 25px. These dimensions match the installed Orbit runtime. `app/density.css` applies the component scale across product compositions and expands controls to 44px minimum for coarse pointers. Light mode remains explicit.
 
 ## Information architecture
 

@@ -29,6 +29,7 @@ const allowed = new Set([
   "app/pages.css",
   "app/growth.css",
   "app/addons.css",
+  "app/density.css",
   "app/lib/addons.js",
   "app/lib/addons-view.js",
   "app/lib/growth.js",

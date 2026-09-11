@@ -1,0 +1,51 @@
+/* Orbit 0.2 component dimensions, matching runtime/styles.css and controls.css.
+   Product compositions use the same scale; touch input expands hit targets. */
+.discovery-app .button {
+  min-height: 36px;
+  padding: 8px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  gap: 7px;
+}
+.discovery-app .button.small { min-height: 28px; padding: 4px 11px; font-size: 11px; }
+.discovery-app .button .icon { width: 15px; height: 15px; }
+.discovery-app .icon-button { width: 35px; height: 35px; min-width: 35px; min-height: 35px; }
+.discovery-app .icon-button .icon { width: 17px; height: 17px; }
+.discovery-app .control-trigger { min-height: 38px; padding: 9px 12px; gap: 10px; font-size: 12px; }
+.discovery-app .control-trigger .icon { width: 16px; height: 16px; }
+.discovery-app .workspace.control-trigger { height: 38px; padding-block: 5px; }
+.discovery-app .workspace .acme-mark { width: 24px; height: 24px; font-size: 16px; }
+.discovery-app .dropdown-panel button,
+.discovery-app .control-panel [role=option] { min-height: 36px; padding: 8px 12px; font-size: 12px; }
+.discovery-app .badge { font-size: 10px; padding: 3px 7px; gap: 5px; border-radius: 6px; }
+.discovery-app .choice input { width: 17px; height: 17px; }
+.discovery-app .header-inner { min-height: 60px; }
+.discovery-app .page-nav-inner { min-height: 52px; gap: 4px; }
+.discovery-app .page-nav-inner > a { min-height: 36px; padding: 8px 12px; }
+.discovery-app main { padding-top: 24px; }
+.discovery-app .workspace-heading h1 { font-size: 28px; }
+.discovery-app .metric { min-height: 124px; padding: 20px; }
+.discovery-app .metric-value { font-size: 25px; letter-spacing: -.6px; margin-top: 8px; }
+.discovery-app .card-heading h2,
+.discovery-app .chart-title-block h2 { font-size: 15px; }
+.discovery-app .rank-row { min-height: 40px; }
+.discovery-app .next-move { padding: 20px; }
+.discovery-app .next-move h2 { font-size: 22px; }
+.discovery-app .addon-focus-copy h2 { font-size: 28px; }
+.discovery-app .addon-focus-copy { padding: 24px; }
+.discovery-app .addon-focus-copy > p,
+.discovery-app .addon-title { font-size: 14px; }
+.discovery-app .addon-row { min-height: 88px; }
+.discovery-app .addon-shelf-heading h2 { font-size: 15px; }
+@media (pointer: coarse) {
+  .discovery-app .button,
+  .discovery-app .button.small,
+  .discovery-app .control-trigger,
+  .discovery-app .dropdown-panel button,
+  .discovery-app .control-panel [role=option],
+  .discovery-app .page-nav-inner > a { min-height: 44px; }
+  .discovery-app .icon-button { min-width: 44px; min-height: 44px; }
+  .discovery-app input,
+  .discovery-app textarea,
+  .discovery-app select { font-size: 16px; }
+}
