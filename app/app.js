@@ -1025,6 +1025,7 @@ function exportReport() {
   toast("Your filtered report has been exported.");
 }
 const actions = {
+  "tour-start": () => showTour(0),
   search,
   setup,
   sources: () => navigate("sources"),
@@ -1112,6 +1113,13 @@ const actions = {
 document.addEventListener("click", (event) => {
   const b = event.target.closest("button,a");
   if (!b || !data) return;
+  if (b.dataset.tour) {
+    const choice = b.dataset.tour;
+    if (choice === "close" || choice === "finish") {
+      endTour(choice === "finish" ? "complete" : "dismissed");
+    } else showTour(choice === "start" ? 0 : tourStep + (choice === "back" ? -1 : 1));
+    return;
+  }
   if (b.dataset.route) {
     if (
       event.button !== 0 ||
@@ -1514,6 +1522,42 @@ document
   .forEach((el) => reveal.observe(el));
 
 let resizeTimer;
+let tourStep = -1;
+const tourSteps = [
+  { view: "overview", target: ".metrics", title: "Start with your position", copy: "Mention rate tells you how often Acme appears in sampled answers. Citations count links; referrals count website visits. They measure different parts of discovery.", task: "Try opening a metric to explore its report." },
+  { view: "questions", target: ".question-table-wrap", title: "Understand the buyer’s question", copy: "These are questions your team chooses to sample—not private customer conversations. Low mention rates reveal where your brand is missing.", task: "Open a question to read its answer evidence." },
+  { view: "opportunities", target: "#action-cards", title: "Turn evidence into a change", copy: "Each opportunity connects a coverage gap to a page you can improve. Start a plan to save a baseline, then follow its checklist.", task: "Open an improvement and inspect the suggested work." },
+  { view: "traffic", target: "#funnel", title: "Follow what happens after the click", copy: "AI referrals use a known referrer or UTM source. The funnel follows those sessions into engagement and leads. Some AI visits lose their source and cannot be attributed.", task: "Compare referrals with leads in the funnel." },
+  { view: "sources", target: ".connections", title: "Know what makes the numbers real", copy: "This workspace uses sample data. Real measurement needs connected answer sampling, website analytics, conversion events, or server logs. Each source answers a different question.", task: "Open a source to see its requirements." },
+  { view: "addons", target: "#addon-focus", title: "Choose your next tool", copy: "Add-ons extend the workflow with content briefs, competitor monitoring, and summaries. Each explains the data it needs. Demo activations stay in your browser.", task: "Explore an add-on—or return to Overview to begin your first improvement." },
+];
+function endTour(result) {
+  $("#demo-tour").hidden = true;
+  document.querySelectorAll(".tour-highlight").forEach((el) => el.classList.remove("tour-highlight"));
+  store("education-tour", result);
+  if (result === "complete") navigate("overview");
+  document.querySelector('[data-tour="start"]')?.focus({ preventScroll: true });
+}
+function showTour(index) {
+  tourStep = Math.max(0, Math.min(index, tourSteps.length - 1));
+  const step = tourSteps[tourStep];
+  document.querySelectorAll(".tour-highlight").forEach((el) => el.classList.remove("tour-highlight"));
+  navigate(step.view);
+  const target = $(step.target);
+  target?.classList.add("tour-highlight");
+  target?.scrollIntoView({ behavior: "instant", block: "center" });
+  const panel = $("#demo-tour");
+  panel.hidden = false;
+  panel.innerHTML = `<div class="tour-top"><span>GUIDED DEMO · ${tourStep + 1} / ${tourSteps.length}</span><button class="icon-button" data-tour="close" aria-label="Close guided tour">${icon("close")}</button></div><div class="tour-progress" aria-hidden="true">${tourSteps.map((_, i) => `<span class="${i <= tourStep ? "complete" : ""}"></span>`).join("")}</div><h2 tabindex="-1">${step.title}</h2><p>${step.copy}</p><div class="tour-task">${icon("cursor")}<span>${step.task}</span></div><div class="tour-actions"><button class="button ghost" data-tour="back" ${tourStep === 0 ? "disabled" : ""}>Back</button><button class="button primary" data-tour="${tourStep === tourSteps.length - 1 ? "finish" : "next"}">${tourStep === tourSteps.length - 1 ? "Start exploring" : "Next"}${icon("right")}</button></div>`;
+  panel.querySelector("h2").focus({ preventScroll: true });
+}
+$("#demo-tour").addEventListener("keydown", (event) => {
+  if (event.key === "Escape") { event.preventDefault(); endTour("dismissed"); }
+});
+if (!load("education-tour", null)) {
+  $("#demo-tour").hidden = false;
+  $("#demo-tour").innerHTML = `<div class="tour-top"><span>WELCOME TO MENTIONLOOM</span><button class="icon-button" data-tour="close" aria-label="Dismiss tour invitation">${icon("close")}</button></div><h2>Your first look at AI discovery</h2><p>Learn what the numbers mean, find a visibility gap, and turn it into your next improvement.</p><div class="tour-task">${icon("info")}<span>2-minute tour · Sample data · Explore at your own pace</span></div><div class="tour-actions"><button class="button ghost" data-tour="close">Explore on my own</button><button class="button primary" data-tour="start">Show me around${icon("right")}</button></div>`;
+}
 addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {

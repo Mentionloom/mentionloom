@@ -1,5 +1,22 @@
 /* Orbit 0.2 component dimensions, matching runtime/styles.css and controls.css.
    Product compositions use the same scale; touch input expands hit targets. */
+.demo-tour { position: fixed; z-index: 30; right: 16px; bottom: 16px; width: min(360px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--purple-2); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-panel); }
+.tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-top > span { font-size: 10px; letter-spacing: .06em; color: var(--accent-text); }
+.demo-tour h2 { font-size: 18px; margin: 12px 0 8px; }
+.demo-tour p { font-size: 13px; line-height: 1.6; color: var(--muted); }
+.tour-task { display: flex; gap: 8px; margin-top: 16px; padding: 12px; border-radius: 9px; background: var(--purple-1); font-size: 12px; line-height: 1.5; }
+.tour-task .icon { width: 16px; height: 16px; color: var(--accent-text); }
+.tour-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
+.tour-progress { display: flex; gap: 4px; margin-top: 10px; }
+.tour-progress span { height: 3px; flex: 1; border-radius: 3px; background: var(--subtle); }
+.tour-progress .complete { background: var(--accent); }
+.tour-highlight { outline: 2px solid var(--purple-3); outline-offset: 4px; }
+body:has(.demo-tour:not([hidden])) main { padding-bottom: 360px; }
+@media (max-width: 600px) {
+  .demo-tour { right: 8px; bottom: 8px; width: calc(100vw - 16px); padding: 16px; max-height: 45dvh; overflow: auto; }
+  .header-inner > [data-tour=start] { padding: 8px; }
+}
 .discovery-app dialog.drawer {
   inset: var(--space-2) var(--space-2) var(--space-2) auto;
   margin: 0;
