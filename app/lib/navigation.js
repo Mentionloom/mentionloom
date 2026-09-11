@@ -4,6 +4,7 @@ export const VIEWS = {
   traffic: "Traffic",
   questions: "Questions",
   opportunities: "Opportunities",
+  addons: "Add-ons",
   sources: "Sources",
 };
 export function resolveView({ pathname = "/app/", hash = "", search = "" }) {

@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="/app/foundation.css" />
     <link rel="stylesheet" href="/app/pages.css" />
     <link rel="stylesheet" href="/app/growth.css" />
+    <link rel="stylesheet" href="/app/addons.css" />
     <script type="module" src="/app/app.js"></script>
   </head>
   <body class="discovery-app">
@@ -76,6 +77,8 @@
           >Questions<span class="nav-count" id="q-nav-count">12</span></a
         ><a href="/app/opportunities/" data-route="opportunities"
           >Opportunities<span class="nav-count" id="action-count">6</span></a
+        ><a href="/app/addons/" data-route="addons"
+          >Add-ons<span class="nav-count" id="addon-count" hidden></span></a
         ><a href="/app/sources/" data-route="sources">Sources</a>
       </div>
     </nav>
@@ -632,6 +635,35 @@
         <button class="text-button review-link" data-action="growth-review">
           Review shipped changes <span data-app-icon="right"></span>
         </button>
+      </section>
+      <section
+        id="addons"
+        class="route-view addons-section"
+        data-route-view="addons"
+        hidden
+      >
+        <div id="addon-focus" class="addon-focus"></div>
+        <section id="addon-active-section" class="addon-shelf" hidden>
+          <div class="addon-shelf-heading">
+            <div><span class="eyebrow">YOUR STACK</span><h2>Active instruments</h2></div>
+            <span class="small-label" id="addon-active-copy"></span>
+          </div>
+          <div id="addon-active" class="addon-list"></div>
+        </section>
+        <section class="addon-shelf">
+          <div class="addon-shelf-heading">
+            <div><span class="eyebrow">READY NOW</span><h2>Extend the workflow</h2></div>
+            <span class="small-label">Included in this demo</span>
+          </div>
+          <div id="addon-available" class="addon-list"></div>
+        </section>
+        <section class="addon-shelf pilot-shelf">
+          <div class="addon-shelf-heading">
+            <div><span class="eyebrow">PRIVATE PILOTS</span><h2>Connect deeper signals</h2></div>
+            <span class="small-label">Opt in to shape the product</span>
+          </div>
+          <div id="addon-pilots" class="addon-list"></div>
+        </section>
       </section>
       <section
         id="sources"

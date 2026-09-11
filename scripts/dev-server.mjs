@@ -28,6 +28,9 @@ const allowed = new Set([
   "app/app.css",
   "app/pages.css",
   "app/growth.css",
+  "app/addons.css",
+  "app/lib/addons.js",
+  "app/lib/addons-view.js",
   "app/lib/growth.js",
   "app/lib/growth-view.js",
   "app/lib/navigation.js",
@@ -74,7 +77,7 @@ createServer(async (req, res) => {
   const file =
     pathname === "/"
       ? "index.html"
-      : /^\/app(?:\/(?:overview|visibility|traffic|questions|opportunities|sources))?\/?$/.test(
+      : /^\/app(?:\/(?:overview|visibility|traffic|questions|opportunities|addons|sources))?\/?$/.test(
             pathname,
           )
         ? "app/index.html"

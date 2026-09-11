@@ -31,6 +31,7 @@ test("the production build ships the complete installed Orbit runtime and font a
     "traffic",
     "questions",
     "opportunities",
+    "addons",
     "sources",
   ]) {
     assert.deepEqual(

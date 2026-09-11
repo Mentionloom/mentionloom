@@ -34,6 +34,14 @@ import {
   workbenchHTML,
   reviewHTML,
 } from "./lib/growth-view.js";
+import {
+  ADDONS,
+  normalizeAddons,
+  setAddonState,
+  addonCounts,
+  recommendedAddon,
+} from "./lib/addons.js";
+import { addonRowHTML, addonDetailHTML } from "./lib/addons-view.js";
 
 import {
   VIEWS,
@@ -68,6 +76,7 @@ pending = pending
   )
   .slice(0, 100);
 let growthWork = normalizeWork(load("growth-work", {}));
+let addonState = normalizeAddons(load("addons", {}));
 let detailHistory = [];
 const date = (d) =>
   new Date(d + "T12:00:00Z").toLocaleDateString("en-US", {
@@ -114,12 +123,14 @@ function showPage({ focus = false } = {}) {
     traffic: "From an AI recommendation to a visit that matters.",
     questions: "Find the buyer questions where your brand is missing.",
     opportunities: "Turn the evidence into improvements you can ship.",
+    addons: "Add focused instruments when your workflow needs them.",
     sources: "Connect the signals behind your growth.",
   }[currentView];
   $("#next-move").hidden = currentView !== "overview";
   $("#overview-next").hidden = currentView !== "overview";
-  $("#page-export").hidden =
-    currentView === "sources" || currentView === "overview";
+  $("#page-export").hidden = ["sources", "overview", "addons"].includes(
+    currentView,
+  );
   $("#growth-path").hidden = !["overview", "opportunities"].includes(
     currentView,
   );
@@ -129,7 +140,7 @@ function showPage({ focus = false } = {}) {
   $("#report-core").hidden = !["overview", "visibility", "traffic"].includes(
     currentView,
   );
-  $("#global-filters").hidden = currentView === "sources";
+  $("#global-filters").hidden = ["sources", "addons"].includes(currentView);
 
   $("#page-add-question").hidden = currentView !== "questions";
   $("#page-setup").hidden = currentView !== "sources";
@@ -276,6 +287,7 @@ function render() {
   renderActions();
   renderPageSummaries();
   renderGrowth();
+  renderAddons();
 }
 function renderMainChart() {
   if ($("#report-core").hidden) return;
@@ -736,6 +748,83 @@ function renderGrowth() {
   $("#meaning-leads").textContent =
     `${pct(context.conversion)} of AI referrals converted`;
 }
+function addonPreview(addon) {
+  const gap = data.questions
+      .slice()
+      .sort((a, b) => a.visibility - b.visibility)[0],
+    competitor = data.competitors.find((item) => !item.self),
+    own = data.competitors.find((item) => item.self);
+  if (addon.id === "brief-studio")
+    return `<div class="addon-preview"><div class="addon-preview-head"><span>Buyer question</span><strong>${pct(gap?.visibility || 0)} visible</strong></div><div class="addon-preview-row"><strong>${esc(gap?.text || "Your next buyer question")}</strong><span>${esc(gap?.topic || "Discovery")}</span></div><div class="addon-preview-row"><span>Suggested structure</span><strong>Answer · proof · source map</strong></div></div>`;
+  if (addon.id === "competitor-watch")
+    return `<div class="addon-preview"><div class="addon-preview-head"><strong>Same questions · same period</strong><span>Mention rate</span></div><div class="addon-preview-row"><span>${esc(competitor?.name || "Leading competitor")}</span><strong>${pct(competitor?.share || 0)}</strong></div><div class="addon-preview-row"><span>Acme</span><strong>${pct(own?.share || data.current.visibility)}</strong></div></div>`;
+  if (addon.id === "weekly-brief")
+    return `<div class="addon-preview"><div class="addon-preview-head"><strong>Monday, at a glance</strong><span>Last ${state.days} days</span></div><div class="addon-preview-row"><span>Mention rate</span><strong>${pct(data.current.visibility)}</strong></div><div class="addon-preview-row"><span>AI referrals</span><strong>${fmt(data.current.referrals)}</strong></div><div class="addon-preview-row"><span>Next opportunity</span><strong>${esc(gap?.topic || "Discovery")}</strong></div></div>`;
+  if (addon.id === "crawler-guard")
+    return `<div class="addon-preview"><div class="addon-preview-head"><strong>Illustrative access check</strong><span>30 days</span></div>${CRAWLERS.slice(0, 3).map((crawler) => `<div class="addon-preview-row"><span>${esc(crawler.name)}</span><strong>${esc(crawler.status)} · ${fmt(crawler.count)}</strong></div>`).join("")}</div>`;
+  return `<div class="addon-preview"><div class="addon-preview-head"><strong>Illustrative AI pipeline</strong><span>Current view</span></div><div class="addon-preview-row"><span>Attributed sessions</span><strong>${fmt(data.current.referrals)}</strong></div><div class="addon-preview-row"><span>Leads created</span><strong>${fmt(data.current.leads)}</strong></div><div class="addon-preview-row"><span>Visit → lead</span><strong>${pct(data.current.referrals ? (data.current.leads / data.current.referrals) * 100 : 0)}</strong></div></div>`;
+}
+function openAddon(id, replace = false) {
+  const addon = ADDONS.find((item) => item.id === id);
+  if (!addon) return;
+  detail(
+    addon.name,
+    addon.access === "pilot" ? "PRIVATE PILOT" : "ADD-ON",
+    addonDetailHTML(addon, addonState[id], addonPreview(addon)),
+    replace,
+  );
+}
+function renderAddons() {
+  const counts = addonCounts(addonState),
+    opted = counts.active + counts.pilots,
+    recommended = recommendedAddon(addonState),
+    allAdded = ADDONS.every((addon) => addonState[addon.id]);
+  $("#addon-count").hidden = opted === 0;
+  $("#addon-count").textContent = opted;
+  $("#addon-focus").innerHTML = `<div class="addon-focus-copy"><span class="badge purple">${allAdded ? "STACK COMPLETE" : "SUGGESTED NEXT"}</span><h2>${allAdded ? "Your signal stack is ready." : `${esc(recommended.name)} turns the evidence into a repeatable move.`}</h2><p>${allAdded ? "Open any instrument below to see what it watches and creates." : esc(recommended.description)}</p><button class="button primary" data-addon="${recommended.id}">${addonState[recommended.id] ? "Manage add-on" : recommended.access === "pilot" ? "Explore pilot" : "See how it works"}${icon("right")}</button></div><div class="addon-focus-signal" aria-label="${esc(recommended.watches)} creates ${esc(recommended.creates)}"><div class="focus-node">${icon("eye")}<span><small>Watches</small><strong>${esc(recommended.watches)}</strong></span></div><span class="focus-arrow">${icon("right")}</span><div class="focus-node">${icon(recommended.icon)}<span><small>Creates</small><strong>${esc(recommended.creates)}</strong></span></div></div>`;
+  const active = ADDONS.filter((addon) => addonState[addon.id]?.state === "active"),
+    available = ADDONS.filter(
+      (addon) =>
+        addon.access === "available" &&
+        !addonState[addon.id] &&
+        (allAdded || addon.id !== recommended.id),
+    ),
+    pilots = ADDONS.filter((addon) => addon.access === "pilot");
+  $("#addon-active-section").hidden = active.length === 0;
+  $("#addon-active-copy").textContent =
+    active.length === 1 ? "1 instrument active" : `${active.length} instruments active`;
+  $("#addon-active").innerHTML = active
+    .map((addon) => addonRowHTML(addon, addonState[addon.id]))
+    .join("");
+  $("#addon-available").innerHTML = available.length
+    ? available.map((addon) => addonRowHTML(addon, addonState[addon.id])).join("")
+    : `<div class="addon-empty">Every available add-on is in your stack.</div>`;
+  $("#addon-pilots").innerHTML = pilots
+    .map((addon) => addonRowHTML(addon, addonState[addon.id]))
+    .join("");
+}
+function changeAddon(id, enabled) {
+  const addon = ADDONS.find((item) => item.id === id);
+  if (!addon) return;
+  const next = setAddonState(
+    addonState,
+    id,
+    enabled ? (addon.access === "pilot" ? "pilot" : "active") : null,
+  );
+  if (!store("addons", next)) return;
+  addonState = next;
+  renderAddons();
+  openAddon(id, true);
+  toast(
+    enabled
+      ? addon.access === "pilot"
+        ? "Pilot interest saved in this browser."
+        : `${addon.name} added to this demo workspace.`
+      : addon.access === "pilot"
+        ? "Pilot interest removed."
+        : `${addon.name} removed from this demo workspace.`,
+  );
+}
 function openDay(start, end = start) {
   const rows = data.a.filter((r) => r.date >= start && r.date <= end),
     visits = data.v.filter((r) => r.date >= start && r.date <= end);
@@ -876,6 +965,13 @@ function renderSearch(term) {
       title: a.title,
       meta: "Next move · " + a.effort,
       i: "bolt",
+    })),
+    ...ADDONS.map((addon) => ({
+      kind: "addon",
+      id: addon.id,
+      title: addon.name,
+      meta: "Add-on · " + addon.watches,
+      i: addon.icon,
     })),
     ...data.pages.map((p) => ({
       kind: "source-page",
@@ -1026,6 +1122,18 @@ document.addEventListener("click", (event) => {
   }
   if (b.dataset.growthReview) {
     openGrowthReview(b.dataset.growthReview);
+    return;
+  }
+  if (b.dataset.addon) {
+    openAddon(b.dataset.addon);
+    return;
+  }
+  if (b.dataset.addonEnable) {
+    changeAddon(b.dataset.addonEnable, true);
+    return;
+  }
+  if (b.dataset.addonRemove) {
+    changeAddon(b.dataset.addonRemove, false);
     return;
   }
   if (b.dataset.connection) {
