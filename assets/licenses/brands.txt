@@ -4,7 +4,11 @@ Icon collection license: CC0 1.0.
 License: https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md
 
 Files are generated without redrawing paths from the collection's OpenAI,
-Claude, Perplexity, Google Gemini, Asana, Notion, and ClickUp marks.
+Claude, Perplexity, Google Gemini, Google, DeepSeek, Meta AI, Mistral AI,
+Asana, Notion, and ClickUp marks.
+
+The Grok mark uses the compact SVG rendered by Grok's official web app and
+provided through xAI's brand resources: https://x.ai/legal/brand-guidelines
 Brand names and logos remain the property of their respective owners.
 They identify providers and a clearly labeled sample competitor set, not
 customers, endorsements, or partnerships.

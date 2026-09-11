@@ -475,19 +475,20 @@
   color: var(--muted);
 }
 .marketing-app .provider-strip > div {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
   align-items: center;
-  gap: 54px;
+  gap: 20px 12px;
   margin-top: 22px;
 }
 .marketing-app .provider-strip > div > span {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 .marketing-app .provider-strip strong {
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: -0.6px;
 }
@@ -614,6 +615,9 @@
 }
 .marketing-app .engine-controls .segmented {
   background: var(--subtle);
+  max-width: 880px;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 .marketing-app .engine-controls button {
   font-size: var(--text-xs);
@@ -1803,16 +1807,16 @@
     font-size: var(--text-xs);
   }
   .marketing-app .provider-strip > div {
-    gap: 21px;
-    flex-wrap: wrap;
-    max-width: 370px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 8px;
+    max-width: 390px;
     margin: 23px auto 0;
   }
   .marketing-app .provider-strip > div > span {
     gap: 7px;
   }
   .marketing-app .provider-strip strong {
-    font-size: 18px;
+    font-size: 14px;
   }
   .marketing-app .provider-strip img {
     width: 24px;
@@ -1873,19 +1877,19 @@
   }
   .marketing-app .engine-controls .segmented {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 3px;
     gap: 2px;
   }
   .marketing-app .engine-controls .segmented > button {
-    flex: 1;
+    flex: 0 0 44px;
     padding: 7px 8px;
     min-height: 44px;
     justify-content: center;
     gap: 0;
   }
   .marketing-app .engine-controls .segmented > button:first-child {
-    flex: 2;
+    flex: 0 0 auto;
     white-space: nowrap;
     font-size: 11px;
   }

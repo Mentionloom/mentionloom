@@ -147,7 +147,7 @@ function render(initialReport) {
     return `<details class="opportunity-item"><summary><div><span>${a.label} · ${q.visibility.toFixed(0)}% visibility</span>${a.title}</div>${icon("plus")}</summary><p>${a.body}</p></details>`;
   }).join("");
   $("#scope-status").textContent =
-    `12 monitored questions · ${engine ? ENGINES.find((e) => e.id === engine).name : "4 engines"} · ${format(report.a.length)} sample answers`;
+    `12 monitored questions · ${engine ? ENGINES.find((e) => e.id === engine).name : `${ENGINES.length} engines`} · ${format(report.a.length)} sample answers`;
   $("#scoped-demo").href =
     `/app/?days=30${engine ? "&engine=" + engine : ""}${story === "questions" ? "#questions" : story === "opportunities" ? "#actions" : ""}`;
   if (ready) void enhance($("#opportunity-rows"));

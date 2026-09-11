@@ -7,13 +7,13 @@ import {
   csv,
   dates,
 } from "../app/lib/model.js";
-import { answers, visits, QUESTIONS } from "../app/lib/data.js";
+import { answers, visits, QUESTIONS, ENGINES } from "../app/lib/data.js";
 const base = { days: 30, engine: "", topic: "", metric: "visibility" };
 test("periods contain complete, distinct comparison windows", () => {
   for (const days of [7, 30, 90]) {
     const d = select({ ...base, days });
     assert.equal(d.series.length, days);
-    assert.equal(d.current.samples, days * QUESTIONS.length * 4);
+    assert.equal(d.current.samples, days * QUESTIONS.length * ENGINES.length);
     assert.equal(d.series[0].date, dates(days).start);
     assert.equal(d.series.at(-1).date, dates(days).end);
     assert.ok(dates(days, true).end < dates(days).start);

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ACTIONS } from "../app/lib/data.js";
+import { ACTIONS, ENGINES } from "../app/lib/data.js";
 import { select } from "../app/lib/model.js";
 import {
   priorities,
@@ -59,7 +59,7 @@ test("a saved baseline survives resuming under a different reporting scope", () 
     baselineFor(a, select(filtered), filtered),
   );
   assert.equal(resumed, work);
-  assert.equal(resumed.a1.baseline.samples, 120);
+  assert.equal(resumed.a1.baseline.samples, 30 * ENGINES.length);
   assert.equal(resumed.a1.baseline.engine, "");
   assert.equal(resumed.a1.baseline.start, data.start);
 });

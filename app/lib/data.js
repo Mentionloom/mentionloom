@@ -24,6 +24,41 @@ export const ENGINES = [
     color: "purple",
     rate: -0.09,
   },
+  {
+    id: "google",
+    name: "Google AI",
+    symbol: "google",
+    color: "blue",
+    rate: 0.06,
+  },
+  {
+    id: "grok",
+    name: "Grok",
+    symbol: "grok",
+    color: "neutral",
+    rate: -0.04,
+  },
+  {
+    id: "deepseek",
+    name: "DeepSeek",
+    symbol: "deepseek",
+    color: "blue",
+    rate: -0.07,
+  },
+  {
+    id: "meta",
+    name: "Meta AI",
+    symbol: "meta",
+    color: "blue",
+    rate: -0.02,
+  },
+  {
+    id: "mistral",
+    name: "Mistral",
+    symbol: "mistral",
+    color: "orange",
+    rate: -0.08,
+  },
 ];
 export const QUESTIONS = [
   {
