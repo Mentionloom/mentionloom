@@ -1,5 +1,16 @@
 /* Orbit 0.2 component dimensions, matching runtime/styles.css and controls.css.
    Product compositions use the same scale; touch input expands hit targets. */
+.discovery-app dialog.drawer {
+  inset: var(--space-2) var(--space-2) var(--space-2) auto;
+  margin: 0;
+  width: min(580px, calc(100vw - 2 * var(--space-2)));
+  max-width: calc(100vw - 2 * var(--space-2));
+  height: calc(100dvh - 2 * var(--space-2));
+  max-height: calc(100dvh - 2 * var(--space-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-panel);
+}
 .benchmark-scope { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
 .benchmark-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 24px; }
 .benchmark-heading h3 { margin: 0; font-size: 15px; }
