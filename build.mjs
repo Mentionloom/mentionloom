@@ -1,4 +1,5 @@
 import { copyFile, cp, mkdir, rm } from "node:fs/promises";
+import { VIEWS } from "./app/lib/navigation.js";
 import { marketingAssets } from "./scripts/marketing-assets.mjs";
 
 const output = new URL("./dist/", import.meta.url);
@@ -10,6 +11,8 @@ const files = [
   "site.js",
   "app/index.html",
   "app/app.css",
+  "app/pages.css",
+  "app/lib/navigation.js",
   "app/app.js",
   "app/tokens.css",
   "app/foundation.css",
@@ -50,3 +53,11 @@ await cp(
 console.log(
   `Built ${files.length} application files and the complete installed Orbit source in dist/.`,
 );
+
+for (const page of Object.keys(VIEWS)) {
+  await mkdir(new URL(`app/${page}/`, output), { recursive: true });
+  await copyFile(
+    new URL("app/index.html", import.meta.url),
+    new URL(`app/${page}/index.html`, output),
+  );
+}

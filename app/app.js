@@ -1,11 +1,4 @@
-import {
-  ENGINES,
-  QUESTIONS,
-  TOPICS,
-  ACTIONS,
-  CRAWLERS,
-  END,
-} from "./lib/data.js";
+import { ENGINES, QUESTIONS, TOPICS, ACTIONS, CRAWLERS } from "./lib/data.js";
 import { select, parseState, fmt, pct, csv } from "./lib/model.js";
 import {
   icon,
@@ -13,7 +6,6 @@ import {
   escape as esc,
   number,
   animate,
-  segment,
   installMenus,
   closeMenus,
   toast,
@@ -28,8 +20,17 @@ import {
 } from "./lib/ui.js";
 import { renderChart, sparkline, LABELS } from "./lib/charts.js";
 
+import {
+  VIEWS,
+  resolveView,
+  metricForView,
+  pageURL,
+} from "./lib/navigation.js";
+
 const $ = (s) => document.querySelector(s);
 const state = parseState(location.search);
+let currentView = resolveView(location);
+state.metric = metricForView(currentView, state.metric);
 let data,
   engineView = "visibility",
   pageView = "own",
@@ -51,8 +52,6 @@ pending = pending
       TOPICS.includes(q.topic),
   )
   .slice(0, 100);
-let pulseIndex = 0,
-  paused = reduced.matches;
 let detailHistory = [];
 const date = (d) =>
   new Date(d + "T12:00:00Z").toLocaleDateString("en-US", {
@@ -67,15 +66,89 @@ function hydrate(root = document) {
     .forEach((el) => (el.innerHTML = icon(el.dataset.appIcon)));
 }
 function syncURL() {
-  const p = new URLSearchParams();
-  if (state.days !== 30) p.set("days", state.days);
-  if (state.engine) p.set("engine", state.engine);
-  if (state.topic) p.set("topic", state.topic);
-  if (state.metric !== "visibility") p.set("metric", state.metric);
-  history.replaceState(
+  history.replaceState(null, "", pageURL(currentView, state));
+  syncPageLinks();
+}
+function syncPageLinks() {
+  document
+    .querySelectorAll("[data-route]")
+    .forEach((link) => (link.href = pageURL(link.dataset.route, state)));
+}
+function selectValue(root, value) {
+  const options = [...root.querySelectorAll("[data-value]")];
+  for (const option of options)
+    option.setAttribute(
+      "aria-selected",
+      String(option.dataset.value === value),
+    );
+  const selected = options.find((option) => option.dataset.value === value);
+  const label = selected?.dataset.option || "";
+  root.querySelector("[data-select-label]").textContent = label;
+  const toggle = root.querySelector("[data-select-toggle]");
+  toggle.dataset.selectName ||= toggle.getAttribute("aria-label");
+  toggle.setAttribute("aria-label", `${toggle.dataset.selectName}: ${label}`);
+}
+function showPage({ focus = false } = {}) {
+  document.body.dataset.currentView = currentView;
+  document.title = `${VIEWS[currentView]} · Acme · Mentionloom`;
+  $("#page-title").textContent = VIEWS[currentView];
+  document
+    .querySelectorAll("[data-route-view]")
+    .forEach((view) => (view.hidden = view.dataset.routeView !== currentView));
+  $("#report-core").hidden = !["overview", "visibility", "traffic"].includes(
+    currentView,
+  );
+  $("#global-filters").hidden = currentView === "sources";
+  $("#page-export").hidden = currentView === "sources";
+  $("#page-add-question").hidden = currentView !== "questions";
+  $("#page-setup").hidden = currentView !== "sources";
+  document
+    .querySelectorAll("[data-metric]")
+    .forEach(
+      (button) =>
+        (button.hidden =
+          currentView === "visibility"
+            ? !["visibility", "citations"].includes(button.dataset.metric)
+            : currentView === "traffic"
+              ? !["referrals", "leads"].includes(button.dataset.metric)
+              : false),
+    );
+  document.querySelectorAll(".page-navigation [data-route]").forEach((link) => {
+    const active = link.dataset.route === currentView;
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
+  syncPageLinks();
+  document
+    .querySelector('.page-navigation [aria-current="page"]')
+    ?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "instant",
+    });
+  if (focus) $("#page-title").focus({ preventScroll: true });
+}
+function navigate(view, { replace = false } = {}) {
+  currentView = Object.hasOwn(VIEWS, view) ? view : "overview";
+  state.metric = metricForView(currentView, state.metric);
+  closeMenus();
+  document.querySelectorAll("dialog[open]").forEach((dialog) => dialog.close());
+  history[replace ? "replaceState" : "pushState"](
     null,
     "",
-    location.pathname + (p.size ? "?" + p : "") + location.hash,
+    pageURL(currentView, state),
+  );
+  showPage({ focus: true });
+  window.scrollTo({ top: 0, behavior: "instant" });
+  render();
+  animate(
+    $("#main"),
+    [
+      { opacity: 0.45, transform: "translateY(4px)" },
+      { opacity: 1, transform: "translateY(0)" },
+    ],
+    180,
   );
 }
 function update(patch) {
@@ -100,7 +173,7 @@ function render() {
   $("#period-label").textContent = `Last ${state.days} days`;
   $("#engine-label").textContent = state.engine
     ? engine(state.engine).name
-    : "All AI engines";
+    : "All engines";
   $("#topic-label").textContent = state.topic || "Add filter";
   $("#date-label").textContent =
     `${date(data.start)} – ${date(data.end)}, 2026`;
@@ -124,7 +197,7 @@ function render() {
   });
   $("#engine-menu").innerHTML =
     '<span class="menu-label">AI engine</span>' +
-    [{ id: "", name: "All AI engines" }, ...ENGINES]
+    [{ id: "", name: "All engines" }, ...ENGINES]
       .map(
         (e) =>
           `<button role="option" data-option="${e.name}" data-engine="${e.id}" aria-selected="${state.engine === e.id}">${e.id ? engineIcon(e) : icon("spark")}<span>${e.name}</span><span class="option-check">${state.engine === e.id ? icon("check") : ""}</span></button>`,
@@ -149,10 +222,14 @@ function render() {
             ? ((data.current[key] - before) / before) * 100
             : 0;
     $("#delta-" + key).innerHTML =
-      `<b class="${diff < 0 ? "negative" : ""}">${diff >= 0 ? "↗" : "↘"} ${Math.abs(diff).toFixed(1)}${key === "visibility" ? " pp" : "%"}</b> vs. previous ${state.days}d`;
+      `<b class="${diff < 0 ? "negative" : ""}">${diff >= 0 ? "↗" : "↘"} ${Math.abs(diff).toFixed(1)}${key === "visibility" ? " pp" : "%"}</b> vs. prior ${state.days}d`;
     const b = $(`[data-metric="${key}"]`);
-    b.classList.toggle("active", state.metric === key);
-    b.setAttribute("aria-pressed", String(state.metric === key));
+    b.classList.toggle(
+      "active",
+      currentView !== "overview" && state.metric === key,
+    );
+    if (currentView === "overview") b.removeAttribute("aria-pressed");
+    else b.setAttribute("aria-pressed", String(state.metric === key));
     sparkline(
       $(`[data-spark="${key}"]`),
       data.series.map((d) => d[key]),
@@ -165,19 +242,16 @@ function render() {
   renderFunnel();
   renderQuestions();
   renderActions();
-  renderPulse();
-  const gap = data.questions.filter((q) => q.visibility < 40).length;
-  $("#insight-text").innerHTML = gap
-    ? `You’re missing from most answers to <b>${gap} buying questions.</b> Let’s change that.`
-    : `You appear in at least 40% of answers for every tracked question. <b>Explore the next opportunity.</b>`;
+  renderPageSummaries();
 }
 function renderMainChart() {
+  if ($("#report-core").hidden) return;
   $("#chart-description").textContent =
     {
-      visibility: "Acme in sampled answers",
-      citations: "Sampled answers linking to acme.work",
-      referrals: "Sessions attributed to AI referrals",
-      leads: "Attributed sessions with a lead event",
+      visibility: "Mention rate",
+      citations: "Website citations",
+      referrals: "AI referrals",
+      leads: "Leads",
     }[state.metric] + (state.days === 90 ? " · grouped every 3 days" : "");
   $("#chart-legend").textContent = LABELS[state.metric];
   $("#sample-count").textContent =
@@ -193,7 +267,7 @@ function renderMainChart() {
   );
 }
 function renderEngines() {
-  segment($("#engine-tabs"), engineView);
+  selectValue($("#engine-tabs"), engineView);
   $("#engine-unit").textContent =
     engineView === "visibility" ? "Mention rate" : "Sessions";
   const max =
@@ -205,7 +279,7 @@ function renderEngines() {
     .sort((a, b) => b[engineView] - a[engineView])
     .map(
       (e) =>
-        `<button class="rank-row ${state.engine === e.id ? "self" : ""}" data-engine="${e.id}" style="--share:${(e[engineView] / max) * 100}%" aria-describedby="engine-filter-hint">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${format(e[engineView], engineView)}</span>${icon("filter")}</button>`,
+        `<button class="rank-row ${state.engine === e.id ? "self" : ""}" data-engine="${e.id}" style="--share:${(e[engineView] / max) * 100}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${format(e[engineView], engineView)}</span>${icon("filter")}</button>`,
     )
     .join("");
 }
@@ -218,7 +292,7 @@ function renderCompetitors() {
     .join("");
 }
 function renderPages() {
-  segment($("#page-tabs"), pageView);
+  selectValue($("#page-tabs"), pageView);
   const pages = pageView === "own" ? data.pages : data.external,
     max = Math.max(...pages.map((p) => p.citations), 1);
   $("#page-rows").innerHTML =
@@ -256,11 +330,8 @@ function renderFunnel() {
       ),
     );
 }
-function coverage(n) {
-  return `<span class="coverage-mini" aria-label="${pct(n)} mention rate">${Array.from({ length: 10 }, (_, i) => `<span class="${i < Math.round(n / 10) ? "on" : ""}"></span>`).join("")}</span>`;
-}
 function renderQuestions() {
-  segment($("#question-tabs"), questionView);
+  selectValue($("#question-tabs"), questionView);
   const query = $("#question-search").value.toLowerCase();
   let qs = [
     ...data.questions,
@@ -268,11 +339,7 @@ function renderQuestions() {
       .filter((q) => !state.topic || q.topic === state.topic)
       .map((q) => ({ ...q, pending: true, visibility: -1 })),
   ];
-  $("#q-all-count").textContent = qs.length;
-  $("#q-gap-count").textContent = data.questions.filter(
-    (q) => q.visibility < 40,
-  ).length;
-  $(".nav-count").textContent = QUESTIONS.length + pending.length;
+  $("#q-nav-count").textContent = QUESTIONS.length + pending.length;
   qs = qs
     .filter(
       (q) =>
@@ -287,7 +354,7 @@ function renderQuestions() {
     ? visible
         .map(
           (q) =>
-            `<tr><td><button class="question-link" data-question="${esc(q.id)}">${esc(q.text)}</button></td><td><span class="badge neutral">${esc(q.topic)}</span></td><td>${q.pending ? '<span class="small-label">Pending</span>' : pct(q.visibility)}</td><td>${q.pending ? '<span class="small-label">No samples</span>' : coverage(q.visibility)}</td><td><button class="icon-button" data-question="${esc(q.id)}" aria-label="Explore ${esc(q.text)}">${icon("right")}</button></td></tr>`,
+            `<tr><td><button class="question-link" data-question="${esc(q.id)}">${esc(q.text)}</button></td><td><span class="badge neutral">${esc(q.topic)}</span></td><td>${q.pending ? '<span class="small-label">Pending</span>' : pct(q.visibility)}</td><td>${q.pending ? '<span class="small-label">No samples</span>' : engineCoverage(q)}</td><td><button class="icon-button" data-question="${esc(q.id)}" aria-label="Explore ${esc(q.text)}">${icon("right")}</button></td></tr>`,
         )
         .join("")
     : `<tr><td colspan="5">${empty("No questions match this view", "Try another search or change the coverage filter.")}</td></tr>`;
@@ -304,18 +371,12 @@ function renderQuestions() {
     .setAttribute("aria-sort", sortAscending ? "ascending" : "descending");
 }
 function renderActions() {
-  segment($("#action-tabs"), actionView);
+  selectValue($("#action-tabs"), actionView);
   const relevant = ACTIONS.filter(
     (a) =>
       !state.topic ||
       QUESTIONS.find((q) => q.id === a.question).topic === state.topic,
   );
-  $("#todo-count").textContent = relevant.filter(
-    (a) => !shipped.includes(a.id),
-  ).length;
-  $("#shipped-count").textContent = relevant.filter((a) =>
-    shipped.includes(a.id),
-  ).length;
   $("#action-count").textContent = ACTIONS.filter(
     (a) => !shipped.includes(a.id),
   ).length;
@@ -326,7 +387,7 @@ function renderActions() {
     ? actions
         .map(
           (a) =>
-            `<button class="action-card" data-improvement="${a.id}"><span class="action-card-top"><span class="badge ${shipped.includes(a.id) ? "green" : "neutral"}">${shipped.includes(a.id) ? "Shipped" : a.label}</span>${icon(shipped.includes(a.id) ? "check" : "arrow")}</span><h3>${a.title}</h3><p>${a.body}</p><span class="action-card-bottom"><span>${icon("clock")}${a.effort}</span><b>${shipped.includes(a.id) ? "Review improvement" : "See the plan"}</b></span></button>`,
+            `<button class="opportunity-row" data-improvement="${a.id}"><span class="opportunity-name"><strong>${a.title}</strong><small>${a.path}</small></span><span class="opportunity-rate"><strong>${pct(data.questions.find((q) => q.id === a.question)?.visibility || 0)}</strong><small>mention rate</small></span><span class="opportunity-effort">${icon("clock")}${a.effort}</span><span class="badge ${shipped.includes(a.id) ? "green" : "neutral"}">${shipped.includes(a.id) ? "Shipped" : "To do"}</span>${icon("right")}</button>`,
         )
         .join("")
     : empty(
@@ -338,21 +399,101 @@ function renderActions() {
           : "Change your topic filter to explore more improvements.",
       );
 }
-function renderPulse() {
-  const rows = data.a.filter((r) => r.mention);
-  const a =
-    rows[
-      (rows.length -
-        1 -
-        (pulseIndex % Math.max(rows.length, 1)) +
-        rows.length) %
-        rows.length
-    ];
-  if (!a) return;
-  const q = QUESTIONS.find((q) => q.id === a.question);
-  $("#pulse-event").innerHTML =
-    `<div>${engineIcon(engine(a.engine))}<span>${engine(a.engine).name} · ${date(a.date)}</span></div><p>“${esc(q.text.length > 70 ? q.text.slice(0, 67) + "…" : q.text)}”</p><span class="badge ${a.cited ? "green" : "neutral"}">${icon(a.cited ? "link" : "check")}${a.cited ? "Your website was cited" : "Acme was mentioned"}</span>`;
+function engineCoverage(question) {
+  return `<span class="engine-coverage">${data.engines
+    .map((e) => {
+      const rows = question.rows.filter((r) => r.engine === e.id),
+        rate = rows.length
+          ? (rows.filter((r) => r.mention).length / rows.length) * 100
+          : 0;
+      return `<span title="${e.name}: ${pct(rate)}" aria-label="${e.name}: ${pct(rate)}" class="${rate < 40 ? "gap" : rate >= 60 ? "strong" : ""}"><img src="/assets/brands/${e.id}.svg" width="15" height="15" alt=""><span>${Math.round(rate)}%</span></span>`;
+    })
+    .join("")}</span>`;
 }
+function stat(label, value, suffix = "") {
+  return `<div><span>${label}</span><strong>${value}${suffix ? `<small>${suffix}</small>` : ""}</strong></div>`;
+}
+function renderPageSummaries() {
+  const gap = data.questions.filter((q) => q.visibility < 40),
+    strong = data.questions.filter((q) => q.visibility >= 60),
+    middle = data.questions.length - gap.length - strong.length;
+  const tracked =
+    data.questions.length +
+    pending.filter((q) => !state.topic || q.topic === state.topic).length;
+  $("#question-stats").innerHTML =
+    stat("Tracked questions", tracked) +
+    stat("Answer samples", fmt(data.current.samples)) +
+    stat("Visibility gaps", gap.length) +
+    stat("Strong presence", strong.length);
+  const categories = [
+    ["Visibility gaps", gap.length, "gap"],
+    ["40–59% mention rate", middle, "mid"],
+    ["60%+ mention rate", strong.length, "strong"],
+  ];
+  $("#coverage-distribution").innerHTML =
+    `<div class="coverage-track" role="img" aria-label="${gap.length} questions below 40 percent, ${middle} from 40 to 59 percent, ${strong.length} at least 60 percent">${categories.map(([label, count, style]) => `<span class="${style}" style="width:${(count / Math.max(data.questions.length, 1)) * 100}%"></span>`).join("")}</div><div class="coverage-key">${categories.map(([label, count, style]) => `<span><i class="${style}"></i>${label}<b>${count}</b></span>`).join("")}</div>`;
+  const relevant = ACTIONS.filter(
+      (a) =>
+        !state.topic ||
+        QUESTIONS.find((q) => q.id === a.question).topic === state.topic,
+    ),
+    done = relevant.filter((a) => shipped.includes(a.id)).length;
+  $("#opportunity-stats").innerHTML =
+    stat("Open opportunities", relevant.length - done) +
+    stat("Shipped", done) +
+    stat("Questions with gaps", gap.length);
+  $("#gap-rows").innerHTML = (
+    gap.length ? gap.slice(0, 4) : data.questions.slice(0, 3)
+  )
+    .map(
+      (q) =>
+        `<button class="gap-row" data-question="${q.id}"><span>${esc(q.text)}</span><span class="gap-track"><span style="width:${100 - q.visibility}%"></span></span><strong>${pct(100 - q.visibility)}</strong>${icon("right")}</button>`,
+    )
+    .join("");
+  $("#overview-engines").innerHTML = data.engines
+    .map(
+      (e) =>
+        `<button class="rank-row" data-overview-engine="${e.id}" style="--share:${e.visibility}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${pct(e.visibility)}</span>${icon("right")}</button>`,
+    )
+    .join("");
+  const next = relevant.filter((a) => !shipped.includes(a.id));
+  $("#overview-opportunities").innerHTML = next.length
+    ? next
+        .map(
+          (a) =>
+            `<button class="overview-opportunity" data-improvement="${a.id}"><span>${a.title}</span><strong>${pct(data.questions.find((q) => q.id === a.question)?.visibility || 0)}<small>mention rate</small></strong>${icon("right")}</button>`,
+        )
+        .join("")
+    : empty("All shipped", "Change the topic filter to see more.");
+  const max = Math.max(...data.engines.map((e) => e.referrals), 1);
+  $("#traffic-engines").innerHTML = data.engines
+    .slice()
+    .sort((a, b) => b.referrals - a.referrals)
+    .map(
+      (e) =>
+        `<button class="rank-row" data-engine="${e.id}" style="--share:${(e.referrals / max) * 100}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${fmt(e.referrals)}</span>${icon("filter")}</button>`,
+    )
+    .join("");
+  const entries = [...new Set(data.v.map((v) => v.page))]
+    .map((path) => ({
+      path,
+      count: data.v.filter((v) => v.page === path).length,
+    }))
+    .sort((a, b) => b.count - a.count);
+  const largest = Math.max(...entries.map((p) => p.count), 1);
+  $("#traffic-pages").innerHTML = entries
+    .slice(0, 6)
+    .map(
+      (p) =>
+        `<button class="rank-row" data-source-page="${esc(p.path)}" style="--share:${(p.count / largest) * 100}%">${icon("file")}<span class="rank-name">${esc(p.path)}</span><span class="rank-value">${fmt(p.count)}</span>${icon("right")}</button>`,
+    )
+    .join("");
+  $("#crawler-rows").innerHTML = CRAWLERS.map(
+    (c) =>
+      `<button class="crawler-row" data-action="crawlers"><span><strong>${c.name}</strong><small>${c.purpose}</small></span><strong>${fmt(c.count)}</strong><span class="badge ${c.status === "Allowed" ? "green" : "neutral"}">${c.status}</span>${icon("right")}</button>`,
+  ).join("");
+}
+
 function empty(title, description) {
   return `<div class="empty-state">${icon("spark")}<h3>${title}</h3><p>${description}</p></div>`;
 }
@@ -538,39 +679,49 @@ function methodology() {
       )}<div class="notice">This entire workspace uses deterministic sample data through September 9, 2026. No live integrations or private AI conversations are connected. Topic filters map answer topics to their related landing pages; this is not a session-to-answer identity match.</div><details><summary>How are chart comparisons calculated?</summary><p>Each period is compared with the immediately preceding period of the same length. Mention-rate changes use percentage points; count changes use relative percentages. The 90-day chart groups observations into three-day intervals. All chart axes start at zero.</p></details><details><summary>What counts as a citation?</summary><p>A sampled answer that links to acme.work counts as one website citation. Mentions without a link still count toward mention rate. An external page may be cited alongside or instead of your website.</p></details><details><summary>Can a mention guarantee traffic or revenue?</summary><p>No. Answers, referrals, and lead events are different datasets. The dashboard brings them together for analysis without claiming that a specific answer caused a visit.</p></details>`,
   );
 }
-function sources() {
+function sourceDetails(kind = "answers") {
+  const config = {
+    answers: [
+      "Answer sampling",
+      "Mentions and citations for your tracked questions.",
+      [
+        "Choose questions and engines",
+        "Collect answer text and cited URLs",
+        "Compare mention rates over time",
+      ],
+    ],
+    analytics: [
+      "Website analytics",
+      "Visits identified through AI referrers or campaign parameters.",
+      [
+        "Add a website collector or analytics connection",
+        "Capture landing page and source",
+        "Keep unattributed sessions separate",
+      ],
+    ],
+    conversions: [
+      "Conversion events",
+      "Lead and signup events from attributed website sessions.",
+      [
+        "Choose a conversion event",
+        "Connect website analytics",
+        "Define an attribution window",
+      ],
+    ],
+    logs: [
+      "Server logs",
+      "Crawler requests from your server or CDN.",
+      [
+        "Import access logs",
+        "Verify bot identity",
+        "Separate search and training crawlers",
+      ],
+    ],
+  }[kind] || ["Data source", "Choose a source to connect.", []];
   detail(
-    "Bring your own signals.",
-    "DATA SOURCES",
-    `<p>The demo is ready to explore. Connect your data to turn these examples into your own discovery dashboard.</p>${[
-      [
-        "spark",
-        "Answer sampling",
-        "Track questions, markets, languages, and answer engines. Keep the original answer and citations as evidence.",
-      ],
-      [
-        "code",
-        "Website analytics",
-        "Install an event collector to capture landing pages, AI referrers, campaign parameters, and consented conversion events.",
-      ],
-      [
-        "globe",
-        "Server or CDN logs",
-        "Import crawler requests and verify bot identity separately from human traffic.",
-      ],
-      [
-        "target",
-        "Conversion events",
-        "Define which events matter: qualified leads, trials, or purchases.",
-      ],
-    ]
-      .map(
-        ([i, t, p]) =>
-          `<div class="source-item"><div class="source-title">${icon(i)}${t}<span class="badge neutral">Not connected</span></div><p>${p}</p></div>`,
-      )
-      .join(
-        "",
-      )}<div class="notice">The integration flow is a product preview. Saving a setup plan does not install a tracker or connect a provider.</div><button class="button primary" data-action="setup">Plan your setup${icon("right")}</button>`,
+    config[0],
+    "SOURCE · NOT CONNECTED",
+    `<p>${config[1]}</p><ol class="step-list">${config[2].map((step, i) => `<li><span class="step-number">${i + 1}</span><span>${step}</span></li>`).join("")}</ol><button class="button primary" data-action="setup">Plan setup${icon("right")}</button><div class="notice">Preview only. A saved plan does not activate this connection.</div>`,
   );
 }
 function setup() {
@@ -666,7 +817,8 @@ function exportReport() {
 const actions = {
   search,
   setup,
-  sources,
+  sources: () => navigate("sources"),
+  "source-details": sourceDetails,
   methodology,
   "add-question": addQuestion,
   export: exportReport,
@@ -674,15 +826,13 @@ const actions = {
   "reset-workspace": () => {
     update({ days: 30, engine: "", topic: "", metric: "visibility" });
     closeMenus();
-    toast("Acme demo overview restored.");
+    navigate("overview");
+    toast("Demo filters reset.");
   },
   opportunities: () => {
     questionView = "opportunity";
     showAll = true;
-    renderQuestions();
-    $("#questions").scrollIntoView({
-      behavior: reduced.matches ? "instant" : "smooth",
-    });
+    navigate("questions");
   },
   "chart-data": () =>
     detail(
@@ -727,6 +877,23 @@ const actions = {
 document.addEventListener("click", (event) => {
   const b = event.target.closest("button,a");
   if (!b) return;
+  if (b.dataset.route) {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    navigate(b.dataset.route);
+    return;
+  }
+  if (b.dataset.connection) {
+    sourceDetails(b.dataset.connection);
+    return;
+  }
   if (b.hasAttribute("data-close")) {
     closeDialog(b.closest("dialog"));
     return;
@@ -737,6 +904,11 @@ document.addEventListener("click", (event) => {
   }
   if (b.dataset.days) {
     setTimeout(() => update({ days: Number(b.dataset.days) }), 0);
+    return;
+  }
+  if (b.dataset.overviewEngine) {
+    state.engine = b.dataset.overviewEngine;
+    navigate("visibility");
     return;
   }
   if (b.hasAttribute("data-engine")) {
@@ -752,6 +924,15 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (b.dataset.metric) {
+    if (currentView === "overview") {
+      state.metric = b.dataset.metric;
+      navigate(
+        ["referrals", "leads"].includes(state.metric)
+          ? "traffic"
+          : "visibility",
+      );
+      return;
+    }
     update({ metric: b.dataset.metric });
     return;
   }
@@ -783,6 +964,7 @@ document.addEventListener("click", (event) => {
     if (store("shipped", next)) {
       shipped = next;
       renderActions();
+      renderPageSummaries();
       openAction(id, true);
       toast(
         shipped.includes(id)
@@ -797,6 +979,7 @@ document.addEventListener("click", (event) => {
     store("questions", pending);
     $("#detail").close();
     renderQuestions();
+    renderPageSummaries();
     toast("Question removed from this browser.");
     return;
   }
@@ -923,9 +1106,7 @@ document.addEventListener("submit", (e) => {
       $("#question-search").value = text;
       update({ topic: "" });
       $("#detail").close();
-      $("#questions").scrollIntoView({
-        behavior: reduced.matches ? "instant" : "smooth",
-      });
+      navigate("questions");
       toast("Question saved. Waiting for an answer-sampling connection.");
     }
   }
@@ -971,65 +1152,20 @@ document.addEventListener("submit", (e) => {
     }
   }
 });
-function setPause(value) {
-  paused = value;
-  document.body.classList.toggle("paused", paused);
-  $("#pause-pulse").innerHTML = icon(paused ? "play" : "pause");
-  $("#pause-pulse").setAttribute(
-    "aria-label",
-    paused ? "Play demo replay" : "Pause demo replay",
-  );
-}
-$("#pause-pulse").addEventListener("click", () => setPause(!paused));
-setInterval(() => {
-  if (paused || document.hidden || !$("#pulse-event").getClientRects().length)
-    return;
-  const r = $("#pulse-event").getBoundingClientRect();
-  if (r.bottom < 0 || r.top > innerHeight) return;
-  pulseIndex++;
-  renderPulse();
-  animate(
-    $("#pulse-event"),
-    [
-      { opacity: 0.15, transform: "translateY(5px)" },
-      { opacity: 1, transform: "none" },
-    ],
-    280,
-  );
-}, 5500);
-reduced.addEventListener("change", (e) => {
-  if (e.matches) setPause(true);
-});
-const sectionIds = ["overview", "questions", "actions"];
-let navFrame = 0;
-function updateActiveSection() {
-  let active = "overview";
-  for (const id of sectionIds)
-    if (
-      document.getElementById(id).getBoundingClientRect().top <=
-      Math.min(220, innerHeight * 0.35)
-    )
-      active = id;
-  document.querySelectorAll("[data-section]").forEach((a) => {
-    a.classList.toggle("active", a.dataset.section === active);
-    if (a.dataset.section === active)
-      a.setAttribute("aria-current", "location");
-    else a.removeAttribute("aria-current");
-  });
-  navFrame = 0;
-}
-addEventListener(
-  "scroll",
-  () => {
-    if (!navFrame) navFrame = requestAnimationFrame(updateActiveSection);
-  },
-  { passive: true },
-);
-addEventListener("resize", updateActiveSection);
-requestAnimationFrame(updateActiveSection);
+showPage();
 addEventListener("popstate", () => {
   Object.assign(state, parseState(location.search));
+  currentView = resolveView(location);
+  state.metric = metricForView(currentView, state.metric);
+  document.querySelectorAll("dialog[open]").forEach((dialog) => dialog.close());
+  showPage({ focus: true });
   render();
+});
+addEventListener("hashchange", () => {
+  if (
+    ["#overview", "#questions", "#actions", "#sources"].includes(location.hash)
+  )
+    navigate(resolveView({ hash: location.hash }), { replace: true });
 });
 try {
   await initializeOrbit();
@@ -1049,9 +1185,11 @@ hydrate();
 installMenus();
 render();
 await enhance(document.querySelector(".question-controls"));
-await enhance(document.querySelector(".actions-section>.section-heading"));
+await enhance(document.querySelector(".opportunity-toolbar"));
+await enhance(document.querySelector(".breakdown-grid"));
+syncURL();
+window.scrollTo({ top: 0, behavior: "instant" });
 
-setPause(paused);
 const reveal = new IntersectionObserver(
   (entries) =>
     entries.forEach((e) => {
@@ -1080,10 +1218,3 @@ addEventListener("resize", () => {
     if (data) renderMainChart();
   }, 160);
 });
-
-// Preserve links from the marketing site to the sources preview.
-function openLinkedPanel() {
-  if (location.hash === "#sources") sources();
-}
-addEventListener("hashchange", openLinkedPanel);
-openLinkedPanel();

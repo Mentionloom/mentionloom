@@ -25,10 +25,28 @@ test("the production build ships the complete installed Orbit runtime and font a
       `${path} must reach production unchanged`,
     );
   }
+  for (const page of [
+    "overview",
+    "visibility",
+    "traffic",
+    "questions",
+    "opportunities",
+    "sources",
+  ]) {
+    assert.deepEqual(
+      await read(`dist/app/${page}/index.html`),
+      await read("dist/app/index.html"),
+      `${page} must load directly and after refresh`,
+    );
+  }
   const html = (await read("dist/app/index.html")).toString();
   for (const [, href] of html.matchAll(/<link\b[^>]*href="([^"]+)"/g)) {
     if (!href.startsWith("http"))
-      await readFile(resolve(root, "dist/app", href));
+      await readFile(
+        href.startsWith("/")
+          ? resolve(root, "dist", href.slice(1))
+          : resolve(root, "dist/app", href),
+      );
   }
 });
 

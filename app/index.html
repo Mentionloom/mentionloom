@@ -11,34 +11,35 @@
       name="description"
       content="Explore your AI visibility, the visits it creates, and your next opportunity. An interactive Mentionloom sample workspace."
     />
-    <link rel="icon" href="../assets/mark.svg" type="image/svg+xml" />
+    <link rel="icon" href="/assets/mark.svg" type="image/svg+xml" />
     <link
       rel="preload"
-      href="./components/orbit/runtime/assets/OpenRunde-Regular.woff2"
+      href="/app/components/orbit/runtime/assets/OpenRunde-Regular.woff2"
       as="font"
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="./components/orbit/runtime/tokens.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/styles.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/motion.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/numbers.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/controls.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/starter.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/agents.css" />
-    <link rel="stylesheet" href="./components/orbit/runtime/extras.css" />
-    <link rel="stylesheet" href="./tokens.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/tokens.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/styles.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/motion.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/numbers.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/controls.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/starter.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/agents.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/extras.css" />
+    <link rel="stylesheet" href="/app/tokens.css" />
 
-    <link rel="stylesheet" href="./app.css" />
-    <link rel="stylesheet" href="./foundation.css" />
-    <script type="module" src="./app.js"></script>
+    <link rel="stylesheet" href="/app/app.css" />
+    <link rel="stylesheet" href="/app/foundation.css" />
+    <link rel="stylesheet" href="/app/pages.css" />
+    <script type="module" src="/app/app.js"></script>
   </head>
   <body class="discovery-app">
     <a class="skip-link" href="#main">Skip to dashboard</a>
     <header class="app-header">
       <div class="header-inner">
-        <a class="brand" href="../" aria-label="Mentionloom home"
-          ><img src="../assets/mark.svg" alt="" width="29" height="29" /><span
+        <a class="brand" href="/" aria-label="Mentionloom home"
+          ><img src="/assets/mark.svg" alt="" width="29" height="29" /><span
             >Mentionloom</span
           ></a
         ><span class="header-divider">/</span
@@ -49,59 +50,70 @@
         >
           <span class="acme-mark">a</span> Acme
           <span data-app-icon="chevrons"></span></button
-        ><span class="badge demo-badge">Demo workspace</span>
+        ><span class="badge demo-badge">Demo</span>
         <div class="header-spacer"></div>
         <button class="search-button button ghost" data-action="search">
-          <span data-app-icon="search"></span><span>Search anything</span
+          <span data-app-icon="search"></span><span>Search</span
           ><kbd>⌘ K</kbd></button
         ><button
           class="button primary"
           data-action="setup"
-          aria-label="Connect your website"
+          aria-label="Add website"
         >
-          <span class="wide-label">Connect your website</span
-          ><span class="narrow-label">Connect</span
+          <span class="wide-label">Add website</span
+          ><span class="narrow-label">Add website</span
           ><span data-app-icon="plus"></span>
         </button>
       </div>
     </header>
-    <nav class="section-nav" aria-label="Dashboard sections">
-      <div class="nav-inner">
-        <a class="active" href="#overview" data-section="overview"
-          ><span data-app-icon="chart"></span>Overview</a
-        ><a href="#questions" data-section="questions"
-          ><span data-app-icon="spark"></span>Questions<span class="nav-count"
-            >12</span
-          ></a
-        ><a href="#actions" data-section="actions"
-          ><span data-app-icon="bolt"></span>Next moves<span
-            class="nav-count"
-            id="action-count"
-            >3</span
-          ></a
-        ><button data-action="sources">
-          <span data-app-icon="layers"></span>Data sources</button
-        ><span class="nav-note"
-          ><span class="status-dot"></span>Explore with sample data</span
-        >
+    <nav class="page-navigation" aria-label="Workspace pages">
+      <div class="page-nav-inner">
+        <a href="/app/overview/" data-route="overview">Overview</a
+        ><a href="/app/visibility/" data-route="visibility">Visibility</a
+        ><a href="/app/traffic/" data-route="traffic">Traffic</a
+        ><a href="/app/questions/" data-route="questions"
+          >Questions<span class="nav-count" id="q-nav-count">12</span></a
+        ><a href="/app/opportunities/" data-route="opportunities"
+          >Opportunities<span class="nav-count" id="action-count">3</span></a
+        ><a href="/app/sources/" data-route="sources">Sources</a>
       </div>
     </nav>
     <main id="main" tabindex="-1">
-      <section id="overview" class="overview-section">
-        <div class="page-heading">
-          <div>
-            <p class="eyebrow">ACME.WORK · AI DISCOVERY</p>
-            <h1>See where the conversation takes you.</h1>
-            <p class="heading-description">
-              Your visibility in AI answers. The people who follow. Your next
-              move.
-            </p>
-          </div>
-          <button class="button" data-action="export" aria-label="Export">
+      <div class="workspace-heading">
+        <div>
+          <h1 id="page-title" tabindex="-1">Overview</h1>
+          <span class="workspace-domain">acme.work</span>
+        </div>
+        <div class="page-actions">
+          <button
+            class="icon-button"
+            data-action="methodology"
+            aria-label="About this data"
+          >
+            <span data-app-icon="info"></span></button
+          ><button
+            class="button"
+            data-action="export"
+            id="page-export"
+            aria-label="Export report"
+          >
             <span data-app-icon="download"></span
-            ><span class="export-label">Export</span>
+            ><span class="action-label">Export</span></button
+          ><button
+            class="button primary"
+            data-action="add-question"
+            id="page-add-question"
+            aria-label="Track question"
+            hidden
+          >
+            <span data-app-icon="plus"></span
+            ><span class="action-label">Track question</span></button
+          ><button class="button" data-action="setup" id="page-setup" hidden>
+            <span data-app-icon="plus"></span>Setup plan
           </button>
         </div>
+      </div>
+      <div id="global-filters">
         <div class="filter-bar">
           <div class="filter-controls">
             <button
@@ -118,7 +130,7 @@
               aria-expanded="false"
             >
               <span data-app-icon="spark"></span
-              ><span id="engine-label">All AI engines</span
+              ><span id="engine-label">All engines</span
               ><span data-app-icon="down"></span></button
             ><button
               class="button ghost filter-trigger"
@@ -131,6 +143,8 @@
           <span id="date-label" class="date-label"></span>
         </div>
         <div id="filter-chips" class="filter-chips"></div>
+      </div>
+      <div id="report-core">
         <div class="metrics" role="group" aria-label="Chart metric">
           <button
             class="metric active"
@@ -232,19 +246,51 @@
             </button>
           </div>
         </div>
-        <button class="insight-strip" id="insight" data-action="opportunities">
-          <span class="insight-icon" data-app-icon="spark"></span
-          ><span id="insight-text"></span
-          ><span class="insight-link"
-            >Explore the gap<span data-app-icon="right"></span
-          ></span>
-        </button>
+      </div>
+      <section
+        id="overview"
+        class="route-view"
+        data-route-view="overview"
+        hidden
+      >
+        <div class="overview-grid">
+          <article class="card">
+            <div class="card-heading">
+              <h2>AI engines</h2>
+              <a
+                class="text-button"
+                href="/app/visibility/"
+                data-route="visibility"
+                >View all <span data-app-icon="right"></span
+              ></a>
+            </div>
+            <div class="rank-list" id="overview-engines"></div>
+          </article>
+          <article class="card">
+            <div class="card-heading">
+              <h2>Opportunities</h2>
+              <a
+                class="text-button"
+                href="/app/opportunities/"
+                data-route="opportunities"
+                >View all <span data-app-icon="right"></span
+              ></a>
+            </div>
+            <div id="overview-opportunities"></div>
+          </article>
+        </div>
+      </section>
+      <section
+        id="visibility"
+        class="route-view"
+        data-route-view="visibility"
+        hidden
+      >
         <div class="breakdown-grid">
           <article class="card engines-card">
             <div class="card-heading">
               <div>
-                <h2>Where you show up</h2>
-                <p>Every engine tells a different story.</p>
+                <h2>AI engines</h2>
               </div>
               <button
                 class="icon-button"
@@ -255,32 +301,48 @@
               </button>
             </div>
             <div class="card-tabs">
-              <div
-                class="segmented"
-                data-segment
-                id="engine-tabs"
-                role="group"
-                aria-label="Engine breakdown metric"
-              >
-                <button data-value="visibility" aria-pressed="true">
-                  Visibility</button
-                ><button data-value="referrals" aria-pressed="false">
-                  Referrals
+              <div class="dropdown ds-select page-select" id="engine-tabs">
+                <button
+                  class="control-trigger"
+                  data-select-toggle
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-label="Engine metric"
+                >
+                  <span data-select-label>Mention rate</span
+                  ><span data-app-icon="down"></span>
                 </button>
+                <div
+                  class="dropdown-panel"
+                  role="listbox"
+                  aria-label="Engine metric"
+                  hidden
+                >
+                  <button
+                    role="option"
+                    data-option="Mention rate"
+                    data-value="visibility"
+                    aria-selected="true"
+                  >
+                    Mention rate</button
+                  ><button
+                    role="option"
+                    data-option="Referrals"
+                    data-value="referrals"
+                    aria-selected="false"
+                  >
+                    Referrals
+                  </button>
+                </div>
               </div>
               <span class="table-hint" id="engine-unit">Mention rate</span>
             </div>
             <div id="engine-rows" class="rank-list"></div>
-            <div class="card-footer">
-              <span>Click an engine to filter the dashboard</span
-              ><span data-app-icon="filter"></span>
-            </div>
           </article>
           <article class="card competitors-card">
             <div class="card-heading">
               <div>
-                <h2>Who gets recommended</h2>
-                <p>Your share of the same conversations.</p>
+                <h2>Competitors</h2>
               </div>
               <button
                 class="icon-button"
@@ -295,16 +357,11 @@
               ><span class="table-hint">Mention rate</span>
             </div>
             <div id="competitor-rows" class="rank-list"></div>
-            <div class="card-footer">
-              <span>Multiple brands can appear in one answer</span
-              ><span class="badge neutral">Sampled</span>
-            </div>
           </article>
           <article class="card pages-card">
             <div class="card-heading">
               <div>
-                <h2>The pages doing the talking</h2>
-                <p>See which sources shape the answer.</p>
+                <h2>Cited pages</h2>
               </div>
               <button
                 class="icon-button"
@@ -315,18 +372,39 @@
               </button>
             </div>
             <div class="card-tabs">
-              <div
-                class="segmented"
-                data-segment
-                id="page-tabs"
-                role="group"
-                aria-label="Cited page ownership"
-              >
-                <button data-value="own" aria-pressed="true">
-                  Your website</button
-                ><button data-value="external" aria-pressed="false">
-                  Other sources
+              <div class="dropdown ds-select page-select" id="page-tabs">
+                <button
+                  class="control-trigger"
+                  data-select-toggle
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-label="Source ownership"
+                >
+                  <span data-select-label>Your website</span
+                  ><span data-app-icon="down"></span>
                 </button>
+                <div
+                  class="dropdown-panel"
+                  role="listbox"
+                  aria-label="Source ownership"
+                  hidden
+                >
+                  <button
+                    role="option"
+                    data-option="Your website"
+                    data-value="own"
+                    aria-selected="true"
+                  >
+                    Your website</button
+                  ><button
+                    role="option"
+                    data-option="Other sources"
+                    data-value="external"
+                    aria-selected="false"
+                  >
+                    Other sources
+                  </button>
+                </div>
               </div>
               <span class="table-hint">Citations</span>
             </div>
@@ -337,143 +415,91 @@
               ><span id="pages-total"></span>
             </div>
           </article>
+        </div>
+      </section>
+      <section id="traffic" class="route-view" data-route-view="traffic" hidden>
+        <div class="traffic-grid">
+          <article class="card">
+            <div class="card-heading">
+              <h2>Referrals by engine</h2>
+              <button
+                class="icon-button"
+                data-action="attribution"
+                aria-label="Referral attribution"
+              >
+                <span data-app-icon="info"></span>
+              </button>
+            </div>
+            <div class="rank-list" id="traffic-engines"></div>
+          </article>
           <article class="card outcome-card">
             <div class="card-heading">
               <div>
-                <h2>From answer to action</h2>
-                <p>What happens after someone clicks through.</p>
+                <h2>Conversion funnel</h2>
               </div>
               <span class="badge green">Attribution</span>
             </div>
             <div id="funnel"></div>
-            <div class="card-footer">
-              <button class="text-button" data-action="attribution">
-                How we attribute visits<span
-                  data-app-icon="right"
-                ></span></button
-              ><span>UTM + referrer</span>
-            </div>
           </article>
-        </div>
-        <div class="discovery-row">
-          <article class="card discovery-card">
+          <article class="card traffic-pages">
             <div class="card-heading">
-              <div>
-                <div class="pulse-label">
-                  <span class="status-dot"></span>Discovery pulse<span
-                    class="badge neutral"
-                    >Demo replay</span
-                  >
-                </div>
-                <h2>Your next customer starts with a question.</h2>
-              </div>
-              <button
-                class="icon-button"
-                id="pause-pulse"
-                aria-label="Pause demo replay"
-              >
-                <span data-app-icon="pause"></span>
-              </button>
+              <h2>Landing pages</h2>
+              <span class="small-label">Sessions</span>
             </div>
-            <div class="discovery-body">
-              <div class="signal-map" aria-hidden="true">
-                <svg viewBox="0 0 440 185" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="signal-fade">
-                      <stop stop-color="var(--accent)" stop-opacity=".12" />
-                      <stop
-                        offset=".6"
-                        stop-color="var(--accent)"
-                        stop-opacity=".7"
-                      />
-                      <stop
-                        offset="1"
-                        stop-color="var(--accent)"
-                        stop-opacity=".2"
-                      />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M48 40C145 40 123 92 215 92S300 36 398 36M48 144C139 144 127 92 215 92S302 150 398 150"
-                  />
-                  <path
-                    d="M48 40C145 40 123 92 215 92"
-                    class="signal signal-one"
-                  />
-                  <path
-                    d="M48 144C139 144 127 92 215 92"
-                    class="signal signal-two"
-                  />
-                  <path
-                    d="M215 92C310 92 300 36 398 36"
-                    class="signal signal-three"
-                  /></svg
-                ><span class="map-node map-gpt" data-app-icon="gpt"></span
-                ><span class="map-node map-claude" data-app-icon="claude"></span
-                ><span class="map-node map-center">a</span
-                ><span class="map-node map-answer" data-app-icon="link"></span
-                ><span class="map-node map-person" data-app-icon="people"></span
-                ><span class="map-caption map-caption-left">AI engines</span
-                ><span class="map-caption map-caption-middle">acme.work</span
-                ><span class="map-caption map-caption-right">Discovery</span>
-              </div>
-              <div class="pulse-event" id="pulse-event"></div>
-            </div>
-            <div class="card-footer">
-              <span>Illustrative activity from this sample workspace</span
-              ><button class="text-button" data-action="activity">
-                Explore answer feed<span data-app-icon="right"></span>
-              </button>
-            </div>
-          </article>
-          <article class="crawler-summary">
-            <span class="icon-tile" data-app-icon="globe"></span>
-            <h2>Can AI reach you?</h2>
-            <p>
-              Search crawlers can access your site. Training crawlers are a
-              separate choice.
-            </p>
-            <div>
-              <span class="status-dot"></span
-              ><strong>3 search bots allowed</strong>
-            </div>
-            <button class="button" data-action="crawlers">
-              Inspect crawler access<span data-app-icon="right"></span></button
-            ><span class="small-label">Sample server-log data</span>
+            <div id="traffic-pages" class="rank-list"></div>
           </article>
         </div>
       </section>
-      <section id="questions" class="questions-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">LISTEN TO THE QUESTION</p>
-            <h2>What your future customers are asking</h2>
-            <p>Explore the answers. Find the moments where you’re missing.</p>
-          </div>
-          <button class="button" data-action="add-question">
-            <span data-app-icon="plus"></span>Track a question
-          </button>
-        </div>
+      <section
+        id="questions"
+        class="route-view questions-section"
+        data-route-view="questions"
+        hidden
+      >
+        <div class="page-stats" id="question-stats"></div>
+        <div class="coverage-distribution" id="coverage-distribution"></div>
+
         <div class="question-controls">
-          <div
-            class="segmented"
-            data-segment
-            id="question-tabs"
-            role="group"
-            aria-label="Question coverage"
-          >
-            <button data-value="all" aria-pressed="true">
-              <span class="control-label wide-label">All questions</span
-              ><span class="control-label narrow-label">All</span
-              ><span id="q-all-count">12</span></button
-            ><button data-value="opportunity" aria-pressed="false">
-              <span class="control-label wide-label">Opportunities</span
-              ><span class="control-label narrow-label">Gaps</span
-              ><span id="q-gap-count"></span></button
-            ><button data-value="strong" aria-pressed="false">
-              <span class="control-label wide-label">Strong presence</span
-              ><span class="control-label narrow-label">Strong</span>
+          <div class="dropdown ds-select page-select" id="question-tabs">
+            <button
+              class="control-trigger"
+              data-select-toggle
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="Question coverage"
+            >
+              <span data-select-label>All questions</span
+              ><span data-app-icon="down"></span>
             </button>
+            <div
+              class="dropdown-panel"
+              role="listbox"
+              aria-label="Question coverage"
+              hidden
+            >
+              <button
+                role="option"
+                data-option="All questions"
+                data-value="all"
+                aria-selected="true"
+              >
+                All questions</button
+              ><button
+                role="option"
+                data-option="Visibility gaps"
+                data-value="opportunity"
+                aria-selected="false"
+              >
+                Visibility gaps</button
+              ><button
+                role="option"
+                data-option="Strong presence"
+                data-value="strong"
+                aria-selected="false"
+              >
+                Strong presence
+              </button>
+            </div>
           </div>
           <label class="search-field"
             ><span data-app-icon="search"></span
@@ -495,7 +521,7 @@
                     Mention rate<span data-app-icon="down"></span>
                   </button>
                 </th>
-                <th scope="col">Coverage</th>
+                <th scope="col">By engine</th>
                 <th scope="col"><span class="sr-only">Details</span></th>
               </tr>
             </thead>
@@ -509,36 +535,133 @@
           </div>
         </div>
       </section>
-      <section id="actions" class="actions-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">MAKE YOUR NEXT MOVE</p>
-            <h2>A little work. More ways to be found.</h2>
-            <p>Focused improvements, backed by the questions you track.</p>
+      <section
+        id="actions"
+        class="route-view actions-section"
+        data-route-view="opportunities"
+        hidden
+      >
+        <div class="page-stats" id="opportunity-stats"></div>
+        <article class="gap-chart">
+          <div class="card-heading">
+            <h2>Visibility gaps</h2>
+            <span class="small-label">Answers without Acme</span>
           </div>
-          <div
-            class="segmented"
-            data-segment
-            id="action-tabs"
-            role="group"
-            aria-label="Improvement status"
-          >
-            <button data-value="todo" aria-pressed="true">
-              To do<span id="todo-count">3</span></button
-            ><button data-value="shipped" aria-pressed="false">
-              Shipped<span id="shipped-count">0</span>
+          <div id="gap-rows"></div>
+        </article>
+        <div class="opportunity-toolbar">
+          <h2>Content opportunities</h2>
+          <div class="dropdown ds-select page-select" id="action-tabs">
+            <button
+              class="control-trigger"
+              data-select-toggle
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-label="Opportunity status"
+            >
+              <span data-select-label>To do</span
+              ><span data-app-icon="down"></span>
             </button>
+            <div
+              class="dropdown-panel"
+              role="listbox"
+              aria-label="Opportunity status"
+              hidden
+            >
+              <button
+                role="option"
+                data-option="To do"
+                data-value="todo"
+                aria-selected="true"
+              >
+                To do</button
+              ><button
+                role="option"
+                data-option="Shipped"
+                data-value="shipped"
+                aria-selected="false"
+              >
+                Shipped
+              </button>
+            </div>
           </div>
         </div>
         <div id="action-cards" class="action-grid"></div>
       </section>
+      <section
+        id="sources"
+        class="route-view sources-section"
+        data-route-view="sources"
+        hidden
+      >
+        <div class="page-stats">
+          <div>
+            <span>Connected sources</span><strong>0 <small>/ 4</small></strong>
+          </div>
+          <div>
+            <span>Workspace</span><strong class="text-stat">Demo</strong>
+          </div>
+          <div>
+            <span>Dataset ends</span
+            ><strong class="text-stat">Sep 9, 2026</strong>
+          </div>
+        </div>
+        <div class="connections">
+          <button class="connection-row" data-connection="answers">
+            <span class="connection-icon"
+              ><span data-app-icon="spark"></span></span
+            ><span
+              ><strong>Answer sampling</strong
+              ><small>Mentions & citations</small></span
+            ><span class="connection-status">Not connected</span
+            ><span data-app-icon="right"></span></button
+          ><button class="connection-row" data-connection="analytics">
+            <span class="connection-icon"
+              ><span data-app-icon="code"></span></span
+            ><span
+              ><strong>Website analytics</strong
+              ><small>AI referral sessions</small></span
+            ><span class="connection-status">Not connected</span
+            ><span data-app-icon="right"></span></button
+          ><button class="connection-row" data-connection="conversions">
+            <span class="connection-icon"
+              ><span data-app-icon="target"></span></span
+            ><span
+              ><strong>Conversion events</strong
+              ><small>Leads & signups</small></span
+            ><span class="connection-status">Not connected</span
+            ><span data-app-icon="right"></span></button
+          ><button class="connection-row" data-connection="logs">
+            <span class="connection-icon"
+              ><span data-app-icon="globe"></span></span
+            ><span
+              ><strong>Server logs</strong><small>Crawler requests</small></span
+            ><span class="connection-status">Not connected</span
+            ><span data-app-icon="right"></span>
+          </button>
+        </div>
+        <div class="source-note">
+          <span data-app-icon="info"></span> Sample data only. Connections are
+          not active.
+        </div>
+        <article class="card crawler-card">
+          <div class="card-heading">
+            <h2>Crawler access</h2>
+            <button class="text-button" data-action="crawlers">
+              Details <span data-app-icon="right"></span>
+            </button>
+          </div>
+          <div id="crawler-rows"></div>
+          <span class="small-label"
+            >Sample snapshot · 30 days · Independent of report filters</span
+          >
+        </article>
+      </section>
       <footer class="app-footer">
-        <span
-          ><img src="../assets/mark.svg" alt="" width="19" height="19" /> Made
-          for the way people discover now.</span
+        <span>Acme · Sample data</span
         ><button class="text-button" data-action="methodology">
-          About this data<span data-app-icon="info"></span></button
-        ><span>Light by design.</span>
+          About this data <span data-app-icon="info"></span>
+        </button>
       </footer>
     </main>
     <div id="period-menu" class="control-panel" popover>

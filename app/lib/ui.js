@@ -95,7 +95,7 @@ export const escape = (value) =>
       ],
   );
 export const engineIcon = (e) =>
-  `<span class="engine-icon ${e.color}">${icon(e.symbol)}</span>`;
+  `<span class="engine-icon ${e.color}"><img src="/assets/brands/${e.id}.svg" width="20" height="20" alt=""></span>`;
 export const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 export function animate(el, frames, duration, extra = {}) {
   const timing =

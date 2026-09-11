@@ -10,17 +10,26 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 
 ## Information architecture
 
-1. The overview connects sampled visibility and citations to attributed referrals and lead events.
-2. Date, engine and topic filters update the chart and its breakdowns together. Filter state survives reloads in the URL.
-3. Engine, competitor and source rows lead to narrower evidence. Native modal drawers include a back path and keyboard focus handling.
-4. Buyer questions support search, sorting, coverage filters and locally saved pending questions.
-5. Improvements link back to their evidence and remember shipped status in this browser.
-6. Source setup and crawler access reveal collection requirements without claiming an active integration.
+The top navigation opens six separate page URLs, rather than scrolling through one long dashboard or switching ARIA tabs:
+
+| Page                  | Primary content                                                    | Details on demand                             |
+| --------------------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| `/app/overview/`      | Four KPIs, trend chart, engine bars, next opportunities            | Metric cards open the relevant report         |
+| `/app/visibility/`    | Mention rate, citations, engine and competitor rankings            | Sampled answers and cited pages               |
+| `/app/traffic/`       | Referrals, leads, conversion funnel, landing pages                 | Session and conversion evidence               |
+| `/app/questions/`     | Coverage KPIs, distribution chart, searchable question table       | Per-engine answers, pending question controls |
+| `/app/opportunities/` | Open/shipped counts, missing-answer bars, compact improvement rows | Full brief, suggested page, shipping status   |
+| `/app/sources/`       | Connection status and crawler request counts                       | Requirements for each individual source       |
+
+Date, engine and topic scope carries between pages in the URL. Browser history, refresh, direct links and opening a page in a new tab work. Older `#questions`, `#actions`, `#sources` and referral links resolve to the appropriate page. Coverage, source ownership and status are Orbit dropdowns. Detailed methodology, answer excerpts and setup instructions live in modal drawers with a back path and keyboard focus handling.
+
+Question additions, shipped status and setup plans remain local to this browser. The small sample-data label and Demo badge stay visible; a real connection is never implied.
 
 ## Architecture
 
 - `app/lib/data.js`: a deterministic 180-day fixture, four engines, twelve questions, separate answer/session records, sample crawler snapshot and improvement plans.
 - `app/lib/model.js`: pure scope selection, correct denominators, comparisons and CSV encoding.
+- `app/lib/navigation.js`: page paths, metric compatibility, shared URL filters and legacy link resolution.
 - `app/components/orbit/runtime`: the installed Orbit 0.2.0 runtime, tokens, control behaviors, fonts and overlay templates.
 - `app/lib/ui.js`: a thin Orbit initializer/adapter plus product-specific persistence and export helpers.
 - `app/tokens.css`: the application density scale and accessible semantic foregrounds.
@@ -28,6 +37,8 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 - `app/lib/charts.js`: responsive zero-based charts, monotone curves, previous-period comparison, pointer/keyboard exploration. Ninety-day charts group three days without changing the daily export.
 - `app/app.js`: dashboard composition and interaction coordination.
 - `app/app.css`: domain layout and mobile adaptations.
+- `app/pages.css`: focused page layouts and compact responsive controls, using the installed Orbit tokens.
+- `build.mjs`: creates an actual static entry point for each page, so Vercel deep links work without a catch-all rewrite.
 
 ## Data boundaries
 
@@ -39,8 +50,8 @@ To connect real data, implement tenant authentication and domain verification, a
 
 ## Verification
 
-- `npm test`: 19 passing checks, including the existing dashboard/waitlist suites, complete Orbit production asset copying, and semantic text/control contrast.
-- Lighthouse 12.8.2 accessibility audit: **96 before, 100 after** on the default dashboard. Fixed the measured green-text contrast failures and engine-row accessible name mismatches. This automated result is not a claim of complete WCAG conformance.
+- `npm test`: 21 passing checks, including dashboard/waitlist suites, complete Orbit assets and six static page entry points, URL routing and filter round trips, and semantic text/control contrast.
+- Lighthouse 12.8.2 accessibility audits cover Overview, Questions and Opportunities. This automated check is not a claim of complete WCAG conformance.
 - Browser checks: native Orbit filter selection with arrow keys and Enter; focus restoration; Escape closes the drawer and returns focus; the app owns Cmd+K without opening Orbit's sample command palette; inline form errors focus and describe the invalid field.
-- Responsive checks at 320px, 390px and desktop. Larger labels contract before control targets shrink; the page has no horizontal overflow at 320px. Section navigation remains intentionally horizontally scrollable.
-- The runtime's reduced-motion branch and the app's reduced-motion CSS disable animation; replay has a visible pause action. Full screen-reader and forced-colors testing still require manual assistive-technology review.
+- Responsive checks at 320px, 390px and desktop. Larger labels contract before control targets shrink; the page has no horizontal overflow at 320px. Page navigation remains intentionally horizontally scrollable and keeps the active page in view.
+- The runtime's reduced-motion branch and the app's reduced-motion CSS disable animation. Full screen-reader and forced-colors testing still require manual assistive-technology review.

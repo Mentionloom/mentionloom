@@ -26,6 +26,8 @@ const allowed = new Set([
   "product-portal.css",
   "app/index.html",
   "app/app.css",
+  "app/pages.css",
+  "app/lib/navigation.js",
   "app/app.js",
   "app/tokens.css",
   "app/foundation.css",
@@ -69,12 +71,16 @@ createServer(async (req, res) => {
   const file =
     pathname === "/"
       ? "index.html"
-      : pathname === "/app" || pathname === "/app/"
+      : /^\/app(?:\/(?:overview|visibility|traffic|questions|opportunities|sources))?\/?$/.test(
+            pathname,
+          )
         ? "app/index.html"
         : pathname.slice(1);
   if (
     !allowed.has(file) &&
-    !/^assets\/(?:globe\.js|brands\/[a-z]+\.svg|icons\/lucide\.svg)$/.test(file) &&
+    !/^assets\/(?:globe\.js|brands\/[a-z]+\.svg|icons\/lucide\.svg)$/.test(
+      file,
+    ) &&
     !/^app\/components\/orbit\/(?:[a-z0-9-]+\.(?:js|html|json)|runtime\/(?:[a-z-]+\.(?:js|css|html)|assets\/[A-Za-z0-9_.-]+))$/.test(
       file,
     )
