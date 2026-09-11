@@ -741,6 +741,15 @@ function openGrowthReview(id) {
 function renderGrowth() {
   const context = growthContext(data),
     items = priorities(data, growthWork, shipped);
+  const buckets = [];
+  for (let i = 0; i < data.series.length; i += Math.ceil(data.series.length / 30)) {
+    const group = data.series.slice(i, i + Math.ceil(data.series.length / 30));
+    buckets.push({ start: group[0].date, end: group.at(-1).date, count: group.reduce((sum, day) => sum + day.referrals, 0) });
+  }
+  const peak = Math.max(1, ...buckets.map((b) => b.count));
+  $("#context-referrals").innerHTML = `<div class="context-total"><strong>${fmt(data.current.referrals)}</strong><span>attributed sessions · ${state.days} days</span></div><div class="context-bars">${buckets.map((b) => `<button data-context-start="${b.start}" data-context-end="${b.end}" aria-label="${date(b.start)} to ${date(b.end)}: ${fmt(b.count)} AI referrals"><span style="height:${Math.max(2, b.count / peak * 100)}%"></span></button>`).join("")}</div><div class="context-axis"><span>${date(data.start)}</span><span>${date(data.end)}</span></div>`;
+  const citationRate = data.current.mentions ? data.current.citations / data.current.mentions * 100 : 0;
+  $("#context-citations").innerHTML = `<div class="context-total"><strong>${pct(citationRate)}</strong><span>of mentions link to your website</span></div><div class="context-ratio" role="img" aria-label="${fmt(data.current.citations)} citations from ${fmt(data.current.mentions)} mentions"><span style="width:${citationRate}%"></span></div><div class="context-axis"><span>${fmt(data.current.citations)} with a link</span><span>${fmt(data.current.mentions - data.current.citations)} without</span></div>`;
   const next = items.find((a) => !a.completed);
   $("#overview-next").disabled = false;
   $("#overview-next").innerHTML =
@@ -834,12 +843,12 @@ function changeAddon(id, enabled) {
         : `${addon.name} removed from this demo workspace.`,
   );
 }
-function openDay(start, end = start) {
+function openDay(start, end = start, metric = state.metric) {
   const rows = data.a.filter((r) => r.date >= start && r.date <= end),
     visits = data.v.filter((r) => r.date >= start && r.date <= end);
   detail(
     date(start) + (end !== start ? " – " + date(end) : ""),
-    "DAILY DETAIL · " + LABELS[state.metric].toUpperCase(),
+    "DAILY DETAIL · " + LABELS[metric].toUpperCase(),
     `<div class="drawer-stats"><div><span>Answers mentioning Acme</span><strong>${rows.filter((r) => r.mention).length}<small style="font-size:15px;color:var(--muted)"> / ${rows.length}</small></strong></div><div><span>AI referrals</span><strong>${fmt(visits.length)}</strong></div></div><h3>Answer samples</h3><div class="drawer-list">${answersList(rows, 16)}</div><div class="notice">This panel follows the engine and topic filters on your dashboard. All entries belong to the sample workspace.</div>`,
   );
 }
@@ -1124,6 +1133,10 @@ document.addEventListener("click", (event) => {
     if (choice === "close" || choice === "finish") {
       endTour(choice === "finish" ? "complete" : "dismissed");
     } else showTour(choice === "start" ? 0 : tourStep + (choice === "back" ? -1 : 1));
+    return;
+  }
+  if (b.dataset.contextStart) {
+    openDay(b.dataset.contextStart, b.dataset.contextEnd, "referrals");
     return;
   }
   if (b.dataset.route) {

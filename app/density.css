@@ -1,5 +1,31 @@
 /* Orbit 0.2 component dimensions, matching runtime/styles.css and controls.css.
    Product compositions use the same scale; touch input expands hit targets. */
+.discovery-app .header-inner { max-width: var(--content-width); width: calc(100% - 48px); margin-inline: auto; padding-inline: 0; }
+.discovery-app .report-focus,
+.discovery-app[data-current-view="overview"] .report-focus { display: flex; flex-direction: column; gap: 24px; }
+.discovery-app .report-focus .chart-area,
+.discovery-app[data-current-view="overview"] .report-focus .chart-area { width: calc(100vw - 16px); max-width: none; margin-inline: calc(50% - 50vw + 8px); padding: 24px 16px 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; box-sizing: border-box; }
+.discovery-app .chart-toolbar,
+.discovery-app .chart-caption { width: 100%; max-width: var(--content-width); margin-inline: auto; }
+.discovery-app .chart-wrapper,
+.discovery-app[data-current-view="overview"] .chart-wrapper,
+.discovery-app #main-chart { height: clamp(280px, 38vw, 440px); }
+.discovery-app .metrics { border: 0; box-shadow: none; background: transparent; }
+.discovery-app .metric { border: 0; border-radius: 0; background: transparent; }
+.discovery-app .next-move { width: 100%; box-sizing: border-box; }
+.discovery-app .overview-grid > .card,
+.discovery-app .context-report { padding: 24px 0; border: 0; border-top: 1px solid var(--border); box-shadow: none; border-radius: 0; background: transparent; min-width: 0; }
+.context-total { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.context-total strong { font-size: 25px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.context-total > span,.context-axis { font-size: 12px; color: var(--muted); }
+.context-bars { height: 100px; display: flex; align-items: end; gap: 4px; }
+.context-bars button { height: 100%; flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; display: flex; align-items: end; cursor: pointer; }
+.context-bars button > span { width: 100%; border-radius: 4px 4px 0 0; background: var(--purple-3); transition: background 140ms; }
+.context-bars button:hover > span { background: var(--accent-text); }
+.context-axis { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.context-ratio { height: 24px; margin-top: 76px; background: var(--subtle); border-radius: 6px; overflow: hidden; }
+.context-ratio > span { display: block; height: 100%; background: var(--accent); }
+@media (max-width: 600px) { .discovery-app .header-inner { width: calc(100% - 32px); } }
 .demo-tour { position: fixed; z-index: 30; right: 16px; bottom: 16px; width: min(360px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--purple-2); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-panel); }
 .tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tour-top > span { font-size: 10px; letter-spacing: .06em; color: var(--accent-text); }
