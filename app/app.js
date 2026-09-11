@@ -12,13 +12,28 @@ import {
   download,
   store,
   load,
-  reduced,
   initializeOrbit,
   enhance,
   openDialog,
   closeDialog,
 } from "./lib/ui.js";
 import { renderChart, sparkline, LABELS } from "./lib/charts.js";
+import {
+  priorities,
+  baselineFor,
+  normalizeWork,
+  startWork,
+  checkStep,
+  canShip,
+  growthContext,
+} from "./lib/growth.js";
+import {
+  nextMoveHTML,
+  journeyHTML,
+  competitorHTML,
+  workbenchHTML,
+  reviewHTML,
+} from "./lib/growth-view.js";
 
 import {
   VIEWS,
@@ -52,6 +67,7 @@ pending = pending
       TOPICS.includes(q.topic),
   )
   .slice(0, 100);
+let growthWork = normalizeWork(load("growth-work", {}));
 let detailHistory = [];
 const date = (d) =>
   new Date(d + "T12:00:00Z").toLocaleDateString("en-US", {
@@ -92,6 +108,21 @@ function showPage({ focus = false } = {}) {
   document.body.dataset.currentView = currentView;
   document.title = `${VIEWS[currentView]} · Acme · Mentionloom`;
   $("#page-title").textContent = VIEWS[currentView];
+  $("#page-context").textContent = {
+    overview: "Your position today. Your next move forward.",
+    visibility: "See where AI recommends you—and who appears alongside you.",
+    traffic: "From an AI recommendation to a visit that matters.",
+    questions: "Find the buyer questions where your brand is missing.",
+    opportunities: "Turn the evidence into improvements you can ship.",
+    sources: "Connect the signals behind your growth.",
+  }[currentView];
+  $("#next-move").hidden = currentView !== "overview";
+  $("#overview-next").hidden = currentView !== "overview";
+  $("#page-export").hidden =
+    currentView === "sources" || currentView === "overview";
+  $("#growth-path").hidden = !["overview", "opportunities"].includes(
+    currentView,
+  );
   document
     .querySelectorAll("[data-route-view]")
     .forEach((view) => (view.hidden = view.dataset.routeView !== currentView));
@@ -99,7 +130,7 @@ function showPage({ focus = false } = {}) {
     currentView,
   );
   $("#global-filters").hidden = currentView === "sources";
-  $("#page-export").hidden = currentView === "sources";
+
   $("#page-add-question").hidden = currentView !== "questions";
   $("#page-setup").hidden = currentView !== "sources";
   document
@@ -223,6 +254,7 @@ function render() {
             : 0;
     $("#delta-" + key).innerHTML =
       `<b class="${diff < 0 ? "negative" : ""}">${diff >= 0 ? "↗" : "↘"} ${Math.abs(diff).toFixed(1)}${key === "visibility" ? " pp" : "%"}</b> vs. prior ${state.days}d`;
+    $("#delta-" + key).title = `Change versus the previous ${state.days} days`;
     const b = $(`[data-metric="${key}"]`);
     b.classList.toggle(
       "active",
@@ -243,6 +275,7 @@ function render() {
   renderQuestions();
   renderActions();
   renderPageSummaries();
+  renderGrowth();
 }
 function renderMainChart() {
   if ($("#report-core").hidden) return;
@@ -253,6 +286,14 @@ function renderMainChart() {
       referrals: "AI referrals",
       leads: "Leads",
     }[state.metric] + (state.days === 90 ? " · grouped every 3 days" : "");
+  $("#chart-context").textContent =
+    state.metric === "visibility"
+      ? growthContext(data).summary
+      : state.metric === "citations"
+        ? "Answers that link to your website"
+        : state.metric === "referrals"
+          ? "Sessions attributed to AI sources"
+          : "Conversions from attributed AI sessions";
   $("#chart-legend").textContent = LABELS[state.metric];
   $("#sample-count").textContent =
     state.metric === "visibility" || state.metric === "citations"
@@ -372,22 +413,17 @@ function renderQuestions() {
 }
 function renderActions() {
   selectValue($("#action-tabs"), actionView);
-  const relevant = ACTIONS.filter(
-    (a) =>
-      !state.topic ||
-      QUESTIONS.find((q) => q.id === a.question).topic === state.topic,
-  );
   $("#action-count").textContent = ACTIONS.filter(
     (a) => !shipped.includes(a.id),
   ).length;
-  const actions = relevant.filter((a) =>
+  const actions = priorities(data, growthWork, shipped).filter((a) =>
     actionView === "shipped" ? shipped.includes(a.id) : !shipped.includes(a.id),
   );
   $("#action-cards").innerHTML = actions.length
     ? actions
         .map(
           (a) =>
-            `<button class="opportunity-row" data-improvement="${a.id}"><span class="opportunity-name"><strong>${a.title}</strong><small>${a.path}</small></span><span class="opportunity-rate"><strong>${pct(data.questions.find((q) => q.id === a.question)?.visibility || 0)}</strong><small>mention rate</small></span><span class="opportunity-effort">${icon("clock")}${a.effort}</span><span class="badge ${shipped.includes(a.id) ? "green" : "neutral"}">${shipped.includes(a.id) ? "Shipped" : "To do"}</span>${icon("right")}</button>`,
+            `<button class="opportunity-row" data-improvement="${a.id}"><span class="opportunity-name"><strong>${a.title}</strong><small>${a.path}</small></span><span class="opportunity-rate"><strong>${pct(data.questions.find((q) => q.id === a.question)?.visibility || 0)}</strong><small>mention rate</small></span><span class="opportunity-effort">${icon("clock")}${a.effort}</span><span class="badge ${shipped.includes(a.id) ? "green" : "neutral"}">${shipped.includes(a.id) ? "Shipped" : growthWork[a.id] ? `${growthWork[a.id].checked.length}/3 complete` : "To do"}</span>${icon("right")}</button>`,
         )
         .join("")
     : empty(
@@ -456,15 +492,6 @@ function renderPageSummaries() {
         `<button class="rank-row" data-overview-engine="${e.id}" style="--share:${e.visibility}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${pct(e.visibility)}</span>${icon("right")}</button>`,
     )
     .join("");
-  const next = relevant.filter((a) => !shipped.includes(a.id));
-  $("#overview-opportunities").innerHTML = next.length
-    ? next
-        .map(
-          (a) =>
-            `<button class="overview-opportunity" data-improvement="${a.id}"><span>${a.title}</span><strong>${pct(data.questions.find((q) => q.id === a.question)?.visibility || 0)}<small>mention rate</small></strong>${icon("right")}</button>`,
-        )
-        .join("")
-    : empty("All shipped", "Change the topic filter to see more.");
   const max = Math.max(...data.engines.map((e) => e.referrals), 1);
   $("#traffic-engines").innerHTML = data.engines
     .slice()
@@ -518,6 +545,18 @@ function detail(title, eyebrow, html, replace = false) {
   void enhance($("#detail-body"));
   $("#app-detail-title").focus({ preventScroll: true });
 }
+$("#detail").addEventListener("close", () => {
+  queueMicrotask(() => {
+    if (
+      document.activeElement === document.body &&
+      !document.querySelector("dialog[open]")
+    )
+      (currentView === "overview"
+        ? $("#overview-next")
+        : $("#page-title")
+      ).focus({ preventScroll: true });
+  });
+});
 $("#drawer-back").addEventListener("click", () => {
   const previous = detailHistory.pop();
   if (!previous) return;
@@ -620,16 +659,81 @@ function openCompetitor(name) {
   );
 }
 function openAction(id, replace = false) {
-  const a = ACTIONS.find((a) => a.id === id);
-  if (!a) return;
-  const done = shipped.includes(id),
-    q = QUESTIONS.find((q) => q.id === a.question);
+  const action = ACTIONS.find((a) => a.id === id);
+  if (!action) return;
+  const record = growthWork[id],
+    done = shipped.includes(id);
   detail(
-    a.title,
-    done ? "IMPROVEMENT · SHIPPED" : a.label.toUpperCase(),
-    `<p>${a.body}</p><span class="badge neutral">${icon("clock")}${a.effort}</span><h3>The question behind it</h3><div class="drawer-list"><button data-question="${a.question}">${icon("spark")}<span>${q.text}</span>${icon("right")}</button></div><h3>Your plan</h3><ol class="step-list">${a.steps.map((s, i) => `<li><span class="step-number">${done ? icon("check") : i + 1}</span><span>${s}</span></li>`).join("")}</ol><div class="source-callout">${icon("file")}<span>Suggested page<br><strong>acme.work${a.path}</strong></span></div><button class="button ${done ? "" : "primary"}" data-ship="${id}">${icon(done ? "up" : "check")}${done ? "Move back to to do" : "Mark as shipped"}</button><div class="notice">${done ? "Saved in this browser. Future answer samples would show whether visibility changed." : "Marking this shipped records your progress in this browser. It does not publish content or change your measured visibility."}</div>`,
+    action.title.replace(/\.$/, ""),
+    done
+      ? "IMPROVEMENT SHIPPED"
+      : record
+        ? "YOUR GROWTH PLAN"
+        : "CONTENT OPPORTUNITY",
+    workbenchHTML(
+      action,
+      record,
+      done,
+      record?.baseline || baselineFor(action, data, state),
+      QUESTIONS.find((q) => q.id === action.question),
+    ),
     replace,
   );
+}
+function saveGrowth(next) {
+  if (!store("growth-work", next)) return false;
+  growthWork = next;
+  renderActions();
+  renderGrowth();
+  return true;
+}
+function beginImprovement(id) {
+  const action = ACTIONS.find((a) => a.id === id);
+  if (!action) return;
+  const existing = Boolean(growthWork[id]);
+  if (
+    !saveGrowth(startWork(growthWork, action, baselineFor(action, data, state)))
+  )
+    return;
+  openAction(id, $("#detail").open);
+  if (!existing) toast("Plan started. Your baseline is saved.");
+}
+function openGrowthReview(id) {
+  const action = ACTIONS.find((a) => a.id === id);
+  if (action && shipped.includes(id)) {
+    detail(
+      "Measure the change",
+      "GROWTH REVIEW",
+      reviewHTML(action, growthWork[id]),
+    );
+    return;
+  }
+  const items = ACTIONS.filter((a) => shipped.includes(a.id));
+  detail(
+    "Measure the change",
+    "YOUR GROWTH REVIEW",
+    items.length
+      ? `<p>Your changes are recorded. Open one to review its baseline and measurement plan.</p><div class="drawer-list">${items.map((a) => `<button data-growth-review="${a.id}">${icon("circlecheck")}<span>${esc(a.title)}<small>Shipped · awaiting new samples</small></span>${icon("right")}</button>`).join("")}</div><div class="notice">Completion is recorded separately from measured impact.</div>`
+      : `<div class="review-empty">${icon("chart")}<h3>Your first improvement starts the loop.</h3><p>Save a baseline, work through a focused plan, then return here to compare new measurements.</p><button class="button primary" data-action="growth-improve">Find an improvement${icon("right")}</button></div>`,
+  );
+}
+function renderGrowth() {
+  const context = growthContext(data),
+    items = priorities(data, growthWork, shipped);
+  const next = items.find((a) => !a.completed);
+  $("#overview-next").innerHTML =
+    `${next ? (growthWork[next.id] ? "Continue plan" : "Your next move") : items.length ? "Review results" : "Explore questions"}${icon("right")}`;
+  $("#next-move").innerHTML = nextMoveHTML(items, growthWork, context);
+  $("#growth-path").innerHTML = journeyHTML(items, context, growthWork);
+  $("#overview-competitors").innerHTML = competitorHTML(data.competitors);
+  $("#overview-benchmark").innerHTML =
+    `<strong>#${context.rank}</strong> of ${data.competitors.length} brands · same questions, same period`;
+  $("#meaning-visibility").textContent =
+    `${fmt(data.current.mentions)} of ${fmt(data.current.samples)} answers`;
+  $("#meaning-citations").textContent = "Answers linking to your website";
+  $("#meaning-referrals").textContent = "Sessions attributed to AI";
+  $("#meaning-leads").textContent =
+    `${pct(context.conversion)} of AI referrals converted`;
 }
 function openDay(start, end = start) {
   const rows = data.a.filter((r) => r.date >= start && r.date <= end),
@@ -819,6 +923,31 @@ const actions = {
   setup,
   sources: () => navigate("sources"),
   "source-details": sourceDetails,
+  "growth-next": () => {
+    const items = priorities(data, growthWork, shipped),
+      next = items.find((a) => !a.completed);
+    next
+      ? beginImprovement(next.id)
+      : items.length
+        ? openGrowthReview()
+        : actions["growth-gaps"]();
+  },
+  "growth-gaps": () => {
+    questionView = growthContext(data).gaps.length ? "opportunity" : "all";
+    showAll = true;
+    navigate("questions");
+  },
+  "growth-improve": () => {
+    actionView = "todo";
+    navigate("opportunities");
+  },
+  "growth-review": () => openGrowthReview(),
+  "growth-priority": () =>
+    detail(
+      "Why this comes next",
+      "RECOMMENDATION LOGIC",
+      `<p>We rank the suggested improvements by the number of sampled answers that omit Acme. An improvement you’ve already started stays first.</p><div class="notice">This follows your engine, topic and date filters. It is an observed coverage gap, not a prediction of search volume or revenue.</div><button class="button" data-action="growth-improve">Explore the improvement queue${icon("right")}</button>`,
+    ),
   methodology,
   "add-question": addQuestion,
   export: exportReport,
@@ -890,6 +1019,14 @@ document.addEventListener("click", (event) => {
     navigate(b.dataset.route);
     return;
   }
+  if (b.dataset.growthStart) {
+    beginImprovement(b.dataset.growthStart);
+    return;
+  }
+  if (b.dataset.growthReview) {
+    openGrowthReview(b.dataset.growthReview);
+    return;
+  }
   if (b.dataset.connection) {
     sourceDetails(b.dataset.connection);
     return;
@@ -957,19 +1094,29 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (b.dataset.ship) {
-    const id = b.dataset.ship;
-    const next = shipped.includes(id)
-      ? shipped.filter((a) => a !== id)
-      : [...shipped, id];
+    const id = b.dataset.ship,
+      action = ACTIONS.find((a) => a.id === id),
+      reopening = shipped.includes(id);
+    if (!action || (!reopening && !canShip(action, growthWork))) return;
+    const next = reopening ? shipped.filter((a) => a !== id) : [...shipped, id];
     if (store("shipped", next)) {
       shipped = next;
+      if (growthWork[id])
+        saveGrowth({
+          ...growthWork,
+          [id]: {
+            ...growthWork[id],
+            shippedAt: reopening ? null : new Date().toISOString(),
+          },
+        });
       renderActions();
       renderPageSummaries();
+      renderGrowth();
       openAction(id, true);
       toast(
-        shipped.includes(id)
-          ? "Shipped. Your progress is saved."
-          : "Moved back to your next moves.",
+        reopening
+          ? "Improvement reopened."
+          : "Improvement shipped. Next: review the results.",
       );
     }
     return;
@@ -1004,6 +1151,43 @@ document.addEventListener("click", (event) => {
     renderActions();
     return;
   }
+});
+document.addEventListener("change", (event) => {
+  const input = event.target.closest("[data-work-step]");
+  if (!input) return;
+  const action = ACTIONS.find((a) => a.id === input.dataset.workAction);
+  if (!action || shipped.includes(action.id)) return;
+  const previous = growthWork;
+  if (
+    !saveGrowth(
+      checkStep(
+        growthWork,
+        action,
+        Number(input.dataset.workStep),
+        input.checked,
+      ),
+    )
+  ) {
+    input.checked =
+      previous[action.id]?.checked.includes(Number(input.dataset.workStep)) ||
+      false;
+    return;
+  }
+  // Preserve checkbox focus and the user's scroll position while revealing progress.
+  const count = growthWork[action.id].checked.length;
+  input.defaultChecked = input.checked;
+  input.closest(".work-step").classList.toggle("is-done", input.checked);
+  $("#work-count").textContent = `${count} / ${action.steps.length} complete`;
+  const progress = $(".work-progress");
+  progress.setAttribute("aria-valuenow", count);
+  progress.firstElementChild.style.transform = `scaleX(${count / action.steps.length})`;
+  const button = $(`[data-ship="${action.id}"]`);
+  button.disabled = !canShip(action, growthWork);
+  $("#ship-hint").textContent = button.disabled
+    ? "Complete the checklist to record this as shipped."
+    : "Finished on your website? Record the change here.";
+  $("#filter-status").textContent =
+    `Improvement saved: ${count} of ${action.steps.length} steps complete.`;
 });
 $("#compare-toggle").addEventListener("change", renderMainChart);
 $("#question-search").addEventListener("input", () => {

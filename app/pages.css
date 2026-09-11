@@ -215,47 +215,6 @@
   z-index: 30;
   min-width: 205px;
 }
-.discovery-app .overview-opportunity {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
-  gap: var(--space-4);
-  width: 100%;
-  min-height: 72px;
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border);
-  background: none;
-}
-.discovery-app .overview-opportunity:last-child {
-  border-bottom: 0;
-}
-.discovery-app .overview-opportunity > span {
-  font-size: var(--text-sm);
-  max-width: 270px;
-  line-height: 1.5;
-}
-.discovery-app .overview-opportunity > strong {
-  font-size: var(--text-lg);
-  font-weight: 500;
-  white-space: nowrap;
-  text-align: right;
-  margin-left: auto;
-}
-.discovery-app .overview-opportunity small {
-  display: block;
-  font-size: var(--text-xs);
-  color: var(--muted);
-  font-weight: 400;
-}
-.discovery-app .overview-opportunity > .icon {
-  width: 16px;
-  height: 16px;
-  color: var(--muted);
-}
-.discovery-app .overview-opportunity:hover > span {
-  color: var(--accent-text);
-}
 .discovery-app .page-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

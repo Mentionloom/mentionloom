@@ -175,6 +175,48 @@ export const EXTERNAL = [
 ];
 export const ACTIONS = [
   {
+    id: "a4",
+    title: "Help buyers compare Acme with Notion.",
+    label: "Alternative comparison",
+    question: "q6",
+    path: "/compare/notion",
+    effort: "~90 minutes",
+    body: "Acme is missing from most sampled answers about Notion alternatives. Give buyers a direct comparison grounded in the workflows your product supports.",
+    steps: [
+      "Describe when to choose Acme for project tracking, using verified product capabilities.",
+      "Compare setup, project views, and task ownership with a custom Notion workspace.",
+      "Link this comparison from your product page and relevant project-tracking guides.",
+    ],
+  },
+  {
+    id: "a5",
+    title: "Make your Monday cost comparison clear.",
+    label: "Pricing comparison",
+    question: "q11",
+    path: "/compare/monday",
+    effort: "~1 hour",
+    body: "Buyers asking about affordable Monday alternatives need comparable costs. Publish the assumptions behind your comparison so the answer can be checked.",
+    steps: [
+      "Compare equivalent plans for a specific team size and billing interval.",
+      "State seat minimums, guest billing, and which features each plan includes.",
+      "Add a checked-on date and links to the pricing sources used in your comparison.",
+    ],
+  },
+  {
+    id: "a6",
+    title: "Show how tasks, docs, and chat work together.",
+    label: "Product explanation",
+    question: "q10",
+    path: "/product",
+    effort: "~1 hour",
+    body: "A list of features leaves buyers to connect the dots. Show one complete workflow that keeps a task, its document, and the discussion together.",
+    steps: [
+      "Add a concise answer explaining how Acme connects tasks, docs, and discussions.",
+      "Illustrate one supported workflow with a concrete example and accessible screenshots.",
+      "Link the relevant documentation so buyers and answer engines can verify the details.",
+    ],
+  },
+  {
     id: "a1",
     title: "Give buyers a better Asana comparison.",
     label: "Comparison gap",

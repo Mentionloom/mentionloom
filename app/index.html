@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="/app/app.css" />
     <link rel="stylesheet" href="/app/foundation.css" />
     <link rel="stylesheet" href="/app/pages.css" />
+    <link rel="stylesheet" href="/app/growth.css" />
     <script type="module" src="/app/app.js"></script>
   </head>
   <body class="discovery-app">
@@ -56,7 +57,7 @@
           <span data-app-icon="search"></span><span>Search</span
           ><kbd>⌘ K</kbd></button
         ><button
-          class="button primary"
+          class="button setup-launch"
           data-action="setup"
           aria-label="Add website"
         >
@@ -83,8 +84,17 @@
         <div>
           <h1 id="page-title" tabindex="-1">Overview</h1>
           <span class="workspace-domain">acme.work</span>
+          <p class="page-context" id="page-context"></p>
         </div>
         <div class="page-actions">
+          <button
+            class="button primary"
+            id="overview-next"
+            data-action="growth-next"
+            hidden
+          >
+            Your next move <span data-app-icon="right"></span>
+          </button>
           <button
             class="icon-button"
             data-action="methodology"
@@ -145,16 +155,17 @@
         <div id="filter-chips" class="filter-chips"></div>
       </div>
       <div id="report-core">
-        <div class="metrics" role="group" aria-label="Chart metric">
+        <div class="metrics" role="group" aria-label="AI discovery metrics">
           <button
             class="metric active"
             data-metric="visibility"
             aria-pressed="true"
           >
             <span class="metric-label"
-              ><span class="metric-dot"></span>Mention rate</span
+              ><span data-app-icon="eye"></span>Mention rate</span
             ><span class="metric-value rolling-number" id="value-visibility"
               >—</span
+            ><span class="metric-meaning" id="meaning-visibility"></span
             ><span class="metric-comparison" id="delta-visibility"></span
             ><svg
               class="mini-spark"
@@ -165,9 +176,10 @@
           </button>
           <button class="metric" data-metric="citations" aria-pressed="false">
             <span class="metric-label"
-              ><span class="metric-dot"></span>Website citations</span
+              ><span data-app-icon="link"></span>Citations</span
             ><span class="metric-value rolling-number" id="value-citations"
               >—</span
+            ><span class="metric-meaning" id="meaning-citations"></span
             ><span class="metric-comparison" id="delta-citations"></span
             ><svg
               class="mini-spark"
@@ -178,9 +190,10 @@
           </button>
           <button class="metric" data-metric="referrals" aria-pressed="false">
             <span class="metric-label"
-              ><span class="metric-dot"></span>AI referrals</span
+              ><span data-app-icon="people"></span>AI referrals</span
             ><span class="metric-value rolling-number" id="value-referrals"
               >—</span
+            ><span class="metric-meaning" id="meaning-referrals"></span
             ><span class="metric-comparison" id="delta-referrals"></span
             ><svg
               class="mini-spark"
@@ -191,8 +204,9 @@
           </button>
           <button class="metric" data-metric="leads" aria-pressed="false">
             <span class="metric-label"
-              ><span class="metric-dot"></span>Leads from AI</span
+              ><span data-app-icon="target"></span>Leads</span
             ><span class="metric-value rolling-number" id="value-leads">—</span
+            ><span class="metric-meaning" id="meaning-leads"></span
             ><span class="metric-comparison" id="delta-leads"></span
             ><svg
               class="mini-spark"
@@ -202,51 +216,69 @@
             ></svg>
           </button>
         </div>
-        <div class="chart-area">
-          <div class="chart-toolbar">
-            <span id="chart-description">Acme in sampled answers</span>
-            <div class="chart-tools">
-              <label class="choice"
-                ><input type="checkbox" id="compare-toggle" checked /><span
-                  >Previous period</span
-                ></label
-              ><button
-                class="icon-button"
-                data-action="chart-data"
-                aria-label="View chart data table"
-                title="View data table"
-              >
-                <span data-app-icon="table"></span>
+        <div class="report-focus">
+          <div class="chart-area">
+            <div class="chart-toolbar">
+              <div class="chart-title-block">
+                <h2 id="chart-description">Mention rate</h2>
+                <span id="chart-context"></span>
+              </div>
+              <div class="chart-tools">
+                <label class="choice"
+                  ><input type="checkbox" id="compare-toggle" checked /><span
+                    >Previous period</span
+                  ></label
+                ><button
+                  class="icon-button"
+                  data-action="chart-data"
+                  aria-label="View chart data table"
+                  title="View data table"
+                >
+                  <span data-app-icon="table"></span>
+                </button>
+              </div>
+            </div>
+            <div class="chart-wrapper" id="chart-wrapper">
+              <svg
+                id="main-chart"
+                viewBox="0 0 1120 270"
+                preserveAspectRatio="none"
+                tabindex="0"
+                role="img"
+                aria-label="Daily mention rate. Use left and right arrow keys to explore."
+              ></svg>
+              <div
+                id="chart-tooltip"
+                class="chart-tooltip"
+                role="status"
+                aria-live="polite"
+                hidden
+              ></div>
+            </div>
+            <div class="chart-caption">
+              <span
+                ><span class="legend-dot"></span
+                ><span id="chart-legend">Mention rate</span></span
+              ><button class="text-button" data-action="methodology">
+                <span id="sample-count"></span
+                ><span data-app-icon="info"></span>
               </button>
             </div>
           </div>
-          <div class="chart-wrapper" id="chart-wrapper">
-            <svg
-              id="main-chart"
-              viewBox="0 0 1120 270"
-              preserveAspectRatio="none"
-              tabindex="0"
-              role="img"
-              aria-label="Daily mention rate. Use left and right arrow keys to explore."
-            ></svg>
-            <div
-              id="chart-tooltip"
-              class="chart-tooltip"
-              role="status"
-              aria-live="polite"
-              hidden
-            ></div>
-          </div>
-          <div class="chart-caption">
-            <span
-              ><span class="legend-dot"></span
-              ><span id="chart-legend">Mention rate</span></span
-            ><button class="text-button" data-action="methodology">
-              <span id="sample-count"></span><span data-app-icon="info"></span>
-            </button>
-          </div>
+          <aside
+            id="next-move"
+            class="next-move"
+            aria-label="Recommended next step"
+            hidden
+          ></aside>
         </div>
       </div>
+      <div
+        id="growth-path"
+        class="growth-path"
+        aria-label="Your growth workflow"
+        hidden
+      ></div>
       <section
         id="overview"
         class="route-view"
@@ -256,7 +288,7 @@
         <div class="overview-grid">
           <article class="card">
             <div class="card-heading">
-              <h2>AI engines</h2>
+              <h2>Where you appear</h2>
               <a
                 class="text-button"
                 href="/app/visibility/"
@@ -264,19 +296,21 @@
                 >View all <span data-app-icon="right"></span
               ></a>
             </div>
+            <p class="card-context">Mention rate across sampled answers</p>
             <div class="rank-list" id="overview-engines"></div>
           </article>
           <article class="card">
             <div class="card-heading">
-              <h2>Opportunities</h2>
+              <h2>Your competitive position</h2>
               <a
                 class="text-button"
-                href="/app/opportunities/"
-                data-route="opportunities"
-                >View all <span data-app-icon="right"></span
+                href="/app/visibility/"
+                data-route="visibility"
+                >Explore <span data-app-icon="right"></span
               ></a>
             </div>
-            <div id="overview-opportunities"></div>
+            <p class="card-context" id="overview-benchmark"></p>
+            <div class="rank-list" id="overview-competitors"></div>
           </article>
         </div>
       </section>
@@ -542,15 +576,9 @@
         hidden
       >
         <div class="page-stats" id="opportunity-stats"></div>
-        <article class="gap-chart">
-          <div class="card-heading">
-            <h2>Visibility gaps</h2>
-            <span class="small-label">Answers without Acme</span>
-          </div>
-          <div id="gap-rows"></div>
-        </article>
+
         <div class="opportunity-toolbar">
-          <h2>Content opportunities</h2>
+          <h2>Your improvement queue</h2>
           <div class="dropdown ds-select page-select" id="action-tabs">
             <button
               class="control-trigger"
@@ -587,6 +615,16 @@
           </div>
         </div>
         <div id="action-cards" class="action-grid"></div>
+        <details class="opportunity-evidence"><summary>Explore the underlying visibility gaps <span data-app-icon="down"></span></summary>        <article class="gap-chart">
+          <div class="card-heading">
+            <h2>Visibility gaps</h2>
+            <span class="small-label">Answers without Acme</span>
+          </div>
+          <div id="gap-rows"></div>
+        </article></details>
+        <button class="text-button review-link" data-action="growth-review">
+          Review shipped changes <span data-app-icon="right"></span>
+        </button>
       </section>
       <section
         id="sources"

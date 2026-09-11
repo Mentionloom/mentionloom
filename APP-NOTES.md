@@ -12,24 +12,38 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 
 The top navigation opens six separate page URLs, rather than scrolling through one long dashboard or switching ARIA tabs:
 
-| Page                  | Primary content                                                    | Details on demand                             |
-| --------------------- | ------------------------------------------------------------------ | --------------------------------------------- |
-| `/app/overview/`      | Four KPIs, trend chart, engine bars, next opportunities            | Metric cards open the relevant report         |
-| `/app/visibility/`    | Mention rate, citations, engine and competitor rankings            | Sampled answers and cited pages               |
-| `/app/traffic/`       | Referrals, leads, conversion funnel, landing pages                 | Session and conversion evidence               |
-| `/app/questions/`     | Coverage KPIs, distribution chart, searchable question table       | Per-engine answers, pending question controls |
-| `/app/opportunities/` | Open/shipped counts, missing-answer bars, compact improvement rows | Full brief, suggested page, shipping status   |
-| `/app/sources/`       | Connection status and crawler request counts                       | Requirements for each individual source       |
+| Page                  | Primary content                                                               | Details on demand                                            |
+| --------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `/app/overview/`      | Contextual KPIs, trend, recommended next move, engine and competitor rankings | Metric cards open reports; the next move starts a saved plan |
+| `/app/visibility/`    | Mention rate, citations, engine and competitor rankings                       | Sampled answers and cited pages                              |
+| `/app/traffic/`       | Referrals, leads, conversion funnel, landing pages                            | Session and conversion evidence                              |
+| `/app/questions/`     | Coverage KPIs, distribution chart, searchable question table                  | Per-engine answers, pending question controls                |
+| `/app/opportunities/` | Open/shipped counts, missing-answer bars, compact improvement rows            | Full brief, suggested page, shipping status                  |
+| `/app/sources/`       | Connection status and crawler request counts                                  | Requirements for each individual source                      |
 
 Date, engine and topic scope carries between pages in the URL. Browser history, refresh, direct links and opening a page in a new tab work. Older `#questions`, `#actions`, `#sources` and referral links resolve to the appropriate page. Coverage, source ownership and status are Orbit dropdowns. Detailed methodology, answer excerpts and setup instructions live in modal drawers with a back path and keyboard focus handling.
 
 Question additions, shipped status and setup plans remain local to this browser. The small sample-data label and Demo badge stay visible; a real connection is never implied.
+
+## Guided growth loop
+
+The September 11 refinement uses UI Skills' **Interface Design** and **Interaction Design** guidance. The intended client is a founder or growth lead returning between other tasks: they should understand their position, choose a useful improvement, and return to assess evidence. Orbit remains the light-only visual system. Purple marks the next action and sampled visibility; green marks observed positive comparisons or recorded completion. Neutral surfaces keep evidence readable.
+
+The overview gives each number context: mention counts and denominators, citations, attributable sessions, and lead conversion rate. It pairs the trend with a recommended improvement, then shows engine coverage and position among the same benchmark brands. The primary action stays near the page heading, including on mobile.
+
+Recommendations rank six sample content plans by missing answers in the current reporting scope. Every default question below 40% visibility has an actionable plan. Started work takes priority over untouched work, and shipped work leaves the active queue. This is not estimated buyer demand or forecast revenue.
+
+The flow is **evidence → improve → measure**. Starting a plan saves its reporting window, engine/topic scope and baseline. Native Orbit checkboxes record individual steps; all steps must be complete before shipping. Returning under different filters does not replace the saved baseline. Shipped work opens a before/after review that explicitly awaits new measurements. The sample dataset cannot demonstrate post-change impact.
+
+New product compositions, built from Orbit primitives: **recommended next move**, **growth workflow navigation**, **saved-baseline panel**, **persistent improvement checklist**, and **measurement review**. Progress motion only confirms a state change and respects reduced motion. The Opportunities page leads with the work queue; underlying gap charts are a native expandable disclosure.
 
 ## Architecture
 
 - `app/lib/data.js`: a deterministic 180-day fixture, four engines, twelve questions, separate answer/session records, sample crawler snapshot and improvement plans.
 - `app/lib/model.js`: pure scope selection, correct denominators, comparisons and CSV encoding.
 - `app/lib/navigation.js`: page paths, metric compatibility, shared URL filters and legacy link resolution.
+- `app/lib/growth.js`: evidence ranking, frozen baselines, validated progress and shipping readiness.
+- `app/lib/growth-view.js`: reusable next-move, workflow, checklist and measurement compositions.
 - `app/components/orbit/runtime`: the installed Orbit 0.2.0 runtime, tokens, control behaviors, fonts and overlay templates.
 - `app/lib/ui.js`: a thin Orbit initializer/adapter plus product-specific persistence and export helpers.
 - `app/tokens.css`: the application density scale and accessible semantic foregrounds.
@@ -38,6 +52,7 @@ Question additions, shipped status and setup plans remain local to this browser.
 - `app/app.js`: dashboard composition and interaction coordination.
 - `app/app.css`: domain layout and mobile adaptations.
 - `app/pages.css`: focused page layouts and compact responsive controls, using the installed Orbit tokens.
+- `app/growth.css`: the hierarchy and responsive layout for guided growth, using Orbit tokens and controls.
 - `build.mjs`: creates an actual static entry point for each page, so Vercel deep links work without a catch-all rewrite.
 
 ## Data boundaries
@@ -50,7 +65,7 @@ To connect real data, implement tenant authentication and domain verification, a
 
 ## Verification
 
-- `npm test`: 21 passing checks, including dashboard/waitlist suites, complete Orbit assets and six static page entry points, URL routing and filter round trips, and semantic text/control contrast.
+- `npm test`: 25 checks, including dashboard/waitlist suites, complete Orbit assets and six static page entry points, URL routing, filter round trips, progress persistence, baseline stability, evidence ranking, and semantic text/control contrast.
 - Lighthouse 12.8.2 accessibility audits cover Overview, Questions and Opportunities. This automated check is not a claim of complete WCAG conformance.
 - Browser checks: native Orbit filter selection with arrow keys and Enter; focus restoration; Escape closes the drawer and returns focus; the app owns Cmd+K without opening Orbit's sample command palette; inline form errors focus and describe the invalid field.
 - Responsive checks at 320px, 390px and desktop. Larger labels contract before control targets shrink; the page has no horizontal overflow at 320px. Page navigation remains intentionally horizontally scrollable and keeps the active page in view.
