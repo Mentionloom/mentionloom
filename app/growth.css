@@ -106,31 +106,134 @@
   font-size: var(--text-xs);
 }
 .discovery-app .next-move {
-  background: var(--accent-soft);
-  border: 1px solid var(--sky-a3);
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 0% 0%, #b6e9ff30, transparent 52%),
+    radial-gradient(ellipse at 100% 8%, #d9c8ff24, transparent 48%),
+    radial-gradient(ellipse at 75% 100%, #ffe3ae24, transparent 48%),
+    var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-card);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  box-shadow: none;
+}
+.discovery-app .agent-header,
+.discovery-app .agent-identity,
+.discovery-app .agent-status,
+.discovery-app .agent-heading { display: flex; align-items: center; gap: var(--space-3); }
+.discovery-app .agent-header,
+.discovery-app .agent-heading { justify-content: space-between; }
+.discovery-app .agent-identity { font-size: var(--text-base); }
+.discovery-app .agent-identity strong { font-weight: 600; }
+.discovery-app .agent-identity .badge { font-size: var(--text-sm); }
+.discovery-app .agent-status { font-size: var(--text-base); color: var(--muted); gap: var(--space-2); }
+.discovery-app .agent-status .icon { width: var(--space-4); height: var(--space-4); }
+.discovery-app .agent-orb { width: 32px; height: 32px; flex-shrink: 0; overflow: hidden; border-radius: 50%; position: relative; background:#4037ba; box-shadow:0 0 12px #6868e922; }
+.discovery-app .agent-orb > span {
+  position: absolute; inset: 0; border-radius: inherit;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 2px, #28146438 2.5px, #dcffff60 3px, transparent 4px 5px),
+    radial-gradient(ellipse at 28% 18%, #b7fff2, transparent 42%),
+    radial-gradient(ellipse at 36% 66%, #f3ef73, transparent 32%),
+    radial-gradient(ellipse at 74% 73%, #ff9b49, transparent 34%),
+    radial-gradient(ellipse at 78% 28%, #61ddd1, transparent 40%),
+    linear-gradient(145deg, #5153e9 8%, #479be9 38%, #7864dd 63%, #a947b8 85%, #414bd2);
+  animation: none;
+}
+.discovery-app .agent-orb::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: inset 1px 1px 3px #ddfaffb0, inset -2px -3px 7px #24248580;
+  background: radial-gradient(circle at 32% 22%, #ffffff65, transparent 38%);
+}
+@property --agent-border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+.discovery-app .next-move::before,
+.discovery-app .agent-heading .button::before {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit;
+  padding: 1px; pointer-events: none; opacity: .7;
+  background: conic-gradient(from var(--agent-border-angle), transparent 0deg 220deg, #8ed9d5 260deg, #a1a6ee 290deg, #e0b785 320deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .discovery-app .next-move::before,
+  .discovery-app .agent-heading .button::before { animation: agent-border-orbit 12s linear infinite; animation-play-state: paused; }
+  .discovery-app .next-move::after { animation: agent-mesh-breathe 9s ease-in-out infinite alternate; animation-play-state: paused; }
+  .discovery-app .next-move.agent-visible::before,
+  .discovery-app .next-move.agent-visible::after,
+  .discovery-app .next-move.agent-visible .agent-heading .button::before { animation-play-state: running; }
+}
+@keyframes agent-border-orbit {
+  from { --agent-border-angle: 0deg; }
+  to { --agent-border-angle: 360deg; }
+}
+.discovery-app .next-move::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: .35;
+  background: radial-gradient(ellipse at 85% 12%, #bcdffd65, transparent 60%), radial-gradient(ellipse at 10% 90%, #d9c8ff55, transparent 55%), radial-gradient(ellipse at 70% 85%, #ffdbb040, transparent 50%);
+}
+@keyframes agent-mesh-breathe { from { opacity: .15; } to { opacity: .8; } }
+.discovery-app .agent-heading .button { position: relative; isolation: isolate; border-color: #a1a6ee66; box-shadow: 0 2px 10px #8b8ae514; background: var(--surface); }
+.discovery-app .agent-heading .button::before { opacity: 1; background: conic-gradient(from var(--agent-border-angle), #b6baf155, #a695e8, #83ccde, #e6bdac, #b6baf155); }
+.discovery-app .agent-heading { margin: 0; gap: var(--space-5); }
+.discovery-app .next-move .agent-heading h2 { font-size: var(--text-xl); line-height: var(--leading-heading); max-width: 36ch; text-wrap: balance; }
+.discovery-app .agent-heading .button { flex-shrink: 0; min-height: 44px; font-size: var(--text-base); padding-inline: var(--space-5); gap: var(--space-5); }
+.discovery-app .agent-reasoning { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1.25fr; margin-top: var(--space-2); }
+.discovery-app .agent-insight,
+.discovery-app .agent-plan { min-width: 0; padding: 0 var(--space-5); border: 0; border-inline-start: 1px solid var(--border); }
+.discovery-app .agent-insight:first-child { padding-inline-start: 0; border: 0; }
+.discovery-app .agent-plan { padding-inline-end: 0; }
+.discovery-app .agent-insight { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-3); text-align: left; background: transparent; color: var(--text); border-radius: 0; cursor: pointer; }
+.discovery-app .agent-label { display: block; color: var(--muted); font-size: var(--text-base); font-weight: 400; }
+.discovery-app .agent-insight-body { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.discovery-app .agent-insight-body strong { font-weight: 500; font-size: var(--text-lg); line-height: var(--leading-body); }
+.discovery-app .agent-insight-body > .icon { flex-shrink: 0; color: var(--muted); width: var(--space-4); height: var(--space-4); transition: transform var(--motion-fast), color var(--motion-fast); }
+.discovery-app .agent-insight:is(:hover, :focus-visible) .agent-insight-body { color: var(--accent-text); }
+.discovery-app .agent-insight:is(:hover, :focus-visible) .agent-insight-body > .icon { color: var(--accent-text); transform: translateX(2px); }
+.discovery-app .agent-brand { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.discovery-app .agent-brand img { flex-shrink: 0; object-fit: contain; }
+.discovery-app .agent-insight-body .agent-number { font-size: var(--text-3xl); line-height: 1; letter-spacing: -.6px; font-variant-numeric: tabular-nums; }
+.discovery-app .agent-support { font-size: var(--text-base); color: var(--muted); line-height: var(--leading-body); }
+.discovery-app .agent-plan ol { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.discovery-app .agent-plan li { display: flex; align-items: baseline; gap: var(--space-2); font-size: var(--text-base); line-height: var(--leading-body); }
+.discovery-app .agent-step { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; color: var(--muted); border: 1px solid var(--border); font-size: var(--text-sm); }
+.discovery-app .agent-step .icon { width: 14px; height: 14px; }
+.discovery-app .agent-plan .is-complete { color: var(--muted); }
+@media (max-width: 1000px) {
+  .discovery-app .agent-reasoning { grid-template-columns: 1fr 1fr; gap: var(--space-5) 0; }
+  .discovery-app .agent-insight:nth-child(3) { border-inline-start: 0; padding-inline-start: 0; }
+  .discovery-app .agent-insight:nth-child(2) { padding-inline-end: 0; }
+}
+@media (max-width: 600px) {
+  .discovery-app .next-move { padding: var(--space-4); }
+  .discovery-app .agent-status { display: none; }
+  .discovery-app .agent-heading { align-items: flex-start; flex-direction: column; gap: var(--space-4); }
+  .discovery-app .agent-heading .button { width: fit-content; }
+  .discovery-app .agent-question,
+  .discovery-app .agent-plan { grid-column: 1 / -1; }
+  .discovery-app .agent-competitor { border-inline-start: 0; padding-inline-start: 0; padding-inline-end: var(--space-3); }
+  .discovery-app .agent-insight.agent-position { border-inline-start: 1px solid var(--border); padding-inline: var(--space-3) 0; }
+  .discovery-app .agent-plan { padding: var(--space-4) 0 0; border-inline-start: 0; border-top: 1px solid var(--border); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .discovery-app .agent-orb > span { animation: none; }
+  .discovery-app .agent-insight .icon { transition: none; }
 }
 .discovery-app .focus-label {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-xs);
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--accent-text);
 }
 .discovery-app .focus-label > .icon {
   width: 17px;
   height: 17px;
-}
-.discovery-app .focus-label > span {
-  margin-left: auto;
-  white-space: nowrap;
-  font-weight: 400;
-  color: var(--muted);
 }
 .discovery-app .next-move h2 {
   margin: 0;
@@ -145,105 +248,18 @@
   color: var(--muted);
   line-height: 1.65;
 }
-.discovery-app .focus-question {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  line-height: 1.6;
-  min-height: 44px;
-}
-.discovery-app .focus-question > .icon {
-  width: 16px;
-  min-width: 16px;
-  height: 16px;
-  color: var(--accent-text);
-}
-.discovery-app .focus-question:hover {
-  color: var(--text);
-}
-.discovery-app .focus-evidence {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-1);
-}
-.discovery-app .focus-evidence > strong {
-  font-size: var(--text-display);
-  line-height: 1;
-  letter-spacing: -1.5px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-.discovery-app .focus-evidence small {
-  font-size: var(--text-xl);
-  letter-spacing: -0.5px;
-}
-.discovery-app .focus-evidence > span {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  line-height: 1.6;
-}
-.discovery-app .evidence-track,
 .discovery-app .work-progress {
   height: 5px;
   background: var(--sky-a3);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
-.discovery-app .evidence-track > span,
 .discovery-app .work-progress > span {
   display: block;
   height: 100%;
   background: var(--accent-text);
   transform-origin: left;
   transition: transform var(--motion-medium) var(--ease-out);
-}
-.discovery-app .evidence-caption {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--muted);
-  margin-top: calc(-1 * var(--space-2));
-}
-.discovery-app .evidence-caption .text-button {
-  font-size: var(--text-xs);
-  min-height: 32px;
-  color: var(--accent-text);
-}
-.discovery-app .focus-action {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.discovery-app .focus-action .button {
-  width: 100%;
-  justify-content: space-between;
-  font-size: var(--text-sm);
-}
-.discovery-app .focus-action > span {
-  text-align: center;
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
-.discovery-app .focus-empty-number {
-  font-size: var(--text-display);
-  font-weight: 500;
-  padding-block: var(--space-4);
-}
-.discovery-app .focus-empty-number > span {
-  display: block;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  font-weight: 400;
 }
 .discovery-app .growth-path {
   display: grid;
@@ -258,37 +274,27 @@
   gap: var(--space-3);
   border: 0;
   padding: var(--space-4);
-  background: var(--background-subtle, var(--subtle));
+  background: radial-gradient(ellipse at 0% 0%, var(--purple-1), transparent 42%),
+    radial-gradient(ellipse at 12% 100%, var(--sky-1), transparent 38%), var(--background-subtle);
   border-radius: var(--radius-row);
   min-width: 0;
   transition: background var(--motion-fast);
 }
 .discovery-app .growth-path > button:hover {
-  background: var(--accent-soft);
+  background: radial-gradient(ellipse at 0% 0%, var(--purple-1), transparent 65%), var(--subtle);
 }
-.discovery-app .journey-marker {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-input);
-  background: var(--surface);
-  color: var(--muted);
-  border: 1px solid var(--border);
-}
-.discovery-app .journey-marker .icon {
-  width: 18px;
-  height: 18px;
-}
-.discovery-app .journey-marker.current {
-  color: var(--accent-text);
-  background: var(--accent-soft);
-  border-color: var(--sky-a3);
-}
+.discovery-app .journey-marker,
+.discovery-app .journey-marker.current,
 .discovery-app .journey-marker.complete {
-  color: var(--success-text);
-  background: var(--green-a2);
+  width: 28px; height: 28px; flex-shrink: 0; display: grid; place-items: center;
+  color: var(--muted); background: transparent; border: 0; border-radius: 0;
+}
+.discovery-app .journey-marker .icon { width: 20px; height: 20px; }
+.discovery-app .growth-path > button:nth-child(2) {
+  background: radial-gradient(ellipse at 0% 0%, var(--sky-1), transparent 42%), radial-gradient(ellipse at 10% 100%, var(--purple-1), transparent 38%), var(--background-subtle);
+}
+.discovery-app .growth-path > button:nth-child(3) {
+  background: radial-gradient(ellipse at 0% 0%, var(--green-1), transparent 42%), radial-gradient(ellipse at 10% 100%, var(--sky-1), transparent 38%), var(--background-subtle);
 }
 .discovery-app .growth-path strong {
   font-size: var(--text-sm);
@@ -641,12 +647,6 @@
   .discovery-app[data-current-view="overview"] .chart-toolbar {
     flex-wrap: wrap;
   }
-  .discovery-app .next-move {
-    padding: var(--space-4);
-  }
-  .discovery-app .next-move h2 {
-    font-size: var(--text-lg);
-  }
   .discovery-app .growth-path {
     gap: var(--space-2);
   }
@@ -705,13 +705,6 @@
     grid-template-columns: 1fr;
     gap: var(--space-4);
   }
-  .discovery-app .next-move {
-    grid-row: 1;
-    padding: var(--space-5);
-  }
-  .discovery-app .next-move h2 {
-    font-size: var(--text-xl);
-  }
   .discovery-app .growth-path {
     grid-template-columns: 1fr;
     gap: var(--space-2);
@@ -764,15 +757,15 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .discovery-app .evidence-track > span,
-  .discovery-app .work-progress > span {
+    .discovery-app .work-progress > span {
     transition: none;
   }
 }
 /* Keep the first read compact: value + change, then its denominator. */
 .discovery-app .metrics .metric {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-2);
   align-content: center;
   row-gap: var(--space-2);
   min-height: 150px;
@@ -791,6 +784,7 @@
   grid-row: 2;
   margin: 0;
   align-self: center;
+  justify-self: start;
   font-size: 0;
 }
 .discovery-app .metrics .metric-comparison b {
@@ -814,13 +808,8 @@
 }
 @media (max-width: 760px) {
   .discovery-app .metrics .metric {
-    grid-template-columns: 1fr;
     min-height: 166px;
     align-content: start;
-  }
-  .discovery-app .metrics .metric-comparison {
-    grid-column: 1;
-    grid-row: 4;
   }
   .discovery-app .metrics .metric-value {
     font-size: var(--text-3xl);
@@ -879,4 +868,13 @@
 }
 .discovery-app .overview-grid {
   align-items: start;
+}
+
+@media(prefers-reduced-motion:no-preference) {
+  .discovery-app .agent-orb > span { inset:-20%; animation:agent-orb-flow 8s ease-in-out infinite alternate; animation-play-state:paused; }
+  .discovery-app .next-move.agent-visible .agent-orb > span { animation-play-state:running; }
+}
+@keyframes agent-orb-flow {
+  from { transform:rotate(-25deg) scale(1.05); }
+  to { transform:rotate(65deg) scale(1.2); }
 }

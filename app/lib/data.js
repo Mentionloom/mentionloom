@@ -211,6 +211,7 @@ export const EXTERNAL = [
 export const ACTIONS = [
   {
     id: "a4",
+    stepLabels: ["Clarify who Acme is for", "Compare project workflows", "Link supporting guides"],
     title: "Help buyers compare Acme with Notion.",
     label: "Alternative comparison",
     question: "q6",
@@ -225,6 +226,7 @@ export const ACTIONS = [
   },
   {
     id: "a5",
+    stepLabels: ["Compare equivalent plans", "Explain the true cost", "Cite verified pricing"],
     title: "Make your Monday cost comparison clear.",
     label: "Pricing comparison",
     question: "q11",
@@ -239,6 +241,7 @@ export const ACTIONS = [
   },
   {
     id: "a6",
+    stepLabels: ["Connect tasks, docs, and chat", "Show a real workflow", "Link the documentation"],
     title: "Show how tasks, docs, and chat work together.",
     label: "Product explanation",
     question: "q10",
@@ -253,6 +256,7 @@ export const ACTIONS = [
   },
   {
     id: "a1",
+    stepLabels: ["Compare the essentials", "Show who Acme is for", "Connect product and pricing"],
     title: "Give buyers a better Asana comparison.",
     label: "Comparison gap",
     question: "q2",
@@ -267,6 +271,7 @@ export const ACTIONS = [
   },
   {
     id: "a2",
+    stepLabels: ["Publish free-plan limits", "Answer the key question", "Date your pricing details"],
     title: "Make your free plan easy to cite.",
     label: "Content opportunity",
     question: "q4",
@@ -281,6 +286,7 @@ export const ACTIONS = [
   },
   {
     id: "a3",
+    stepLabels: ["Explain the import flow", "Clarify migration costs", "Offer a clear next step"],
     title: "Turn migration into a reason to switch.",
     label: "High-intent question",
     question: "q12",
@@ -326,41 +332,51 @@ for (let d = 0; d < 180; d++) {
         ),
         position: mention ? 1 + Math.floor(random(seed + 17) * 4) : null,
       });
-      const n = Math.floor(random(seed + 23) * 4) + (mention ? 1 : 0);
-      for (let v = 0; v < n; v++) {
-        const engaged = random(seed + v * 29 + 31) < 0.63;
-        visits.push({
-          id: `v-${date}-${qi}-${ei}-${v}`,
-          date,
-          engine: e.id,
-          topic: q.topic,
-          page: q.page,
-          engaged,
-          lead: engaged && random(seed + v * 37 + 47) < 0.08,
-          method: random(seed + v + 61) < 0.62 ? "UTM source" : "Referrer",
-        });
-      }
     }),
   );
+}
+// Human visits are independent of our scheduled answer samples. This early
+// startup has quiet days and a few small bursts, rather than uniform volume.
+const dailyVisits = [0, 1, 0, 2, 4, 1, 0, 0, 3, 7, 2, 0, 1, 0, 0, 4, 1, 2, 9, 3, 0, 0, 2, 1, 5, 2, 0, 1, 3, 0];
+const trafficEngines = ["chatgpt", "chatgpt", "chatgpt", "chatgpt", "chatgpt", "perplexity", "perplexity", "google", "claude", "gemini"];
+for (let d = 0; d < 180; d++) {
+  const date = new Date(Date.parse(END + "T00:00:00Z") - (179 - d) * DAY).toISOString().slice(0, 10);
+  const month = Math.floor(d / 30),
+    count = Math.round(dailyVisits[(d + (5 - month) * 7) % 30] * (0.5 + month * 0.1));
+  for (let v = 0; v < count; v++) {
+    const seed = d * 571 + v * 137,
+      q = QUESTIONS[Math.floor(random(seed + 11) * QUESTIONS.length)],
+      engaged = random(seed + 31) < 0.6;
+    visits.push({
+      id: `v-${date}-${v}`,
+      date,
+      engine: trafficEngines[Math.floor(random(seed + 19) * trafficEngines.length)],
+      topic: q.topic,
+      page: q.page,
+      engaged,
+      lead: engaged && random(seed + 47) < 0.12,
+      method: random(seed + 61) < 0.62 ? "UTM source" : "Referrer",
+    });
+  }
 }
 export const CRAWLERS = [
   {
     name: "OAI-SearchBot",
     purpose: "Search indexing",
-    count: 1286,
+    count: 86,
     status: "Allowed",
   },
   {
     name: "Claude-SearchBot",
     purpose: "Search indexing",
-    count: 842,
+    count: 42,
     status: "Allowed",
   },
   {
     name: "PerplexityBot",
     purpose: "Search indexing",
-    count: 623,
+    count: 23,
     status: "Allowed",
   },
-  { name: "GPTBot", purpose: "Model training", count: 418, status: "Blocked" },
+  { name: "GPTBot", purpose: "Model training", count: 18, status: "Blocked" },
 ];

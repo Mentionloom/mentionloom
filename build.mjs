@@ -1,4 +1,5 @@
 import { copyFile, cp, mkdir, rm } from "node:fs/promises";
+import { ADDONS } from "./app/lib/addons.js";
 import { VIEWS } from "./app/lib/navigation.js";
 import { marketingAssets } from "./scripts/marketing-assets.mjs";
 
@@ -25,21 +26,30 @@ const files = [
   "app/foundation.css",
   "app/lib/data.js",
   "app/lib/model.js",
+  "app/lib/traffic.js",
+  "app/lib/traffic-view.js",
+  "app/traffic.css",
+  "app/lib/intelligence.js",
   "app/lib/ui.js",
+  "app/lib/filters.js",
   "app/lib/charts.js",
 
   "waitlist.css",
   "waitlist.js",
   "assets/mark.svg",
+  "assets/brands/acme.svg",
   "assets/woven-light.png",
   "assets/OpenRunde-Regular.woff2",
   "assets/OpenRunde-Medium.woff2",
   "assets/OpenRunde-Semibold.woff2",
+  "assets/Geist-Variable.woff2",
+  "assets/SpaceGrotesk-Variable.woff2",
+  "assets/Geist-LICENSE.txt",
   "assets/OFL.txt",
 ];
 
 await rm(output, { recursive: true, force: true });
-await mkdir(new URL("assets/", output), { recursive: true });
+await mkdir(new URL("assets/brands/", output), { recursive: true });
 await mkdir(new URL("app/lib/", output), { recursive: true });
 await Promise.all(
   files.map((file) =>
@@ -61,10 +71,16 @@ console.log(
   `Built ${files.length} application files and the complete installed Orbit source in dist/.`,
 );
 
-for (const page of Object.keys(VIEWS)) {
+// Retain a static entry for bookmarked Sources URLs; the app routes it to Overview.
+for (const page of [...Object.keys(VIEWS), "sources"]) {
   await mkdir(new URL(`app/${page}/`, output), { recursive: true });
   await copyFile(
     new URL("app/index.html", import.meta.url),
     new URL(`app/${page}/index.html`, output),
   );
+}
+
+for (const addon of ADDONS) {
+  await mkdir(new URL(`app/addons/${addon.id}/`, output), { recursive: true });
+  await copyFile(new URL("app/index.html", import.meta.url), new URL(`app/addons/${addon.id}/index.html`, output));
 }

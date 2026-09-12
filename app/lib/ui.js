@@ -142,7 +142,7 @@ export function installMenus() {
     trigger.setAttribute("data-select-toggle", "");
     trigger.setAttribute("aria-haspopup", "listbox");
     trigger.setAttribute("aria-controls", panel.id);
-    let label = trigger.querySelector("#period-label,#engine-label");
+    let label = trigger.querySelector("#period-label,#engine-label,#traffic-source-label,#country-label,#device-label");
     if (!label) {
       label = document.createElement("span");
       const text = [...trigger.childNodes]
@@ -171,6 +171,9 @@ export function installMenus() {
       "aria-label",
       {
         "period-menu": "Reporting period",
+        "traffic-source-menu": "Traffic source",
+        "country-menu": "Country",
+        "device-menu": "Device",
         "engine-menu": "AI engine",
         "topic-menu": "Buyer intent",
         "workspace-menu": "Workspace",

@@ -1,0 +1,67 @@
+/* Website analytics uses the same Orbit card, controls and density as Visibility. */
+.discovery-app #traffic-metrics[hidden], .discovery-app #discovery-metrics[hidden], .discovery-app .dropdown[hidden] { display: none !important; }
+.discovery-app #traffic-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.discovery-app[data-current-view=traffic] .control-panel { min-width: 0; }
+.discovery-app .traffic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+.discovery-app .traffic-grid .card { display: flex; flex-direction: column; min-width: 0; }
+.discovery-app .traffic-grid .card-heading { min-height: 38px; margin-bottom: var(--space-3); flex-wrap: wrap; }
+.discovery-app .traffic-grid .page-select { width: auto; flex-shrink: 0; }
+.discovery-app .traffic-grid .page-select .control-trigger { min-width: 120px; }
+.discovery-app .traffic-grid .rank-row { min-height: 44px; height: 44px; }
+.discovery-app .traffic-grid .rank-row:before { min-width: 0; }
+.discovery-app .traffic-card-content { display: flex; flex-direction: column; gap: var(--space-1); }
+.discovery-app .traffic-grid .card-footer { margin-top: auto; padding-top: var(--space-3); min-height: 48px; border: 0; }
+.discovery-app .traffic-columns { display: flex; justify-content: space-between; color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-3); gap: var(--space-3); }
+.discovery-app .traffic-usage { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-5); margin-block: 0 var(--space-5); padding: var(--space-4) 0; }
+.discovery-app .traffic-usage > div { display: flex; flex-direction: column; gap: var(--space-2); }
+.discovery-app .traffic-usage span { color: var(--muted); font-size: var(--text-base); }
+.discovery-app .traffic-usage strong { font-size: var(--text-xl); font-weight: 500; font-variant-numeric: tabular-nums; }
+.discovery-app .traffic-source-icon { width: 28px; height: 28px; display: inline-flex; justify-content: center; align-items: center; flex: 0 0 auto; }
+.discovery-app .traffic-source-icon .icon { color: var(--text); opacity: 1; }
+.discovery-app .country-code { display: inline-flex; width: 28px; flex: 0 0 auto; color: var(--muted); font-size: var(--text-sm); }
+.discovery-app #traffic-funnel { display: flex; flex-direction: column; gap: var(--space-1); }
+.discovery-app .traffic-funnel-step { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 44px; padding: var(--space-2); text-align: left; border-radius: var(--radius-row); background: transparent; }
+.discovery-app .traffic-funnel-step:hover { background: var(--subtle); }
+.discovery-app .traffic-funnel-label { display: flex; flex-direction: column; gap: 5px; flex: 1; font-size: var(--text-base); }
+.discovery-app .funnel-order { width: 18px; color: var(--muted); font-size: var(--text-sm); }
+.discovery-app .funnel-percent { width: 55px; text-align: right; color: var(--muted); font-size: var(--text-sm); }
+.discovery-app .traffic-funnel-step strong { width: 34px; text-align: right; font-size: var(--text-base); font-weight: 500; }
+.discovery-app .traffic-funnel-track { height: 4px; width: 100%; background: var(--subtle); border-radius: 4px; overflow: hidden; }
+.discovery-app .traffic-funnel-track > span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.discovery-app .traffic-funnel-total { color: var(--muted); font-size: var(--text-sm); padding-top: var(--space-4); margin-top: auto; }
+.discovery-app .traffic-journey { display: grid; grid-template-columns: 1fr auto; gap: 0 var(--space-3); padding: var(--space-1) var(--space-2); text-align: left; width: 100%; border-radius: var(--radius-row); background: transparent; }
+.discovery-app .traffic-journey:hover { background: var(--subtle); }
+.discovery-app .journey-source { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-base); }
+.discovery-app .journey-source .engine-icon, .discovery-app .journey-source .traffic-source-icon { width: 20px; height: 20px; border: 0; box-shadow: none; }
+.discovery-app .journey-source .engine-icon img { width: 17px; height: 17px; }
+.discovery-app .journey-path { grid-column: 1; display: flex; gap: var(--space-2); align-items: center; font-size: var(--text-sm); color: var(--muted); overflow: hidden; white-space: nowrap; }
+.discovery-app .journey-path .icon { width: 13px; height: 13px; }
+.discovery-app .traffic-journey > strong { grid-column: 2; grid-row: 1/3; align-self: center; font-weight: 500; }
+.discovery-app .traffic-empty { min-height: 100px; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.discovery-app .traffic-chart-markers { position: absolute; inset: 0; pointer-events: none; }
+.discovery-app .chart-milestone { position: absolute; top: 6px; bottom: 34px; transform: translateX(-50%); width: 28px; padding: 0; pointer-events: auto; display: flex; flex-direction: column; align-items: center; background: transparent; }
+.discovery-app .chart-milestone::after { content: ''; height: 100%; border-left: 1px dashed var(--fg-1); margin-top: 6px; }
+.discovery-app .milestone-number { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-height: 24px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: var(--text-sm); }
+.discovery-app .chart-milestone:hover .milestone-number { border-color: var(--accent); }
+.discovery-app .traffic-milestones { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); padding-top: var(--space-3); }
+.discovery-app .traffic-milestones .text-button { font-size: var(--text-sm); }
+.discovery-app .traffic-event-post { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-card); margin-block: var(--space-4); }
+.discovery-app .traffic-event-post > span { color: var(--muted); font-size: var(--text-sm); }
+.discovery-app .traffic-event-post > p { color: var(--text); margin-top: var(--space-3); }
+.discovery-app .traffic-session { padding-block: var(--space-4); border-bottom: 1px solid var(--border); }
+.discovery-app .traffic-session > div:first-child { display: flex; align-items: center; gap: var(--space-2); }
+.discovery-app .traffic-session > div:first-child > span:last-child:not(.badge) { margin-left: auto; color: var(--muted); font-size: var(--text-sm); }
+.discovery-app .traffic-session > p { margin-block: var(--space-2); color: var(--muted); font-size: var(--text-sm); }
+.discovery-app .session-path { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.discovery-app .session-path .icon { width: 13px; height: 13px; }
+.discovery-app[data-current-view=traffic] #chart-context { display: none; }
+@media (max-width: 680px) {
+  .discovery-app #traffic-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .discovery-app #traffic-metrics .metric { min-height: 112px; grid-template-rows: auto auto auto; }
+  .discovery-app #traffic-metrics .metric-value { font-size: var(--text-2xl); }
+  .discovery-app #traffic-metrics .metric-comparison { grid-row: 3; }
+  .discovery-app .traffic-grid { grid-template-columns: 1fr; }
+  .discovery-app .traffic-usage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .discovery-app[data-current-view=traffic] .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .discovery-app[data-current-view=traffic] .date-label { grid-column: 1/-1; grid-row: 3; text-align: left; }
+}

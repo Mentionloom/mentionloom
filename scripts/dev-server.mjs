@@ -40,7 +40,12 @@ const allowed = new Set([
   "app/foundation.css",
   "app/lib/data.js",
   "app/lib/model.js",
+  "app/lib/traffic.js",
+  "app/lib/traffic-view.js",
+  "app/traffic.css",
+  "app/lib/intelligence.js",
   "app/lib/ui.js",
+  "app/lib/filters.js",
   "app/lib/charts.js",
   "site.js",
   "waitlist.css",
@@ -51,6 +56,9 @@ const allowed = new Set([
   "assets/OpenRunde-Medium.woff2",
   "assets/OpenRunde-Semibold.woff2",
   "assets/OFL.txt",
+  "assets/Geist-Variable.woff2",
+  "assets/SpaceGrotesk-Variable.woff2",
+  "assets/Geist-LICENSE.txt",
 ]);
 createServer(async (req, res) => {
   const pathname = new URL(req.url, "http://localhost").pathname;
@@ -78,7 +86,7 @@ createServer(async (req, res) => {
   const file =
     pathname === "/"
       ? "index.html"
-      : /^\/app(?:\/(?:overview|visibility|traffic|questions|opportunities|addons|sources))?\/?$/.test(
+      : /^\/app(?:\/(?:overview|visibility|traffic|questions|opportunities|addons(?:\/[a-z-]+)?|sources))?\/?$/.test(
             pathname,
           )
         ? "app/index.html"

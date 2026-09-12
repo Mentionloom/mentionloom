@@ -42,3 +42,24 @@ test("stored add-on state is normalized and removable", () => {
     "crawler-guard": { state: "pilot", addedAt: null },
   });
 });
+
+import { addonFromPath, addonURL, checkoutURL } from '../app/lib/addons.js';
+import { resolveView } from '../app/lib/navigation.js';
+test('product URLs resolve independently of dashboard metrics', () => {
+  for (const addon of ADDONS) {
+    assert.equal(resolveView({ pathname: addonURL(addon.id), search: '?metric=referrals' }), 'addons');
+    assert.equal(addonFromPath(addonURL(addon.id)), addon);
+    assert.equal(addonFromPath(addonURL(addon.id).slice(0,-1)), addon);
+  }
+  assert.equal(addonFromPath('/app/addons/unknown/'), undefined);
+});
+test('unapproved prices and untrusted checkout destinations cannot enable payment', () => {
+  const base = { ...ADDONS[0], samplePricing:false, paymentLink:'https://buy.stripe.com/test_example' };
+  assert.equal(checkoutURL(base), base.paymentLink);
+  for (const paymentLink of ['javascript:alert(1)', 'https://buy.stripe.com.evil.test/a', 'http://buy.stripe.com/a', 'https://user@buy.stripe.com/a', null]) assert.equal(checkoutURL({...base,paymentLink}),null);
+  assert.equal(checkoutURL({...base,samplePricing:true}),null);
+  assert.equal(checkoutURL({...base,access:'pilot'}),null);
+  for (const addon of ADDONS) {
+    assert.equal(checkoutURL(addon),null);
+  }
+});

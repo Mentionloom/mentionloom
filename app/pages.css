@@ -41,9 +41,12 @@
   color: var(--text);
 }
 .discovery-app .page-nav-inner > a[aria-current="page"] {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+  background: var(--subtle);
+  color: var(--text);
+  font-weight: 500;
 }
+.discovery-app .nav-update { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.discovery-app .nav-update[hidden] { display: none; }
 .discovery-app main {
   padding-top: var(--space-6);
   min-height: calc(100dvh - 142px);
@@ -190,9 +193,119 @@
   margin-top: 0;
   gap: var(--space-5);
 }
-.discovery-app .breakdown-grid .pages-card,
 .discovery-app .traffic-pages {
   grid-column: 1/-1;
+}
+.discovery-app .breakdown-grid > .card {
+  display: flex;
+  flex-direction: column;
+}
+.discovery-app .breakdown-grid .page-select {
+  width: auto;
+  flex-shrink: 0;
+}
+.discovery-app .breakdown-grid .card-heading {
+  flex-wrap: wrap;
+}
+.discovery-app .breakdown-grid .rank-list {
+  min-height: 0;
+}
+.discovery-app .breakdown-grid .rank-row {
+  min-height: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+.discovery-app .breakdown-grid .card-footer {
+  min-height: 36px;
+  padding-top: var(--space-3);
+}
+.discovery-app .citation-coverage,
+.discovery-app .citation-mix-values,
+.discovery-app .citation-source-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.discovery-app .citation-coverage {
+  margin-block: var(--space-1) var(--space-4);
+}
+.discovery-app :is(.citation-coverage, .citation-mix-values, .citation-source-counts) > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.discovery-app :is(.citation-coverage, .citation-mix-values, .citation-source-counts) span,
+.discovery-app .citation-list-heading {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.discovery-app .citation-coverage strong,
+.discovery-app .citation-source-counts strong {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.discovery-app .citation-coverage small {
+  color: var(--muted);
+  font-size: var(--text-base);
+  font-weight: 400;
+}
+.discovery-app .citation-list-heading {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.discovery-app .citation-list-heading > :last-child {
+  padding-right: 28px;
+}
+.discovery-app .citation-mix-values {
+  margin-top: var(--space-4);
+}
+.discovery-app .citation-mix-values strong {
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.6px;
+}
+.discovery-app .citation-mix-values small {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.discovery-app .citation-mix-bar {
+  height: 14px;
+  background: var(--bg-a3);
+  border-radius: var(--radius-row);
+  overflow: hidden;
+  margin-block: var(--space-5);
+}
+.discovery-app .citation-mix-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+}
+.discovery-app .citation-mix-values > div > span::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  background: var(--accent);
+}
+.discovery-app .citation-mix-values > div:last-child > span::before {
+  background: var(--fg-1);
+}
+.discovery-app .citation-source-counts {
+  padding-bottom: var(--space-4);
+}
+.discovery-app .citation-mix-card .card-footer {
+  margin-top: auto;
+}
+.discovery-app .citation-empty {
+  padding: var(--space-4) 0;
+  color: var(--muted);
 }
 .discovery-app .card-tabs {
   margin-bottom: var(--space-3);
@@ -209,9 +322,7 @@
   background: var(--surface);
 }
 .discovery-app .page-select .dropdown-panel {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
+  position: fixed;
   z-index: 30;
   min-width: 205px;
 }
@@ -895,3 +1006,10 @@
 .discovery-app .coverage-key > span:first-child {
   cursor: help;
 }
+
+.discovery-app .page-select .dropdown-panel.control-panel { min-width: 0; }
+
+.data-setup-list { margin:24px 0 0; }
+.data-setup-list > div { padding:16px 0; border-top:1px solid var(--border); }
+.data-setup-list dt { font-size:14px; font-weight:500; }
+.data-setup-list dd { margin:6px 0 0; color:var(--muted); font-size:14px; line-height:1.5; }

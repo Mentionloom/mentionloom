@@ -1,4 +1,4 @@
-export const ADDONS = [
+const catalogue = [
   {
     id: "brief-studio",
     name: "Brief Studio",
@@ -32,7 +32,7 @@ export const ADDONS = [
   {
     id: "crawler-guard",
     name: "Crawler Guard",
-    icon: "shield",
+    icon: "lock",
     access: "pilot",
     description: "Catch changes that block AI search crawlers from your site.",
     watches: "Verified crawler requests and access rules",
@@ -50,6 +50,26 @@ export const ADDONS = [
     needs: "Analytics, conversions and CRM",
   },
 ];
+
+const offers = {
+  "brief-studio": { price: 19, category: "Content", headline: "Turn a missing mention into your next brief.", allowance: "10 briefs per month", benefits: ["Start with a buyer question where you are missing.", "Build an outline around the answers buyers need.", "Keep supporting sources beside each recommendation."], before: "Collect answer samples, copy sources, then piece together an outline.", after: "Open the question and review one brief with an outline and source map.", workflow: ["Choose a visibility gap", "Review the suggested outline", "Share the brief with your writer"] },
+  "competitor-watch": { price: 29, category: "Monitoring", headline: "Catch a competitor gaining ground.", allowance: "5 competitors · 25 tracked questions", benefits: ["Follow changes across the questions you care about.", "Compare the same engines and sampling periods.", "Open the answer evidence behind a change."], before: "Recheck rankings and compare separate reports by hand.", after: "Review the changed questions together, with the answer evidence attached.", workflow: ["Choose competitors and questions", "Set a change threshold", "Review a focused alert"] },
+  "weekly-brief": { price: 9, category: "Reporting", headline: "Bring the week’s changes to your team.", allowance: "1 workspace · 5 recipients", benefits: ["Bring visibility, visits and shipped work into one digest.", "Give each number a comparison with the previous week.", "Keep a clear next action beside the results."], before: "Pull metrics from different views and write the same update every Monday.", after: "Review a prepared digest and share the changes worth discussing.", workflow: ["Choose the signals to include", "Set recipients and delivery day", "Review the weekly digest"] },
+  "crawler-guard": { price: 19, category: "Monitoring", headline: "Find access problems before they stay unnoticed.", allowance: "1 website · daily access checks", benefits: ["Review crawler access alongside your visibility data.", "Spot changed rules and blocked requests.", "Give your developer the affected route and evidence."], before: "Search logs after a visibility drop to find a possible access problem.", after: "Review an access-change alert with the affected crawler and route.", workflow: ["Connect server or CDN logs", "Choose the crawlers to monitor", "Review access changes"] },
+  "revenue-match": { price: 39, category: "Attribution", headline: "See which AI visits turn into pipeline.", allowance: "1 workspace · 1 CRM connection", benefits: ["Match attributed sessions to known CRM outcomes.", "Compare qualified leads by AI source and landing page.", "Keep unmatched visits visible instead of guessing their value."], before: "Compare analytics exports with CRM records in a spreadsheet.", after: "Review matched leads by source, with the original visit attached.", workflow: ["Connect analytics and your CRM", "Define a qualified lead", "Review matched outcomes"] },
+};
+// Sample offers until commercial terms are approved. Supply a Stripe Payment Link
+// only together with its matching price/allowance; then set samplePricing to false.
+export const ADDONS = catalogue.map(addon => ({ ...addon, ...offers[addon.id], samplePricing: true, paymentLink: null }));
+export const addonURL = id => `/app/addons/${encodeURIComponent(id)}/`;
+export const addonFromPath = pathname => ADDONS.find(a => pathname === addonURL(a.id) || pathname === addonURL(a.id).slice(0, -1));
+export function checkoutURL(addon) {
+  if (!addon || addon.samplePricing || addon.access !== "available" || !addon.paymentLink) return null;
+  try {
+    const url = new URL(addon.paymentLink);
+    return url.protocol === "https:" && url.hostname === "buy.stripe.com" && !url.username && !url.password && url.pathname.length > 1 ? url.href : null;
+  } catch { return null; }
+}
 
 export function normalizeAddons(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};

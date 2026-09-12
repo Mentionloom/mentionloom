@@ -6,9 +6,41 @@ import {
   filterRecords,
   csv,
   dates,
+  citationSummary,
 } from "../app/lib/model.js";
 import { answers, visits, QUESTIONS, ENGINES } from "../app/lib/data.js";
+import { recommendationEvidence } from "../app/lib/intelligence.js";
+test("recommendation evidence separates mentions, shortlist positions, and distinct lost questions", () => {
+  const rows = [
+    { question: "a", mention: true, position: null, competitors: [], external: "source" },
+    { question: "a", mention: true, position: 2, competitors: ["Other"], external: "source" },
+    { question: "a", mention: false, position: null, competitors: ["Other"], external: "source" },
+    { question: "a", mention: false, position: null, competitors: ["Other"], external: "source" },
+    { question: "b", mention: false, position: null, competitors: [], external: "unrelated" },
+  ];
+  const e = recommendationEvidence(rows);
+  assert.equal(e.share, 20);
+  assert.equal(e.lostQuestions, 1);
+  assert.equal(e.lostAnswers, 2);
+  assert.deepEqual(e.sources, [{ name: "source", count: 2 }]);
+  assert.deepEqual(e.competitors, [{ name: "Other", count: 2 }]);
+  assert.equal(recommendationEvidence([]).share, 0);
+});
 const base = { days: 30, engine: "", topic: "", metric: "visibility" };
+test("citation mix counts references separately from distinct page, question, and engine coverage", () => {
+  const summary = citationSummary([
+    { cited: true, page: "/pricing", question: "q1", engine: "chatgpt", external: "g2.com" },
+    { cited: true, page: "/pricing", question: "q1", engine: "claude", external: "g2.com" },
+    { cited: false, page: "/product", question: "q2", engine: "chatgpt", external: "reddit.com" },
+  ]);
+  assert.deepEqual(summary.own, { citations: 2, pages: 1, questions: 1, engines: 2 });
+  assert.deepEqual(summary.external, { citations: 3, pages: 2, questions: 2, engines: 2 });
+  assert.equal(summary.total, 5);
+  assert.equal(summary.websiteShare, 40);
+  assert.equal(summary.questions, 2);
+  assert.equal(citationSummary([]).websiteShare, 0);
+  assert.equal(citationSummary([{ cited: false, question: "q1", engine: "claude" }]).total, 0);
+});
 test("periods contain complete, distinct comparison windows", () => {
   for (const days of [7, 30, 90]) {
     const d = select({ ...base, days });
@@ -91,4 +123,16 @@ test("invalid URL parameters fall back to safe, supported values", () => {
 });
 test("CSV correctly quotes fields, including multiline content", () => {
   assert.equal(csv([["One, two", 'a"b', "a\nb"]]), '"One, two","a""b","a\nb"');
+});
+
+test("startup traffic includes real zero days and stays independent of answer sampling", () => {
+  const data = select(base);
+  assert.ok(data.current.referrals > 20 && data.current.referrals < 100);
+  assert.ok(data.series.filter((day) => day.referrals === 0).length >= 5);
+  assert.ok(Math.max(...data.series.map((day) => day.referrals)) <= 12);
+  assert.ok(data.current.leads > 0 && data.current.leads <= 5);
+  const noTraffic = select({ ...base, engine: "grok" });
+  assert.equal(noTraffic.current.referrals, 0);
+  assert.equal(noTraffic.current.leads, 0);
+  assert.ok(noTraffic.current.samples > 0);
 });

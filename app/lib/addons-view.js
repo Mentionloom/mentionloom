@@ -1,34 +1,23 @@
 import { icon, escape as esc } from "./ui.js";
+import { addonURL, checkoutURL } from "./addons.js";
 
-const status = (addon, state) => {
-  if (state?.state === "active")
-    return '<span class="badge green"><span class="status-dot"></span>Active</span>';
-  if (state?.state === "pilot")
-    return '<span class="badge purple">Pilot joined</span>';
-  return addon.access === "pilot"
-    ? '<span class="badge">Pilot</span>'
-    : '<span class="badge purple">Available</span>';
-};
-
-export function addonRowHTML(addon, state, featured = false) {
-  return `<button class="addon-row${featured ? " featured" : ""}" data-addon="${addon.id}">
-    <span class="addon-icon">${icon(addon.icon)}</span>
-    <span class="addon-copy"><span class="addon-title">${esc(addon.name)}${status(addon, state)}</span><span>${esc(addon.description)}</span></span>
-    <span class="addon-contract"><small>Watches</small>${esc(addon.watches)}</span>
-    <span class="addon-state">${state ? (state.state === "active" ? "Manage" : "View pilot") : addon.access === "pilot" ? "Join pilot" : "Add"}${icon("right")}</span>
-  </button>`;
+export function productPreview(addon, large = false) {
+ const rows = {
+  "brief-studio": [["Buyer question", "Best Notion alternative?"], ["Outline", "Fit · workflows · pricing"], ["Source map", "3 supporting pages"]],
+  "competitor-watch": [["Asana", "65.4%"], ["Acme", "45.4%"], ["Notion", "41.9%"]],
+  "weekly-brief": [["AI visits", "54"], ["Leads", "2"], ["Shipped", "1 improvement"]],
+  "crawler-guard": [["GPTBot", "Allowed"], ["ClaudeBot", "Allowed"], ["PerplexityBot", "Review access"]],
+  "revenue-match": [["ChatGPT → /pricing", "Qualified"], ["Perplexity → /product", "New lead"], ["Unknown source", "Unmatched"]]
+ }[addon.id];
+ return `<div class="market-preview ${large ? "large" : ""}" aria-label="${esc(addon.name)} illustrative product preview"><div class="market-window"><div class="market-window-title">${icon(addon.icon)}<strong>${esc(addon.name)}</strong><span>Sample</span></div>${rows.map(([label,value],i)=>`<div class="market-preview-row"><span>${esc(label)}</span><strong>${esc(value)}</strong>${addon.id === "competitor-watch" ? `<i style="width:${[65,45,42][i]}%"></i>` : ""}</div>`).join("")}${large ? `<div class="market-preview-foot">${icon("check")} ${esc(addon.creates)}</div>` : ""}</div></div>`;
 }
-
-export function addonDetailHTML(addon, state, preview) {
-  const active = state?.state === "active";
-  const pilot = state?.state === "pilot";
-  return `<div class="addon-detail-lead"><span class="addon-icon large">${icon(addon.icon)}</span><p>${esc(addon.description)}</p></div>
-    <div class="signal-contract" aria-label="Add-on signal contract">
-      <div><small>Watches</small><strong>${esc(addon.watches)}</strong></div>
-      <span>${icon("right")}</span>
-      <div><small>Creates</small><strong>${esc(addon.creates)}</strong></div>
-    </div>
-    <div class="addon-need">${icon("layers")}<span><small>Data needed</small><strong>${esc(addon.needs)}</strong></span></div>
-    <h3>Inside the add-on</h3>${preview}
-    ${active ? `<div class="addon-active-note">${icon("circlecheck")}<span><strong>Active in this demo workspace</strong>This add-on will use connected signals as they become available.</span></div><button class="button" data-addon-remove="${addon.id}">Remove add-on</button>` : pilot ? `<div class="addon-active-note pilot">${icon("check")}<span><strong>You joined the pilot</strong>We saved your interest in this browser. No request was sent.</span></div><button class="button" data-addon-remove="${addon.id}">Leave pilot</button>` : addon.access === "pilot" ? `<button class="button primary" data-addon-enable="${addon.id}">Join the pilot${icon("right")}</button><p class="addon-disclaimer">This records pilot interest in the demo only. A production flow would capture workspace ownership and consent.</p>` : `<button class="button primary" data-addon-enable="${addon.id}">Add to Mentionloom${icon("plus")}</button><p class="addon-disclaimer">Demo activation only. No email, alert or external service is connected.</p>`}`;
+export function addonRowHTML(addon, state) {
+ return `<a class="market-card" href="${addonURL(addon.id)}" data-addon="${addon.id}" data-category="${esc(addon.category)}">${productPreview(addon)}<div class="market-card-body"><span class="market-category">${esc(addon.category)}</span><div class="market-card-title"><h2>${esc(addon.name)}</h2>${state ? `<span class="badge">${state.state === "active" ? "Demo active" : "Pilot saved"}</span>` : addon.access === "pilot" ? '<span class="badge">Coming soon</span>' : ""}</div><p>${esc(addon.description)}</p><span class="market-allowance">${esc(addon.allowance)}</span><div class="market-card-footer"><span>${addon.access === "pilot" ? "Planned" : "From"} <strong>$${addon.price}</strong><span> / mo</span></span><span class="market-discover">Details ${icon("right")}</span></div></div></a>`;
+}
+export function addonDetailHTML(addon, state) {
+ const checkout = checkoutURL(addon);
+ return `<div class="market-product"><div class="market-product-hero"><div class="market-product-copy"><span class="market-category">${esc(addon.category)}</span><h2>${esc(addon.headline)}</h2><p>${esc(addon.description)}</p><ul class="market-benefits">${addon.benefits.map(b=>`<li>${icon("check")}<span>${esc(b)}</span></li>`).join("")}</ul></div><aside class="market-purchase" aria-label="${esc(addon.name)} pricing"><span>${addon.access === "pilot" ? "Planned pricing" : "From"}</span><div class="market-price">$${addon.price}<span>USD / month</span></div><p>${esc(addon.allowance)}</p>${checkout ? `<a class="button primary" href="${esc(checkout)}">Continue to Stripe ${icon("right")}</a>` : `<button class="button" disabled>${addon.access === "pilot" ? "Coming soon" : "Checkout unavailable"}</button>`}<span class="market-price-note">${addon.samplePricing ? "Sample pricing. Purchases are not enabled." : "Recurring subscription. Confirm billing terms on Stripe."}</span><button class="text-button" data-addon-demo="${addon.id}">${state ? "Manage demo" : addon.access === "pilot" ? "Preview pilot" : "Try in demo"}</button></aside></div><figure class="market-product-demo">${productPreview(addon,true)}<figcaption>Illustrative product preview · sample data</figcaption></figure><section class="market-workflow"><h2>How it works</h2><ol>${addon.workflow.map((step,i)=>`<li><span>${i+1}</span><h3>${esc(step)}</h3></li>`).join("")}</ol></section><section class="market-comparison"><h2>In your workflow</h2><div><article><span>Before</span><p>${esc(addon.before)}</p></article><article><span>With ${esc(addon.name)}</span><p>${esc(addon.after)}</p></article></div></section><details class="market-requirements"><summary>What you need</summary><p>${esc(addon.needs)}. ${addon.access === "pilot" ? "This product is in development; the preview shows the intended workflow." : "The current workspace is a demo. Trying an add-on does not connect external services."}</p></details></div>`;
+}
+export function addonDemoHTML(addon,state,preview) {
+ return `<p>${esc(addon.description)}</p>${preview}<p class="small-label">Demo only. No purchase, email or external connection is made.</p><button class="button" ${state ? `data-addon-remove="${addon.id}"` : `data-addon-enable="${addon.id}"`}>${state ? "Remove from demo" : addon.access === "pilot" ? "Save pilot interest" : "Enable in demo"}</button>`;
 }

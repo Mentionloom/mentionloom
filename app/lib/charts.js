@@ -31,26 +31,27 @@ function aggregate(series, key) {
           ? (rows.reduce((s, r) => s + r.mentions, 0) /
               rows.reduce((s, r) => s + r.samples, 0)) *
             100
-          : rows.reduce((s, r) => s + r[key], 0),
+          : key === "visitors" ? new Set(rows.flatMap(r => r.visitorIds)).size : rows.reduce((s, r) => s + r[key], 0),
       previous: {
         [key]:
           key === "visibility"
             ? (rows.reduce((s, r) => s + r.previous.mentions, 0) /
                 rows.reduce((s, r) => s + r.previous.samples, 0)) *
               100
-            : rows.reduce((s, r) => s + r.previous[key], 0),
+            : key === "visitors" ? new Set(rows.flatMap(r => r.previous.visitorIds)).size : rows.reduce((s, r) => s + r.previous[key], 0),
       },
     });
   }
   return buckets;
 }
-export function renderChart(svg, series, key, compare, onDay) {
+export function renderChart(svg, series, key, compare, onDay, options = {}) {
+  const label = options.label || LABELS[key];
   const data = aggregate(series, key);
   const W = Math.max(280, svg.clientWidth),
     H = svg.clientHeight || 270,
     left = 40,
     right = 9,
-    top = 15,
+    top = options.milestones?.length ? 44 : 15,
     bottom = 34,
     iw = W - left - right,
     ih = H - top - bottom;
@@ -59,12 +60,12 @@ export function renderChart(svg, series, key, compare, onDay) {
     key === "visibility"
       ? 100
       : Math.max(
-          5,
+          4,
           Math.ceil(
             Math.max(
               ...data.flatMap((d) => [d[key], compare ? d.previous[key] : 0]),
-            ) / 5,
-          ) * 5,
+            ) / 4,
+          ) * 4,
         );
   const x = (i) => left + (i / (data.length - 1)) * iw,
     y = (n) => top + ih - (n / max) * ih;
@@ -96,8 +97,18 @@ export function renderChart(svg, series, key, compare, onDay) {
   )}<path class="chart-area-fill" d="${points}L${x(data.length - 1)},${y(0)}L${x(0)},${y(0)}Z"/>${compare ? `<path class="chart-previous" d="${prev}"/>` : ""}<path class="chart-line" d="${points}"/>${labelIndices.map((i, j) => `<text class="chart-axis" x="${x(i)}" y="${H - 5}" text-anchor="${j === 0 ? "start" : j === labelIndices.length - 1 ? "end" : "middle"}">${short(data[i].date)}</text>`).join("")}<g id="chart-hover" hidden><line class="chart-crosshair" x1="0" x2="0" y1="${top}" y2="${y(0)}"/><circle class="chart-point" r="5" cx="0" cy="0"/></g>`;
   svg.setAttribute(
     "aria-label",
-    `${LABELS[key]} ${data.length < series.length ? "in three-day groups" : "by day"}. Use arrow keys to explore and Enter for details.`,
+    `${label} ${data.length < series.length ? "in three-day groups" : "by day"}. Use arrow keys to explore and Enter for details.`,
   );
+  const markerLayer = document.getElementById('traffic-chart-markers');
+  if (markerLayer) {
+    const milestones = options.milestones || [];
+    markerLayer.hidden = !milestones.length;
+    markerLayer.innerHTML = milestones.map((event, i) => {
+      const index = data.findIndex(d => event.date >= d.date && event.date <= (d.dateEnd || d.date));
+      return index < 0 ? '' : `<button class="chart-milestone" style="left:${x(index)}px" title="${escape(event.label)} · ${short(event.date)}" aria-label="${escape(event.label)} on ${short(event.date)}" data-event="${escape(event.id)}"><span class="milestone-number">${i + 1}</span></button>`;
+    }).join('');
+    markerLayer.querySelectorAll('button').forEach(button => button.onclick = () => options.onMilestone?.(button.dataset.event));
+  }
   const line = svg.querySelector(".chart-line"),
     len = line.getTotalLength();
   animate(
@@ -122,7 +133,7 @@ export function renderChart(svg, series, key, compare, onDay) {
     c.setAttribute("cx", x(index));
     c.setAttribute("cy", y(d[key]));
     tip.hidden = false;
-    tip.innerHTML = `<strong>${short(d.date)}${d.dateEnd ? " – " + short(d.dateEnd) : ""}, 2026</strong><div class="tooltip-row"><span>${LABELS[key]}</span><b>${format(d[key], key)}</b></div>${compare ? `<div class="tooltip-row"><span>Previous period</span><b>${format(d.previous[key], key)}</b></div>` : ""}<small>Click to explore this ${d.dateEnd ? "period" : "day"}</small>`;
+    tip.innerHTML = `<strong>${short(d.date)}${d.dateEnd ? " – " + short(d.dateEnd) : ""}, 2026</strong><div class="tooltip-row"><span>${label}</span><b>${format(d[key], key)}</b></div>${compare ? `<div class="tooltip-row"><span>${short(new Date(Date.parse(d.date + "T00:00:00Z") - series.length * 86400000).toISOString().slice(0, 10))}${d.dateEnd ? " (3 days)" : ""}</span><b>${format(d.previous[key], key)}</b></div>` : ""}<small>Click to explore this ${d.dateEnd ? "period" : "day"}</small>`;
     const width = svg.getBoundingClientRect().width;
     tip.style.left = `${Math.max(0, Math.min((x(index) / W) * width + 14, width - tip.offsetWidth))}px`;
   }

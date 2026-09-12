@@ -39,6 +39,25 @@ export function metrics(a, v) {
     engaged: v.filter((r) => r.engaged).length,
   };
 }
+export function citationSummary(records) {
+  const summarize = (rows, sourceKey) => ({
+    citations: rows.length,
+    pages: new Set(rows.map((row) => row[sourceKey])).size,
+    questions: new Set(rows.map((row) => row.question)).size,
+    engines: new Set(rows.map((row) => row.engine)).size,
+  });
+  const own = summarize(records.filter((row) => row.cited && row.page), "page"),
+    external = summarize(records.filter((row) => row.external), "external"),
+    total = own.citations + external.citations;
+  return {
+    own,
+    external,
+    total,
+    websiteShare: total ? own.citations / total * 100 : 0,
+    questions: new Set(records.map((row) => row.question)).size,
+    engines: new Set(records.map((row) => row.engine)).size,
+  };
+}
 export function select(state) {
   const a = filterRecords(answers, state),
     v = filterRecords(visits, state),
@@ -132,6 +151,7 @@ export function select(state) {
     competitors,
     pages,
     external,
+    citationSummary: citationSummary(a),
     start,
     end,
   };
@@ -148,7 +168,7 @@ export function parseState(search) {
     topic: QUESTIONS.some((q) => q.topic === p.get("topic"))
       ? p.get("topic")
       : "",
-    metric: ["visibility", "citations", "referrals", "leads"].includes(
+    metric: ["visibility", "citations", "referrals", "leads", "visitors", "pageviews"].includes(
       p.get("metric"),
     )
       ? p.get("metric")

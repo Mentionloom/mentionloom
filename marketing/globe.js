@@ -96,6 +96,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       .closest(".discovery-scene")
       .classList.toggle("scene-visible", visible);
     sync();
+    if (visible && !started && !reduced.matches && !isPaused()) void start();
   });
   observer.observe(canvas);
   // Upgrade the visible CSS globe after the visitor has settled from scrolling.

@@ -20,7 +20,7 @@ test("legacy marketing and dashboard links open their intended page", () => {
     resolveView({ pathname: "/app/", hash: "#questions" }),
     "questions",
   );
-  assert.equal(resolveView({ pathname: "/app/", hash: "#sources" }), "sources");
+  assert.equal(resolveView({ pathname: "/app/", hash: "#sources" }), "overview");
   assert.equal(
     resolveView({ pathname: "/app/", search: "?metric=referrals" }),
     "traffic",
@@ -45,8 +45,9 @@ test("page links preserve analysis scope and choose valid page metrics", () => {
     const restored = parseState(url.search);
     assert.equal(resolveView(url), view);
     assert.equal(restored.days, input.days);
-    assert.equal(restored.engine, input.engine);
-    assert.equal(restored.topic, input.topic);
+    assert.equal(restored.engine, view === "traffic" ? "" : input.engine);
+    assert.equal(restored.topic, view === "traffic" ? "" : input.topic);
+    if (view === "traffic") assert.equal(url.searchParams.get("source"), input.engine);
     assert.equal(
       restored.metric,
       view === "visibility" ? "visibility" : "leads",
@@ -55,4 +56,11 @@ test("page links preserve analysis scope and choose valid page metrics", () => {
   assert.equal(metricForView("traffic", "citations"), "referrals");
   assert.equal(metricForView("visibility", "citations"), "citations");
   assert.equal(pageURL("invalid", {}), "/app/overview/");
+});
+
+test("retired Sources links return to Overview without a dead navigation entry", () => {
+  assert.equal(Object.hasOwn(VIEWS, "sources"), false);
+  assert.equal(resolveView({ pathname: "/app/sources/", search: "?metric=referrals" }), "overview");
+  assert.equal(resolveView({ pathname: "/app/sources" }), "overview");
+  assert.equal(pageURL("sources"), "/app/overview/");
 });

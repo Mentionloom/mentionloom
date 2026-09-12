@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test checks/waitlist.test.mjs checks/waitlist-api.test.mjs checks/dashboard.test.mjs checks/orbit.test.mjs checks/navigation.test.mjs checks/growth.test.mjs checks/addons.test.mjs checks/brands.test.mjs",
+    "test": "node --test checks/waitlist.test.mjs checks/waitlist-api.test.mjs checks/dashboard.test.mjs checks/orbit.test.mjs checks/navigation.test.mjs checks/growth.test.mjs checks/addons.test.mjs checks/brands.test.mjs checks/traffic.test.mjs",
     "waitlist:export": "node --env-file=.env.local scripts/export-waitlist.mjs",
     "dev": "node scripts/marketing-assets.mjs && node scripts/dev-server.mjs"
   },
@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",
-    "cobe": "2.0.1"
+    "cobe": "2.0.1",
+    "geist": "^1.5.1"
   },
   "devDependencies": {
     "@iconify-json/simple-icons": "1.2.95",

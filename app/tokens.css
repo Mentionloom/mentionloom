@@ -4,6 +4,7 @@
   /* Mentionloom brand: Orbit sky palette with accessible blue foregrounds. */
   --accent: #2563eb;
   --accent-soft: var(--sky-1);
+  --selection-surface: color-mix(in srgb, var(--subtle) 85%, var(--yellow-1));
   --accent-text: #2457c5;
 
   --text-xs: 0.75rem;

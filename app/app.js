@@ -1,5 +1,9 @@
-import { ENGINES, QUESTIONS, TOPICS, ACTIONS, CRAWLERS } from "./lib/data.js";
-import { select, parseState, fmt, pct, csv } from "./lib/model.js";
+import { createFilters } from "./lib/filters.js";
+import { TRAFFIC_SOURCES, SOURCE_GROUPS, COUNTRIES, DEVICES, TRAFFIC_METRICS, MILESTONES, sourceLabel, countryLabel, parseTrafficState, selectTraffic, trafficMetrics, funnelRows } from "./lib/traffic.js";
+import { usageHTML, funnelHTML, sourcesHTML, locationsHTML, devicesHTML, pagesHTML, journeysHTML, journeys, sessionsHTML, trafficTableHTML } from "./lib/traffic-view.js";
+import { END, answers, ENGINES, QUESTIONS, TOPICS, ACTIONS, CRAWLERS } from "./lib/data.js";
+import { select, parseState, fmt, pct, csv, dates } from "./lib/model.js";
+import { recommendationEvidence } from "./lib/intelligence.js";
 import {
   icon,
   engineIcon,
@@ -41,7 +45,8 @@ import {
   addonCounts,
   recommendedAddon,
 } from "./lib/addons.js";
-import { addonRowHTML, addonDetailHTML } from "./lib/addons-view.js";
+import { addonURL, addonFromPath } from "./lib/addons.js";
+import { addonRowHTML, addonDetailHTML, addonDemoHTML } from "./lib/addons-view.js";
 
 import {
   VIEWS,
@@ -51,9 +56,11 @@ import {
 } from "./lib/navigation.js";
 
 const $ = (s) => document.querySelector(s);
-const state = parseState(location.search);
+const state = { ...parseState(location.search), ...parseTrafficState(location.search) };
 let currentView = resolveView(location);
 state.metric = metricForView(currentView, state.metric);
+let trafficData, locationView = "country", deviceView = "device", trafficPageView = "landing";
+let filters;
 let data,
   engineView = "visibility",
   pageView = "own",
@@ -91,13 +98,14 @@ function hydrate(root = document) {
     .forEach((el) => (el.innerHTML = icon(el.dataset.appIcon)));
 }
 function syncURL() {
+  if (currentView === "addons" && addonFromPath(location.pathname)) return;
   history.replaceState(null, "", pageURL(currentView, state));
   syncPageLinks();
 }
 function syncPageLinks() {
   document
     .querySelectorAll("[data-route]")
-    .forEach((link) => (link.href = pageURL(link.dataset.route, state)));
+    .forEach((link) => (link.href = pageURL(link.dataset.route, link.dataset.sourceScope ? { ...state, source: state.engine || link.dataset.sourceScope, country: "", device: "" } : link.dataset.route === "traffic" && currentView !== "traffic" ? { ...state, source: state.engine || state.source } : state)));
 }
 function selectValue(root, value) {
   const options = [...root.querySelectorAll("[data-value]")];
@@ -115,18 +123,15 @@ function selectValue(root, value) {
 }
 function showPage({ focus = false } = {}) {
   document.body.dataset.currentView = currentView;
-  document.title = `${VIEWS[currentView]} · Acme · Mentionloom`;
-  $("#page-title").textContent = VIEWS[currentView];
-  $("#page-context").textContent = {
-    overview: "Your position today. Your next move forward.",
-    visibility: "See where AI recommends you—and who appears alongside you.",
-    traffic: "From an AI recommendation to a visit that matters.",
-    questions: "Find the buyer questions where your brand is missing.",
-    opportunities: "Turn the evidence into improvements you can ship.",
-    addons: "Add focused instruments when your workflow needs them.",
-    sources: "Connect the signals behind your growth.",
-  }[currentView];
+  $('#traffic-metrics').hidden = currentView !== 'traffic';
+  $('#discovery-metrics').hidden = currentView === 'traffic';
+  filters?.close();
+  $('#traffic-milestones').hidden = currentView !== 'traffic';
+  const product = currentView === "addons" ? addonFromPath(location.pathname) : null;
+  document.title = `${product?.name || VIEWS[currentView]} · Acme · Mentionloom`;
+  $("#page-title").textContent = product?.name || VIEWS[currentView];
   $("#next-move").hidden = currentView !== "overview";
+  $("#recommendation-summary").hidden = !["overview", "questions"].includes(currentView);
   $("#overview-next").hidden = currentView !== "overview";
   $("#page-export").hidden = ["sources", "overview", "addons"].includes(
     currentView,
@@ -143,7 +148,6 @@ function showPage({ focus = false } = {}) {
   $("#global-filters").hidden = ["sources", "addons"].includes(currentView);
 
   $("#page-add-question").hidden = currentView !== "questions";
-  $("#page-setup").hidden = currentView !== "sources";
   document
     .querySelectorAll("[data-metric]")
     .forEach(
@@ -172,6 +176,7 @@ function showPage({ focus = false } = {}) {
   if (focus) $("#page-title").focus({ preventScroll: true });
 }
 function navigate(view, { replace = false } = {}) {
+  if (view === 'traffic' && currentView !== 'traffic') state.source = state.engine || state.source || '';
   currentView = Object.hasOwn(VIEWS, view) ? view : "overview";
   state.metric = metricForView(currentView, state.metric);
   closeMenus();
@@ -199,36 +204,27 @@ function update(patch) {
   syncURL();
   render();
   if (previousFocus && !previousFocus.isConnected) {
-    const menu =
-      "engine" in patch
-        ? "engine-menu"
-        : "topic" in patch
-          ? "topic-menu"
-          : "period-menu";
-    $(`[data-menu="${menu}"]`).focus({ preventScroll: true });
+    const metric = previousFocus.dataset.trafficMetric;
+    const target = metric ? `[data-traffic-metric="${metric}"]` : 'days' in patch ? '[data-menu="period-menu"]' : '#filters-toggle';
+    $(target)?.focus({ preventScroll: true });
   }
   $("#filter-status").textContent =
+    currentView === "traffic" ? `Showing ${trafficData.current.referrals} visits, ${sourceLabel(state.source)}, ${countryLabel(state.country)}, ${state.device || "all devices"}.` :
     `Showing ${state.days} days, ${state.engine ? engine(state.engine).name : "all engines"}, ${state.topic || "all topics"}. ${fmt(data.current.samples)} sampled answers.`;
 }
 function render() {
   data = select(state);
+  trafficData = selectTraffic(trafficScope());
+  const intelligence = recommendationEvidence(data.a);
+  $("#recommendation-summary").innerHTML = `<div class="mini-stats recommendation-stats">
+    <button class="stat" data-action="recommendation-details"><span>Recommendation share${icon("right")}</span><strong>${pct(intelligence.share)}</strong></button>
+    <button class="stat" data-action="lost-questions"><span>Lost questions${icon("right")}</span><strong>${intelligence.lostQuestions}<small> / ${intelligence.questions}</small></strong></button>
+  </div>`;
   $("#period-label").textContent = `Last ${state.days} days`;
-  $("#engine-label").textContent = state.engine
-    ? engine(state.engine).name
-    : "All engines";
-  $("#topic-label").textContent = state.topic || "Add filter";
-  $("#date-label").textContent =
-    `${date(data.start)} – ${date(data.end)}, 2026`;
-  $("#filter-chips").innerHTML =
-    (state.engine
-      ? `<button class="filter-chip" data-clear="engine">Engine is ${engine(state.engine).name}${icon("close")}</button>`
-      : "") +
-    (state.topic
-      ? `<button class="filter-chip" data-clear="topic">Topic is ${esc(state.topic)}${icon("close")}</button>`
-      : "") +
-    (state.engine || state.topic
-      ? '<button class="text-button" data-action="clear-filters">Clear all</button>'
-      : "");
+  const range = `${date(data.start)} – ${date(data.end)}, 2026`;
+  $('[data-menu="period-menu"]').title = range;
+  $("#period-range").textContent = range;
+  filters?.render();
   document.querySelectorAll("[data-days]").forEach((b) => {
     b.setAttribute(
       "aria-selected",
@@ -237,23 +233,6 @@ function render() {
     b.querySelector(".option-check").innerHTML =
       Number(b.dataset.days) === state.days ? icon("check") : "";
   });
-  $("#engine-menu").innerHTML =
-    '<span class="menu-label">AI engine</span>' +
-    [{ id: "", name: "All engines" }, ...ENGINES]
-      .map(
-        (e) =>
-          `<button role="option" data-option="${e.name}" data-engine="${e.id}" aria-selected="${state.engine === e.id}">${e.id ? engineIcon(e) : icon("spark")}<span>${e.name}</span><span class="option-check">${state.engine === e.id ? icon("check") : ""}</span></button>`,
-      )
-      .join("");
-  $("#topic-menu").innerHTML =
-    '<span class="menu-label">Filter by buyer intent</span>' +
-    ["", ...TOPICS]
-      .map(
-        (t) =>
-          `<button role="option" data-option="${t || "All topics"}" data-topic="${t}" aria-selected="${state.topic === t}">${icon(t ? "target" : "layers")}<span>${t || "All topics"}</span><span class="option-check">${state.topic === t ? icon("check") : ""}</span></button>`,
-      )
-      .join("") +
-    '<div class="menu-note">Topics connect tracked answers with their related landing pages.</div>';
   for (const key of Object.keys(LABELS)) {
     number($("#value-" + key), format(data.current[key], key));
     const before = data.previous[key],
@@ -264,15 +243,13 @@ function render() {
             ? ((data.current[key] - before) / before) * 100
             : 0;
     $("#delta-" + key).innerHTML =
-      `<b class="${diff < 0 ? "negative" : ""}">${diff >= 0 ? "↗" : "↘"} ${Math.abs(diff).toFixed(1)}${key === "visibility" ? " pp" : "%"}</b> vs. prior ${state.days}d`;
+      `<b class="${diff < 0 ? "negative" : ""}">${!before && key !== "visibility" ? data.current[key] ? "New" : "No change" : `${diff >= 0 ? "↗" : "↘"} ${Math.abs(diff).toFixed(1)}${key === "visibility" ? " pp" : "%"}`}</b>`;
     $("#delta-" + key).title = `Change versus the previous ${state.days} days`;
     const b = $(`[data-metric="${key}"]`);
-    b.classList.toggle(
-      "active",
-      currentView !== "overview" && state.metric === key,
-    );
-    if (currentView === "overview") b.removeAttribute("aria-pressed");
-    else b.setAttribute("aria-pressed", String(state.metric === key));
+    b.title = `${LABELS[key]} · Change versus the previous ${state.days} days. Select to view the chart.`;
+    b.classList.toggle("active", state.metric === key);
+    b.setAttribute("aria-pressed", String(state.metric === key));
+    b.setAttribute("aria-controls", "main-chart");
     sparkline(
       $(`[data-spark="${key}"]`),
       data.series.map((d) => d[key]),
@@ -282,15 +259,41 @@ function render() {
   renderEngines();
   renderCompetitors();
   renderPages();
-  renderFunnel();
+
   renderQuestions();
   renderActions();
   renderPageSummaries();
   renderGrowth();
   renderAddons();
+  renderTraffic();
+  renderNavUpdates();
+}
+function renderNavUpdates() {
+  const stored = load("nav-seen", {}),
+    seen = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {},
+    revision = `${END}:${answers.length}`,
+    signals = { questions: "New answer samples", opportunities: "New recommendations to review" };
+  if (signals[currentView] && seen[currentView] !== revision) {
+    seen[currentView] = revision;
+    store("nav-seen", seen);
+  }
+  for (const [view, label] of Object.entries(signals)) {
+    const link = $(`.page-navigation [data-route="${view}"]`),
+      unread = seen[view] !== revision;
+    link.querySelector(".nav-update").hidden = !unread;
+    if (unread) {
+      link.setAttribute("aria-label", `${VIEWS[view]} · ${label.toLowerCase()}`);
+      link.title = label;
+    } else {
+      link.removeAttribute("aria-label");
+      link.removeAttribute("title");
+    }
+  }
 }
 function renderMainChart() {
   if ($("#report-core").hidden) return;
+  if (currentView === "traffic") return renderTrafficChart();
+  $("#traffic-milestones").hidden = true;
   $("#chart-description").textContent =
     {
       visibility: "Mention rate",
@@ -306,7 +309,13 @@ function renderMainChart() {
         : state.metric === "referrals"
           ? "Sessions attributed to AI sources"
           : "Conversions from attributed AI sessions";
-  $("#chart-legend").textContent = LABELS[state.metric];
+  const comparison = dates(state.days, true),
+    comparing = $("#compare-toggle").checked;
+  $("#compare-label").textContent = `Compare with prior ${state.days} days`;
+  $("#compare-toggle").closest("label").title = `Show a dashed line for ${date(comparison.start)} – ${date(comparison.end)}`;
+  $("#chart-legend").textContent = `${date(data.start)} – ${date(data.end)}`;
+  $("#comparison-legend").hidden = !comparing;
+  $("#comparison-dates").textContent = `${date(comparison.start)} – ${date(comparison.end)}`;
   $("#sample-count").textContent =
     state.metric === "visibility" || state.metric === "citations"
       ? `${fmt(data.current.samples)} sampled answers`
@@ -322,7 +331,7 @@ function renderMainChart() {
 function renderEngines() {
   selectValue($("#engine-tabs"), engineView);
   $("#engine-unit").textContent =
-    engineView === "visibility" ? "Mention rate" : "Sessions";
+    engineView === "visibility" ? "Rate" : "Sessions";
   const max =
     engineView === "visibility"
       ? 100
@@ -330,58 +339,45 @@ function renderEngines() {
   $("#engine-rows").innerHTML = data.engines
     .slice()
     .sort((a, b) => b[engineView] - a[engineView])
+    .slice(0, rankingPreviewCount())
     .map(
       (e) =>
         `<button class="rank-row ${state.engine === e.id ? "self" : ""}" data-engine="${e.id}" style="--share:${(e[engineView] / max) * 100}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${format(e[engineView], engineView)}</span>${icon("filter")}</button>`,
     )
     .join("");
+  $("#engines-more").textContent = data.engines.length === 1 ? "View engine" : `View all ${data.engines.length} engines`;
+}
+function rankingPreviewCount() {
+  return Math.min(5, data.engines.length, data.competitors.length);
 }
 function renderCompetitors() {
   $("#competitor-rows").innerHTML = data.competitors
+    .slice(0, rankingPreviewCount())
     .map(
       (c, i) =>
-        `<button class="rank-row ${c.self ? "self" : ""}" data-competitor="${esc(c.name)}" style="--share:${c.share}%"><span class="rank-index">${i + 1}</span><span class="brand-initial ${c.self ? "self" : ""}">${c.self ? "a" : c.name.slice(0, 1)}</span><span class="rank-name">${c.name}${c.self ? ' <span class="badge">You</span>' : ""}</span><span class="rank-value">${pct(c.share)}</span>${icon("arrow")}</button>`,
+        `<button class="rank-row ${c.self ? "self" : ""}" data-competitor="${esc(c.name)}" style="--share:${c.share}%"><span class="rank-index">${i + 1}</span><span class="brand-initial ${c.self ? "self acme-mark" : ""}">${c.self ? '<img src="/assets/brands/acme.svg" width="23" height="23" alt="">' : esc(c.name.slice(0, 1))}</span><span class="rank-name">${c.name}${c.self ? ' <span class="badge">You</span>' : ""}</span><span class="rank-value">${pct(c.share)}</span>${icon("arrow")}</button>`,
     )
     .join("");
+  $("#competitors-more").textContent = `View all ${data.competitors.length} brands`;
 }
 function renderPages() {
   selectValue($("#page-tabs"), pageView);
   const pages = pageView === "own" ? data.pages : data.external,
-    max = Math.max(...pages.map((p) => p.citations), 1);
+    max = Math.max(...pages.map((p) => p.citations), 1),
+    summary = data.citationSummary,
+    coverage = summary[pageView];
+  $("#citation-coverage").innerHTML = `<div title="Questions with a citation from ${pageView === "own" ? "your website" : "an external source"}"><span>Cited questions</span><strong>${coverage.questions}<small> / ${summary.questions}</small></strong></div><div title="Engines citing ${pageView === "own" ? "your website" : "an external source"}"><span>Citing engines</span><strong>${coverage.engines}<small> / ${summary.engines}</small></strong></div>`;
   $("#page-rows").innerHTML =
     pages
-      .slice(0, 5)
+      .slice(0, 3)
       .map(
         (p) =>
           `<button class="rank-row" data-source-page="${esc(p.path)}" style="--share:${(p.citations / max) * 88}%">${icon(pageView === "own" ? "file" : "globe")}<span class="rank-name">${esc(p.path)}</span><span class="rank-value">${fmt(p.citations)}</span>${icon("arrow")}</button>`,
       )
       .join("") ||
-    empty("No citations in this view", "Try a different engine or topic.");
+    '<div class="citation-empty">No cited pages</div>';
   $("#pages-total").textContent = `${pages.length} sources`;
-}
-function renderFunnel() {
-  const c = data.current;
-  $("#funnel").innerHTML =
-    [
-      ["referrals", "AI referrals", "people"],
-      ["engaged", "Engaged visits", "chart"],
-      ["leads", "Leads created", "target"],
-    ]
-      .map(
-        ([key, label, symbol]) =>
-          `<div class="funnel-step"><div class="funnel-label"><span>${icon(symbol)}${label}</span><strong>${fmt(c[key])}</strong></div><div class="funnel-track"><span style="width:${c.referrals ? (c[key] / c.referrals) * 100 : 0}%"></span></div></div>`,
-      )
-      .join("") +
-    `<div class="funnel-rates"><span><b>${pct(c.referrals ? (c.engaged / c.referrals) * 100 : 0)}</b> engagement rate</span><span><b>${pct(c.referrals ? (c.leads / c.referrals) * 100 : 0)}</b> lead conversion</span></div>`;
-  $("#funnel")
-    .querySelectorAll(".funnel-track>span")
-    .forEach((el) =>
-      animate(
-        el,
-        [{ transform: "scaleX(.9)" }, { transform: "scaleX(1)" }],
-        400,
-      ),
-    );
+  $("#citation-mix").innerHTML = `<div class="citation-mix-values"><div><span>Your website</span><strong>${pct(summary.websiteShare)}</strong><small>${fmt(summary.own.citations)} citations</small></div><div><span>External sources</span><strong>${pct(summary.total ? 100 - summary.websiteShare : 0)}</strong><small>${fmt(summary.external.citations)} citations</small></div></div><div class="citation-mix-bar" role="img" aria-label="${fmt(summary.own.citations)} website citations and ${fmt(summary.external.citations)} external citations, ${fmt(summary.total)} total"><span style="width:${summary.websiteShare}%"></span></div><div class="citation-source-counts"><div><span>Website pages</span><strong>${summary.own.pages}</strong></div><div><span>External sources</span><strong>${summary.external.pages}</strong></div></div>`;
 }
 function renderQuestions() {
   selectValue($("#question-tabs"), questionView);
@@ -392,7 +388,6 @@ function renderQuestions() {
       .filter((q) => !state.topic || q.topic === state.topic)
       .map((q) => ({ ...q, pending: true, visibility: -1 })),
   ];
-  $("#q-nav-count").textContent = QUESTIONS.length + pending.length;
   qs = qs
     .filter(
       (q) =>
@@ -425,9 +420,6 @@ function renderQuestions() {
 }
 function renderActions() {
   selectValue($("#action-tabs"), actionView);
-  $("#action-count").textContent = ACTIONS.filter(
-    (a) => !shipped.includes(a.id),
-  ).length;
   const actions = priorities(data, growthWork, shipped).filter((a) =>
     actionView === "shipped" ? shipped.includes(a.id) : !shipped.includes(a.id),
   );
@@ -504,33 +496,32 @@ function renderPageSummaries() {
         `<button class="rank-row" data-overview-engine="${e.id}" style="--share:${e.visibility}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${pct(e.visibility)}</span>${icon("right")}</button>`,
     )
     .join("");
-  const max = Math.max(...data.engines.map((e) => e.referrals), 1);
-  $("#traffic-engines").innerHTML = data.engines
-    .slice()
-    .sort((a, b) => b.referrals - a.referrals)
-    .map(
-      (e) =>
-        `<button class="rank-row" data-engine="${e.id}" style="--share:${(e.referrals / max) * 100}%">${engineIcon(e)}<span class="rank-name">${e.name}</span><span class="rank-value">${fmt(e.referrals)}</span>${icon("filter")}</button>`,
-    )
-    .join("");
-  const entries = [...new Set(data.v.map((v) => v.page))]
-    .map((path) => ({
-      path,
-      count: data.v.filter((v) => v.page === path).length,
-    }))
-    .sort((a, b) => b.count - a.count);
-  const largest = Math.max(...entries.map((p) => p.count), 1);
-  $("#traffic-pages").innerHTML = entries
-    .slice(0, 6)
-    .map(
-      (p) =>
-        `<button class="rank-row" data-source-page="${esc(p.path)}" style="--share:${(p.count / largest) * 100}%">${icon("file")}<span class="rank-name">${esc(p.path)}</span><span class="rank-value">${fmt(p.count)}</span>${icon("right")}</button>`,
-    )
-    .join("");
-  $("#crawler-rows").innerHTML = CRAWLERS.map(
-    (c) =>
-      `<button class="crawler-row" data-action="crawlers"><span><strong>${c.name}</strong><small>${c.purpose}</small></span><strong>${fmt(c.count)}</strong><span class="badge ${c.status === "Allowed" ? "green" : "neutral"}">${c.status}</span>${icon("right")}</button>`,
-  ).join("");
+
+}
+
+function limitOverviewList(id) {
+  const list = document.getElementById(id);
+  list.nextElementSibling?.matches('.list-more') && list.nextElementSibling.remove();
+  list.classList.add('overview-scroll-list');
+  list.classList.remove('is-expanded');
+  list.scrollTop = 0;
+  const rows = [...list.children];
+  rows.forEach((row, index) => row.hidden = index >= 4);
+  if (rows.length <= 4) return;
+  const button = document.createElement('button');
+  button.className = 'text-button list-more';
+  button.textContent = `Show more (${rows.length - 4})`;
+  button.setAttribute('aria-expanded', 'false');
+  button.setAttribute('aria-controls', id);
+  button.addEventListener('click', () => {
+    const expanded = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', String(expanded));
+    button.textContent = expanded ? 'Show less' : `Show more (${rows.length - 4})`;
+    list.classList.toggle('is-expanded', expanded);
+    rows.forEach((row, index) => row.hidden = !expanded && index >= 4);
+    list.scrollTo({ top: expanded ? 60 : 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  });
+  list.after(button);
 }
 
 function empty(title, description) {
@@ -595,6 +586,10 @@ function answerCard(r) {
     : "other dedicated project management tools";
   return `<article class="answer-card"><div class="answer-head">${engineIcon(e)}${e.name}<span class="badge ${r.mention ? "green" : "amber"}">${r.mention ? "Mentioned" : "Missing"}</span></div><blockquote>${r.mention ? `<mark>Acme</mark> ${esc(q.excerpt)} ${r.competitors.length ? "Other options to compare include " + esc(names) + "." : ""}` : `${esc(q.missing)} ${r.competitors.length ? "The options in this answer include " + esc(names) + "." : ""}`}</blockquote><div class="answer-source">${icon("link")}${r.cited ? "acme.work" + esc(r.page) : esc(r.external)}</div><div class="answer-meta">Illustrative answer excerpt · ${date(r.date)}, 2026${r.position ? " · Acme at position " + r.position : ""}</div></article>`;
 }
+function answerSamplesHTML(rows) {
+  if (!rows.length) return empty("No samples in this view", "Change the topic filter to see this question’s measurements.");
+  return answerCard(rows[0]) + (rows.length > 1 ? `<details class="evidence-disclosure"><summary>More engine answers<span class="disclosure-end">${rows.length - 1}${icon("down")}</span></summary>${rows.slice(1).map(answerCard).join("")}</details>` : "");
+}
 function openQuestion(id, answerDate, answerEngine) {
   const q =
     data.questions.find((q) => q.id === id) ||
@@ -617,12 +612,13 @@ function openQuestion(id, answerDate, answerEngine) {
   const specific =
     answerDate &&
     rows.find((r) => r.date === answerDate && r.engine === answerEngine);
+  const evidence = questionEvidenceHTML(rows);
   detail(
     q.text,
     q.topic + " · BUYER QUESTION",
-    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(rows.length ? (hits / rows.length) * 100 : 0)}</strong></div><div><span>Answers sampled</span><strong>${fmt(rows.length)}</strong></div></div><div class="notice">${date(data.start)} – ${date(data.end)} · ${state.engine ? engine(state.engine).name : "All AI engines"}. These are sample answers, not access to private conversations.</div><h3>${specific ? "Selected answer" : "Latest answer by engine"}</h3>${(specific ? [specific] : latest).map(answerCard).join("") || empty("No samples in this view", "Change the topic filter to see this question’s measurements.")}<h3>Make this answer easier to find</h3><p class="small-label">Related landing page</p><button class="rank-row self" data-source-page="${q.page}" style="--share:100%">${icon("file")}<span class="rank-name">acme.work${q.page}</span>${icon("arrow")}</button>${
+    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(rows.length ? (hits / rows.length) * 100 : 0)}</strong></div><div><span>Answers sampled</span><strong>${fmt(rows.length)}</strong></div></div>${evidence}<h3>${specific ? "Selected answer" : "Latest answers"}</h3>${answerSamplesHTML(specific ? [specific] : latest)}<h3>Target page</h3><button class="rank-row self" data-source-page="${q.page}" style="--share:100%">${icon("file")}<span class="rank-name">acme.work${q.page}</span>${icon("arrow")}</button>${
       ACTIONS.some((a) => a.question === id)
-        ? `<h3>A next move for this question</h3><div class="drawer-list">${ACTIONS.filter(
+        ? `<h3>Next move</h3><div class="drawer-list">${ACTIONS.filter(
             (a) => a.question === id,
           )
             .map(
@@ -634,6 +630,25 @@ function openQuestion(id, answerDate, answerEngine) {
     }`,
   );
 }
+function questionEvidenceHTML(rows) {
+  const e = recommendationEvidence(rows);
+  if (!e.lostAnswers) return '<p class="small-label">No competitor-only answers in this sample.</p>';
+  return `<div class="benchmark-heading"><h3>Competitors</h3><span>${e.lostAnswers} / ${e.samples} answers</span></div><div class="rank-list">${e.competitors.map((c) => `<button class="rank-row" data-competitor="${esc(c.name)}"><span class="rank-name">${esc(c.name)}</span><span class="rank-value">${c.count}</span>${icon("right")}</button>`).join("")}</div><details class="evidence-disclosure"><summary>Cited sources<span class="disclosure-end">${e.sources.length}${icon("down")}</span></summary><div class="rank-list">${e.sources.map((s) => `<button class="rank-row" data-source-page="${esc(s.name)}"><span class="rank-name">${esc(s.name)}</span><span class="rank-value">${s.count} citations</span>${icon("right")}</button>`).join("")}</div><p>Sources cited in answers naming competitors without Acme. Frequency shows association, not causation.</p></details>`;
+}
+function openRecommendationEvidence(id) {
+  const q = data.questions.find((question) => question.id === id);
+  if (!q) return;
+  detail(q.text, "RECOMMENDATION EVIDENCE", `<div class="drawer-stats"><div><span>Answers missing Acme</span><strong>${fmt(q.samples - q.mentions)}<small> / ${fmt(q.samples)}</small></strong></div><div><span>Mention rate</span><strong>${q.samples ? pct(q.visibility) : "—"}</strong></div></div>${questionEvidenceHTML(q.rows)}<details><summary>How to read this${icon("down")}</summary><p>The visibility gap counts every answer missing Acme. Competitor counts include only answers naming that brand without Acme, so the totals can differ. A brand may appear alongside other competitors; frequency is not a shortlist position. All counts follow your current filters.</p></details><button class="button" data-question="${q.id}">Explore answers${icon("right")}</button>`);
+}
+function recommendationDetails() {
+  const e = recommendationEvidence(data.a);
+  detail("Recommendation share", "METRIC DETAILS", `<div class="drawer-stats"><div><span>Shortlisted answers</span><strong>${fmt(e.recommendations)}</strong></div><div><span>Total answers</span><strong>${fmt(e.samples)}</strong></div></div><p>${pct(e.share)} of sampled answers record an Acme shortlist position.</p><details><summary>Definition${icon("down")}</summary><p>Shortlisted answers divided by all sampled answers in the selected period, engines, and topics. Mention rate remains available in Visibility. The demo assigns a position to every mention, so these two rates currently match.</p></details><button class="button" data-action="lost-questions">Explore lost questions${icon("right")}</button>`);
+}
+function lostQuestions() {
+  const e = recommendationEvidence(data.a);
+  const questions = data.questions.map((q) => ({ ...q, losses: recommendationEvidence(q.rows).lostAnswers })).filter((q) => q.losses).sort((a, b) => b.losses - a.losses);
+  detail("Lost questions", "RECOMMENDATION GAPS", `<div class="drawer-stats"><div><span>Questions with losses</span><strong>${e.lostQuestions}<small> / ${e.questions}</small></strong></div><div><span>Lost answers</span><strong>${fmt(e.lostAnswers)}</strong></div></div><div class="benchmark-heading"><h3>Buyer question</h3><span>Lost answers</span></div><div class="benchmark-list">${questions.map((q) => `<button class="benchmark-question" data-question="${q.id}"><span class="benchmark-question-copy"><strong>${esc(q.text)}</strong></span><span class="benchmark-count"><strong>${q.losses}</strong></span>${icon("right")}</button>`).join("") || '<p>No lost questions in this view.</p>'}</div><details><summary>Definition${icon("down")}</summary><p>A lost question has at least one sampled answer naming a competitor without Acme. The same question can also have wins on other dates or engines. Counts follow your current filters; pending questions are excluded.</p></details>`);
+}
 function openPage(path) {
   const own = path.startsWith("/");
   const rows = data.a.filter((r) =>
@@ -643,9 +658,9 @@ function openPage(path) {
   detail(
     own ? "acme.work" + path : path,
     own ? "YOUR WEBSITE · CITED PAGE" : "EXTERNAL SOURCE",
-    `<div class="drawer-stats"><div><span>Sampled citations</span><strong>${fmt(rows.length)}</strong></div><div><span>${own ? "AI referrals" : "Distinct questions"}</span><strong>${own ? fmt(v.length) : new Set(rows.map((r) => r.question)).size}</strong></div></div><div class="notice">${own ? "Website citations and referrals are separate signals. We cannot tie a particular click to a specific private AI conversation." : "External sources are pages cited in sampled answers. They can shape the answer even when your own website is not cited."}</div><h3>Recent answers using this source</h3><div class="drawer-list">${answersList(rows) || empty("No citations in this view", "Try another reporting period or filter.")}</div>${
+    `<div class="drawer-stats"><div><span>Sampled citations</span><strong>${fmt(rows.length)}</strong></div><div><span>${own ? "AI referrals" : "Distinct questions"}</span><strong>${own ? fmt(v.length) : new Set(rows.map((r) => r.question)).size}</strong></div></div><div class="notice">${own ? "Website citations and referrals are separate signals. We cannot tie a particular click to a specific private AI conversation." : "External sources are pages cited in sampled answers. They can shape the answer even when your own website is not cited."}</div><h3>Source answers</h3><div class="drawer-list">${answersList(rows) || empty("No citations in this view", "Try another reporting period or filter.")}</div>${
       own
-        ? `<h3>Visits to this page</h3><table class="data-table"><thead><tr><th>Engine</th><th>Sessions</th><th>Leads</th></tr></thead><tbody>${ENGINES.filter(
+        ? `<h3>Page traffic</h3><table class="data-table"><thead><tr><th>Engine</th><th>Sessions</th><th>Leads</th></tr></thead><tbody>${ENGINES.filter(
             (e) => !state.engine || state.engine === e.id,
           )
             .map(
@@ -676,7 +691,7 @@ function openCompetitor(name) {
   detail(
     name,
     name === "Acme" ? "YOUR BRAND" : "COMPETITOR BENCHMARK",
-    `<p class="benchmark-scope">${state.engine ? esc(engine(state.engine).name) : "All engines"} · ${date(data.start)} – ${date(data.end)} · Sample data</p><div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(c.share)}</strong></div><div><span>${name === "Acme" ? "Answers mentioning you" : "Answers without Acme"}</span><strong>${fmt(name === "Acme" ? c.count : gaps.length)}</strong></div></div><div class="benchmark-heading"><h3>${name === "Acme" ? "Questions mentioning you" : "Where you’re missing"}</h3><span>${grouped.length} questions</span></div><p class="benchmark-description">${name === "Acme" ? "Ranked by sampled mentions." : esc(name) + " appears in these answers without Acme. Open a question to inspect the latest sample."}</p><div class="benchmark-list">${evidence || empty("No missing mentions here", "Acme appears alongside this brand in the current sample.")}</div><details class="benchmark-method"><summary>How this is measured</summary><p>${fmt(c.count)} of ${fmt(data.current.samples)} sampled answers mention ${esc(name)}. Each question groups its matching answers across this reporting period. Multiple brands can appear in one answer; rates do not add to 100%.</p></details>`,
+    `<p class="benchmark-scope">${state.engine ? esc(engine(state.engine).name) : "All engines"} · ${date(data.start)} – ${date(data.end)} · Sample data</p><div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(c.share)}</strong></div><div><span>${name === "Acme" ? "Answers mentioning you" : "Answers without Acme"}</span><strong>${fmt(name === "Acme" ? c.count : gaps.length)}</strong></div></div><div class="benchmark-heading"><h3>${name === "Acme" ? "Mentions" : "Visibility gaps"}</h3><span>${grouped.length} questions</span></div><p class="benchmark-description">${name === "Acme" ? "Ranked by sampled mentions." : esc(name) + " appears in these answers without Acme. Open a question to inspect the latest sample."}</p><div class="benchmark-list">${evidence || empty("No missing mentions here", "Acme appears alongside this brand in the current sample.")}</div><details class="benchmark-method"><summary>How this is measured</summary><p>${fmt(c.count)} of ${fmt(data.current.samples)} sampled answers mention ${esc(name)}. Each question groups its matching answers across this reporting period. Multiple brands can appear in one answer; rates do not add to 100%.</p></details>`,
   );
 }
 function openAction(id, replace = false) {
@@ -692,7 +707,7 @@ function openAction(id, replace = false) {
         ? "YOUR GROWTH PLAN"
         : "CONTENT OPPORTUNITY",
     workbenchHTML(
-      action,
+      { ...action, evidence: recommendationEvidence(data.a.filter((r) => r.question === action.question)) },
       record,
       done,
       record?.baseline || baselineFor(action, data, state),
@@ -746,19 +761,25 @@ function renderGrowth() {
     const group = data.series.slice(i, i + Math.ceil(data.series.length / 30));
     buckets.push({ start: group[0].date, end: group.at(-1).date, count: group.reduce((sum, day) => sum + day.referrals, 0) });
   }
-  const peak = Math.max(1, ...buckets.map((b) => b.count));
-  $("#context-referrals").innerHTML = `<div class="context-total"><strong>${fmt(data.current.referrals)}</strong><span>attributed sessions · ${state.days} days</span></div><div class="context-bars">${buckets.map((b) => `<button data-context-start="${b.start}" data-context-end="${b.end}" aria-label="${date(b.start)} to ${date(b.end)}: ${fmt(b.count)} AI referrals"><span style="height:${Math.max(2, b.count / peak * 100)}%"></span></button>`).join("")}</div><div class="context-axis"><span>${date(data.start)}</span><span>${date(data.end)}</span></div>`;
+  const peak = Math.max(0, ...buckets.map((b) => b.count));
+  const zeroDays = data.series.filter((day) => day.referrals === 0).length;
+  $("#context-referrals").innerHTML = `<div class="context-total"><strong>${fmt(data.current.referrals)}</strong><span>visits · ${state.days} days</span></div><div class="context-chart-scale"><span>Peak: ${peak} ${state.days > 30 ? "visits / 3 days" : "visits / day"}</span></div><div class="context-bars">${buckets.map((b) => `<button data-context-start="${b.start}" data-context-end="${b.end}" aria-label="${date(b.start)}${b.start === b.end ? "" : ` to ${date(b.end)}`}: ${fmt(b.count)} AI ${b.count === 1 ? "visit" : "visits"}" title="${date(b.start)}: ${fmt(b.count)} ${b.count === 1 ? "visit" : "visits"}"><span class="${b.count ? "" : "is-zero"}" style="height:${b.count / Math.max(1, peak) * 100}%"></span></button>`).join("")}</div><div class="context-axis"><span>${date(data.start)}</span><span>${zeroDays} ${zeroDays === 1 ? "day" : "days"} with no visits</span><span>${date(data.end)}</span></div>`;
   const citationRate = data.current.mentions ? data.current.citations / data.current.mentions * 100 : 0;
   $("#context-citations").innerHTML = `<div class="context-total"><strong>${pct(citationRate)}</strong><span>of mentions link to your website</span></div><div class="context-ratio" role="img" aria-label="${fmt(data.current.citations)} citations from ${fmt(data.current.mentions)} mentions"><span style="width:${citationRate}%"></span></div><div class="context-axis"><span>${fmt(data.current.citations)} with a link</span><span>${fmt(data.current.mentions - data.current.citations)} without</span></div>`;
   const next = items.find((a) => !a.completed);
   $("#overview-next").disabled = false;
   $("#overview-next").innerHTML =
     `${next ? (growthWork[next.id] ? "Continue plan" : "Your next move") : items.length ? "Review results" : "Explore questions"}${icon("right")}`;
-  $("#next-move").innerHTML = nextMoveHTML(items, growthWork, context);
+  $("#next-move").innerHTML = nextMoveHTML(items, growthWork);
   $("#growth-path").innerHTML = journeyHTML(items, context, growthWork);
-  $("#overview-competitors").innerHTML = competitorHTML(data.competitors);
+  const losses = recommendationEvidence(data.a);
+  $("#overview-competitors").innerHTML = losses.competitors.length
+    ? competitorHTML(losses.competitors.map((c) => ({ ...c, share: c.count / losses.lostAnswers * 100 })))
+    : '<p class="small-label">No competitor-only answers in this period.</p>';
+  limitOverviewList("overview-engines");
+  limitOverviewList("overview-competitors");
   $("#overview-benchmark").innerHTML =
-    `<strong>#${context.rank}</strong> of ${data.competitors.length} brands · same questions, same period`;
+    `Share of ${fmt(losses.lostAnswers)} answers where competitors appear without you`;
   $("#meaning-visibility").textContent =
     `${fmt(data.current.mentions)} of ${fmt(data.current.samples)} answers`;
   $("#meaning-citations").textContent = "Answers linking to your website";
@@ -783,44 +804,38 @@ function addonPreview(addon) {
   return `<div class="addon-preview"><div class="addon-preview-head"><strong>Illustrative AI pipeline</strong><span>Current view</span></div><div class="addon-preview-row"><span>Attributed sessions</span><strong>${fmt(data.current.referrals)}</strong></div><div class="addon-preview-row"><span>Leads created</span><strong>${fmt(data.current.leads)}</strong></div><div class="addon-preview-row"><span>Visit → lead</span><strong>${pct(data.current.referrals ? (data.current.leads / data.current.referrals) * 100 : 0)}</strong></div></div>`;
 }
 function openAddon(id, replace = false) {
-  const addon = ADDONS.find((item) => item.id === id);
+  const addon = ADDONS.find(item => item.id === id);
   if (!addon) return;
-  detail(
-    addon.name,
-    addon.access === "pilot" ? "PRIVATE PILOT" : "ADD-ON",
-    addonDetailHTML(addon, addonState[id], addonPreview(addon)),
-    replace,
-  );
+  document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+  currentView = "addons";
+  history[replace ? "replaceState" : "pushState"](null, "", addonURL(id));
+  showPage();
+  renderAddons();
+  $("#page-title").focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 function renderAddons() {
-  const counts = addonCounts(addonState),
-    opted = counts.active + counts.pilots,
-    recommended = recommendedAddon(addonState),
-    allAdded = ADDONS.every((addon) => addonState[addon.id]);
-  $("#addon-count").hidden = opted === 0;
-  $("#addon-count").textContent = opted;
-  $("#addon-focus").innerHTML = `<div class="addon-focus-copy"><span class="badge purple">${allAdded ? "STACK COMPLETE" : "SUGGESTED NEXT"}</span><h2>${allAdded ? "Your signal stack is ready." : `${esc(recommended.name)} turns the evidence into a repeatable move.`}</h2><p>${allAdded ? "Open any instrument below to see what it watches and creates." : esc(recommended.description)}</p><button class="button primary" data-addon="${recommended.id}">${addonState[recommended.id] ? "Manage add-on" : recommended.access === "pilot" ? "Explore pilot" : "See how it works"}${icon("right")}</button></div><div class="addon-focus-signal" aria-label="${esc(recommended.watches)} creates ${esc(recommended.creates)}"><div class="focus-node">${icon("eye")}<span><small>Watches</small><strong>${esc(recommended.watches)}</strong></span></div><span class="focus-arrow">${icon("right")}</span><div class="focus-node">${icon(recommended.icon)}<span><small>Creates</small><strong>${esc(recommended.creates)}</strong></span></div></div>`;
-  const active = ADDONS.filter((addon) => addonState[addon.id]?.state === "active"),
-    available = ADDONS.filter(
-      (addon) =>
-        addon.access === "available" &&
-        !addonState[addon.id] &&
-        (allAdded || addon.id !== recommended.id),
-    ),
-    pilots = ADDONS.filter((addon) => addon.access === "pilot");
-  $("#addon-active-section").hidden = active.length === 0;
-  $("#addon-active-copy").textContent =
-    active.length === 1 ? "1 instrument active" : `${active.length} instruments active`;
-  $("#addon-active").innerHTML = active
-    .map((addon) => addonRowHTML(addon, addonState[addon.id]))
-    .join("");
-  $("#addon-available").innerHTML = available.length
-    ? available.map((addon) => addonRowHTML(addon, addonState[addon.id])).join("")
-    : `<div class="addon-empty">Every available add-on is in your stack.</div>`;
-  $("#addon-pilots").innerHTML = pilots
-    .map((addon) => addonRowHTML(addon, addonState[addon.id]))
-    .join("");
+  const addon = currentView === "addons" ? addonFromPath(location.pathname) : null;
+  const root = $("#addon-marketplace");
+  if (addon) {
+    $("#page-title").textContent = addon.name;
+    document.title = `${addon.name} · Add-ons · Mentionloom`;
+    root.innerHTML = `<a class="market-back" href="/app/addons/" data-route="addons">${icon("right")} All add-ons</a>${addonDetailHTML(addon, addonState[addon.id])}`;
+  } else {
+    root.innerHTML = `<div class="market-intro"><div><h2>Tools for your next step</h2><p>Content, monitoring and reporting. Add what your team needs.</p></div><label class="market-search">${icon("search")}<input type="search" id="market-search" placeholder="Search add-ons" aria-label="Search add-ons"></label></div><div class="market-toolbar"><div class="market-categories" aria-label="Product categories">${["All products", "Content", "Monitoring", "Reporting", "Attribution"].map((c,i)=>`<button class="button" data-market-category="${c}" aria-pressed="${i===0}">${c}</button>`).join("")}</div><span class="small-label">Sample pricing · USD / month</span></div><div class="market-grid">${ADDONS.map(a=>`<div data-product-category="${a.category}" data-product-search="${esc(`${a.name} ${a.description}`.toLowerCase())}">${addonRowHTML(a,addonState[a.id])}</div>`).join("")}</div><p id="market-empty" class="market-empty" hidden>No add-ons match. Try another search or category.</p>`;
+  }
 }
+function filterMarketplace() {
+  const category = document.querySelector('[data-market-category][aria-pressed="true"]')?.dataset.marketCategory;
+  const query = $("#market-search")?.value.trim().toLowerCase() || "";
+  let count = 0;
+  document.querySelectorAll("[data-product-category]").forEach(el => {
+    el.hidden = (category !== "All products" && el.dataset.productCategory !== category) || !el.dataset.productSearch.includes(query);
+    if (!el.hidden) count++;
+  });
+  $("#market-empty").hidden = count > 0;
+}
+document.addEventListener("input", event => { if (event.target.id === "market-search") filterMarketplace(); });
 function changeAddon(id, enabled) {
   const addon = ADDONS.find((item) => item.id === id);
   if (!addon) return;
@@ -846,6 +861,15 @@ function changeAddon(id, enabled) {
 function openDay(start, end = start, metric = state.metric) {
   const rows = data.a.filter((r) => r.date >= start && r.date <= end),
     visits = data.v.filter((r) => r.date >= start && r.date <= end);
+  if (["referrals", "leads"].includes(metric)) {
+    const sources = ENGINES.map((engine) => ({ ...engine, rows: visits.filter((visit) => visit.engine === engine.id) })).filter((engine) => engine.rows.length);
+    detail(
+      date(start) + (end !== start ? " – " + date(end) : ""),
+      "VISITS FROM AI",
+      `<div class="drawer-stats"><div><span>AI visits</span><strong>${fmt(visits.length)}</strong></div><div><span>Leads</span><strong>${fmt(visits.filter((visit) => visit.lead).length)}</strong></div></div>${visits.length ? `<h3>Sources</h3><table class="data-table"><thead><tr><th>Source</th><th>Visits</th><th>Leads</th></tr></thead><tbody>${sources.map((source) => `<tr><td><span class="daily-source">${engineIcon(source)}${esc(source.name)}</span></td><td>${source.rows.length}</td><td>${source.rows.filter((visit) => visit.lead).length}</td></tr>`).join("")}</tbody></table>` : '<div class="empty-state"><h3>No AI visits in this period</h3><p>No attributed visits match the selected dates and filters.</p></div>'}`,
+    );
+    return;
+  }
   detail(
     date(start) + (end !== start ? " – " + date(end) : ""),
     "DAILY DETAIL · " + LABELS[metric].toUpperCase(),
@@ -891,49 +915,11 @@ function methodology() {
       )}<div class="notice">This entire workspace uses deterministic sample data through September 9, 2026. No live integrations or private AI conversations are connected. Topic filters map answer topics to their related landing pages; this is not a session-to-answer identity match.</div><details><summary>How are chart comparisons calculated?</summary><p>Each period is compared with the immediately preceding period of the same length. Mention-rate changes use percentage points; count changes use relative percentages. The 90-day chart groups observations into three-day intervals. All chart axes start at zero.</p></details><details><summary>What counts as a citation?</summary><p>A sampled answer that links to acme.work counts as one website citation. Mentions without a link still count toward mention rate. An external page may be cited alongside or instead of your website.</p></details><details><summary>Can a mention guarantee traffic or revenue?</summary><p>No. Answers, referrals, and lead events are different datasets. The dashboard brings them together for analysis without claiming that a specific answer caused a visit.</p></details>`,
   );
 }
-function sourceDetails(kind = "answers") {
-  const config = {
-    answers: [
-      "Answer sampling",
-      "Mentions and citations for your tracked questions.",
-      [
-        "Choose questions and engines",
-        "Collect answer text and cited URLs",
-        "Compare mention rates over time",
-      ],
-    ],
-    analytics: [
-      "Website analytics",
-      "Visits identified through AI referrers or campaign parameters.",
-      [
-        "Add a website collector or analytics connection",
-        "Capture landing page and source",
-        "Keep unattributed sessions separate",
-      ],
-    ],
-    conversions: [
-      "Conversion events",
-      "Lead and signup events from attributed website sessions.",
-      [
-        "Choose a conversion event",
-        "Connect website analytics",
-        "Define an attribution window",
-      ],
-    ],
-    logs: [
-      "Server logs",
-      "Crawler requests from your server or CDN.",
-      [
-        "Import access logs",
-        "Verify bot identity",
-        "Separate search and training crawlers",
-      ],
-    ],
-  }[kind] || ["Data source", "Choose a source to connect.", []];
+function sourceDetails() {
   detail(
-    config[0],
-    "SOURCE · NOT CONNECTED",
-    `<p>${config[1]}</p><ol class="step-list">${config[2].map((step, i) => `<li><span class="step-number">${i + 1}</span><span>${step}</span></li>`).join("")}</ol><button class="button primary" data-action="setup">Plan setup${icon("right")}</button><div class="notice">Preview only. A saved plan does not activate this connection.</div>`,
+    "Data setup",
+    "WORKSPACE",
+    `<p>This workspace uses sample data. Live connections are not available yet.</p><dl class="data-setup-list"><div><dt>AI answers</dt><dd>Answer samples power mention rates and citations.</dd></div><div><dt>Website analytics</dt><dd>Visits and events power traffic and conversions.</dd></div><div><dt>Server logs</dt><dd>Optional crawler monitoring for Crawler Guard.</dd></div></dl>`,
   );
 }
 function setup() {
@@ -1013,6 +999,7 @@ function renderSearch(term) {
     : empty("No results", "Try a page name, buyer question, or improvement.");
 }
 function exportReport() {
+  if (currentView === "traffic") return exportTraffic();
   const rows = [
     ["Mentionloom sample workspace — Acme"],
     ["Period", data.start, data.end],
@@ -1033,11 +1020,75 @@ function exportReport() {
   download(`acme-ai-discovery-${data.start}-${data.end}.csv`, csv(rows));
   toast("Your filtered report has been exported.");
 }
+function trafficScope() {
+  return { days: state.days, source: state.source || '', country: state.country || '', device: state.device || '' };
+}
+function renderTraffic() {
+  const c = trafficData.current;
+  $('#traffic-metrics').innerHTML = Object.entries(TRAFFIC_METRICS).map(([key, label]) => {
+    const before = trafficData.previous[key], diff = before ? (c[key] - before) / before * 100 : 0;
+    const change = before ? `${diff < 0 ? '↘' : '↗'} ${Math.abs(diff).toFixed(1)}%` : c[key] ? 'New' : 'No change';
+    return `<button class="metric ${state.metric === key ? 'active' : ''}" data-traffic-metric="${key}" aria-pressed="${state.metric === key}" aria-controls="main-chart"><span class="metric-label">${label}</span><span class="metric-value">${fmt(c[key])}</span><span class="metric-comparison" title="Compared with prior ${state.days} days"><b class="${diff < 0 ? 'negative' : ''}">${change}</b></span></button>`;
+  }).join('');
+  $('#traffic-usage').innerHTML = usageHTML(trafficData);
+  $('#traffic-engines').innerHTML = sourcesHTML(trafficData);
+  $('#traffic-funnel').innerHTML = funnelHTML(trafficData);
+  $('#traffic-funnel-total').textContent = `${pct(c.referrals ? c.leads / c.referrals * 100 : 0)} visit-to-lead conversion`;
+  $('#traffic-locations').innerHTML = locationsHTML(trafficData, locationView, 3);
+  $('#traffic-devices').innerHTML = devicesHTML(trafficData, deviceView, 3);
+  $('#traffic-pages').innerHTML = pagesHTML(trafficData, trafficPageView);
+  $('#traffic-page-unit').textContent = trafficPageView === 'all' ? 'Page views' : 'Visits';
+  $('#traffic-journeys').innerHTML = journeysHTML(trafficData);
+  selectValue($('#location-view'), locationView);
+  selectValue($('#device-view'), deviceView);
+  selectValue($('#traffic-page-view'), trafficPageView);
+}
+function renderTrafficChart() {
+  const comparing = $('#compare-toggle').checked, comparison = dates(state.days, true);
+  $('#chart-description').textContent = TRAFFIC_METRICS[state.metric] + (state.days === 90 ? ' · every 3 days' : '');
+  $('#chart-context').textContent = '';
+  $('#compare-label').textContent = `Compare with prior ${state.days} days`;
+  $('#compare-toggle').closest('label').title = `${date(comparison.start)} – ${date(comparison.end)}`;
+  $('#chart-legend').textContent = `${date(trafficData.start)} – ${date(trafficData.end)}`;
+  $('#comparison-legend').hidden = !comparing;
+  $('#comparison-dates').textContent = `${date(comparison.start)} – ${date(comparison.end)}`;
+  $('#sample-count').textContent = `${fmt(trafficData.current.referrals)} visits · Sample data`;
+  $('#traffic-milestones').hidden = !trafficData.milestones.length;
+  $('#traffic-milestones').innerHTML = trafficData.milestones.map((event, i) => `<button class="text-button" data-milestone="${event.id}"><span class="milestone-number">${i + 1}</span>${date(event.date)} · ${event.label}${icon('right')}</button>`).join('');
+  renderChart($('#main-chart'), trafficData.series, state.metric, comparing, openTrafficDay, { label: TRAFFIC_METRICS[state.metric], milestones: trafficData.milestones, onMilestone: openMilestone });
+}
+function openTrafficSessions(title, rows, note = '') {
+  const c = trafficMetrics(rows);
+  detail(title, 'SAMPLE VISITS', `<div class="drawer-stats"><div><span>Visits</span><strong>${fmt(c.referrals)}</strong></div><div><span>Leads</span><strong>${fmt(c.leads)}</strong></div></div>${note ? `<p>${esc(note)}</p>` : ''}${sessionsHTML(rows.slice().sort((a,b) => b.date.localeCompare(a.date)))}`);
+}
+function openTrafficDay(start, end = start) {
+  openTrafficSessions(date(start) + (end !== start ? ' – ' + date(end) : ''), trafficData.rows.filter(v => v.date >= start && v.date <= end));
+}
+function openMilestone(id) {
+  const event = MILESTONES.find(e => e.id === id);
+  if (!event) return;
+  const rows = trafficData.rows.filter(v => v.campaign === event.campaign), c = trafficMetrics(rows);
+  detail(event.title, `${date(event.date).toUpperCase()} · SAMPLE EVENT`, `<div class="traffic-event-post"><span>${esc(sourceLabel(event.source))} · Illustrative post</span><p>${esc(event.post)}</p></div><div class="drawer-stats"><div><span>Tagged visits</span><strong>${c.referrals}</strong></div><div><span>Leads</span><strong>${c.leads}</strong></div></div><p>Visits tagged to this campaign within the selected filters. The chart shows all matching visits; timing alone does not establish impact.</p>${sessionsHTML(rows)}`);
+}
+function openTrafficNumbers() {
+  detail(TRAFFIC_METRICS[state.metric], `${date(trafficData.start)} – ${date(trafficData.end)} · ${sourceLabel(state.source)} · ${countryLabel(state.country)}`, trafficTableHTML(trafficData, state.metric, TRAFFIC_METRICS[state.metric], $('#compare-toggle').checked));
+}
+function exportTraffic() {
+  const rows = [ ['Acme · Sample website traffic'], ['Period', trafficData.start, trafficData.end], ['Source', sourceLabel(state.source)], ['Country', countryLabel(state.country)], ['Device', state.device || 'All devices'], [], ['Date', 'Visits', 'Visitors', 'Page views', 'Leads'] ];
+  trafficData.series.forEach(d => rows.push([d.date, d.referrals, d.visitors, d.pageviews, d.leads]));
+  rows.push([], ['Visit ID', 'Date', 'Source', 'Country', 'City', 'Device', 'Browser', 'System', 'Entry', 'Journey', 'Seconds', 'Lead', 'Attribution', 'Campaign']);
+  trafficData.rows.forEach(v => rows.push([v.id, v.date, sourceLabel(v.source), countryLabel(v.country), v.city, v.device, v.browser, v.os, v.page, v.journey.join(' → '), v.seconds, v.lead, v.method, v.campaign]));
+  download(`acme-traffic-${trafficData.start}-${trafficData.end}.csv`, csv(rows));
+  toast('Your filtered traffic report has been exported.');
+}
+
 const actions = {
+  "recommendation-details": recommendationDetails,
+  "lost-questions": lostQuestions,
   "tour-start": () => showTour(0),
   search,
   setup,
-  sources: () => navigate("sources"),
+  sources: sourceDetails,
   "source-details": sourceDetails,
   "growth-next": () => {
     const items = priorities(data, growthWork, shipped),
@@ -1068,6 +1119,13 @@ const actions = {
   "add-question": addQuestion,
   export: exportReport,
   "clear-filters": () => update({ engine: "", topic: "" }),
+  "traffic-clear": () => update({ source: '', country: '', device: '' }),
+  "traffic-sources": () => detail('Sources', 'VISITS', sourcesHTML(trafficData, Infinity)),
+  "traffic-locations": () => detail('Locations', 'VISITS', locationsHTML(trafficData, locationView, Infinity)),
+  "traffic-devices": () => detail('Devices', 'VISITS', devicesHTML(trafficData, deviceView, Infinity)),
+  "traffic-pages": () => detail('Pages', trafficPageView === 'all' ? 'PAGE VIEWS' : 'VISITS', pagesHTML(trafficData, trafficPageView, Infinity)),
+  "traffic-journeys": () => detail('Journeys', 'SOURCE → DESTINATION', journeysHTML(trafficData, Infinity)),
+  "traffic-funnel": () => detail('Funnel', 'SAME-SESSION CONVERSION', `<p>Visits → engaged visits → pricing → signup → lead. Each stage includes only visits that reached the preceding steps. Engagement means at least 30 seconds or a second page view.</p>${funnelHTML(trafficData)}`),
   "reset-workspace": () => {
     update({ days: 30, engine: "", topic: "", metric: "visibility" });
     closeMenus();
@@ -1079,35 +1137,41 @@ const actions = {
     showAll = true;
     navigate("questions");
   },
-  "chart-data": () =>
+  "chart-data": () => currentView === "traffic" ? openTrafficNumbers() :
     detail(
       LABELS[state.metric],
       "CHART DATA",
-      `<p>${date(data.start)} – ${date(data.end)}, 2026. ${state.engine ? engine(state.engine).name : "All AI engines"} · ${state.topic || "All topics"}. Daily values before chart grouping.</p><button class="button" data-action="export">${icon("download")}Export report</button><table class="data-table"><thead><tr><th>Date</th><th>${LABELS[state.metric]}</th><th>Previous period</th></tr></thead><tbody>${data.series.map((d) => `<tr><td>${date(d.date)}</td><td>${format(d[state.metric], state.metric)}</td><td>${format(d.previous[state.metric], state.metric)}</td></tr>`).join("")}</tbody></table>`,
+      `<p>${date(data.start)} – ${date(data.end)}, 2026. ${state.engine ? engine(state.engine).name : "All AI engines"} · ${state.topic || "All topics"}. Daily values before chart grouping.</p><button class="button" data-action="export">${icon("download")}Export report</button><table class="data-table"><thead><tr><th>Date</th><th>${LABELS[state.metric]}</th>${$("#compare-toggle").checked ? "<th>Compared with</th><th>Value</th>" : ""}</tr></thead><tbody>${data.series.map((d) => `<tr><td>${date(d.date)}</td><td>${format(d[state.metric], state.metric)}</td>${$("#compare-toggle").checked ? `<td>${date(new Date(Date.parse(d.date + "T00:00:00Z") - state.days * 86400000).toISOString().slice(0, 10))}</td><td>${format(d.previous[state.metric], state.metric)}</td>` : ""}</tr>`).join("")}</tbody></table>`,
+    ),
+  engines: () =>
+    detail(
+      "AI engines",
+      engineView === "visibility" ? "MENTION RATE" : "AI REFERRALS",
+      `<div class="drawer-list">${data.engines.slice().sort((a, b) => b[engineView] - a[engineView]).map((e) => `<button data-engine="${e.id}">${engineIcon(e)}<span>${esc(e.name)}<small>${fmt(e.mentions)} / ${fmt(e.samples)} answers · ${fmt(e.referrals)} referrals</small></span><strong>${format(e[engineView], engineView)}</strong>${icon("filter")}</button>`).join("")}</div>`,
     ),
   competitors: () =>
     detail(
-      "The competitive picture.",
+      "Competitors",
       "SAME QUESTIONS · SAME PERIOD",
-      `<p>Compare brands across ${fmt(data.current.samples)} sampled answers. Open a brand to find the questions behind its visibility.</p><div class="drawer-list">${data.competitors.map((c) => `<button data-competitor="${c.name}"><span class="brand-initial ${c.self ? "self" : ""}">${c.self ? "a" : c.name[0]}</span><span>${c.name}<small>${fmt(c.count)} answers · ${pct(c.share)} mention rate</small></span>${icon("right")}</button>`).join("")}</div>`,
+      `<p>Compare brands across ${fmt(data.current.samples)} sampled answers. Open a brand to find the questions behind its visibility.</p><div class="drawer-list">${data.competitors.map((c) => `<button data-competitor="${c.name}"><span class="brand-initial ${c.self ? "self acme-mark" : ""}">${c.self ? '<img src="/assets/brands/acme.svg" width="23" height="23" alt="">' : esc(c.name[0])}</span><span>${c.name}<small>${fmt(c.count)} answers · ${pct(c.share)} mention rate</small></span>${icon("right")}</button>`).join("")}</div>`,
     ),
   pages: () =>
     detail(
-      "Follow the citations.",
+      "Cited pages",
       "SOURCES IN AI ANSWERS",
-      `<p>These are the pages cited in your filtered sample. Select a source to inspect the answers behind it.</p><h3>Your website</h3><div class="drawer-list">${data.pages.map((p) => `<button data-source-page="${esc(p.path)}">${icon("file")}<span>acme.work${esc(p.path)}<small>${fmt(p.citations)} citations · ${fmt(p.referrals)} referrals</small></span>${icon("right")}</button>`).join("")}</div><h3>External sources</h3><div class="drawer-list">${data.external.map((p) => `<button data-source-page="${esc(p.path)}">${icon("globe")}<span>${esc(p.path)}<small>${fmt(p.citations)} sampled citations</small></span>${icon("right")}</button>`).join("")}</div>`,
+      `<p>Counts include website and external citations. An answer can cite both. Select a page to inspect its answer samples.</p><h3>Your website</h3><div class="drawer-list">${data.pages.map((p) => `<button data-source-page="${esc(p.path)}">${icon("file")}<span>acme.work${esc(p.path)}<small>${fmt(p.citations)} citations · ${fmt(p.referrals)} referrals</small></span>${icon("right")}</button>`).join("")}</div><h3>External sources</h3><div class="drawer-list">${data.external.map((p) => `<button data-source-page="${esc(p.path)}">${icon("globe")}<span>${esc(p.path)}<small>${fmt(p.citations)} sampled citations</small></span>${icon("right")}</button>`).join("")}</div>`,
     ),
   attribution: () =>
     detail(
       "The click is only the beginning.",
       "REFERRAL ATTRIBUTION",
-      `<p>AI referrals are identified from a known AI referrer or campaign source. Once a visitor arrives, their session can be associated with an event on your own website.</p><div class="drawer-stats"><div><span>Identified by UTM</span><strong>${fmt(data.v.filter((v) => v.method === "UTM source").length)}</strong></div><div><span>Identified by referrer</span><strong>${fmt(data.v.filter((v) => v.method === "Referrer").length)}</strong></div></div><h3>In this sample</h3><ol class="step-list"><li><span class="step-number">1</span><span>A session arrives with an AI source in the UTM or referrer.</span></li><li><span class="step-number">2</span><span>An engaged visit views another page or stays for at least 30 seconds.</span></li><li><span class="step-number">3</span><span>A lead is a form completion in that same session.</span></li></ol><div class="notice">Referrer loss means some AI visits cannot be identified. A UTM does not expose the prompt that produced a visit. This dashboard does not claim to read private chats.</div><button class="button" data-action="sources">Explore data sources${icon("right")}</button>`,
+      `<p>AI referrals are identified from a known AI referrer or campaign source. Once a visitor arrives, their session can be associated with an event on your own website.</p><div class="drawer-stats"><div><span>Identified by UTM</span><strong>${fmt(data.v.filter((v) => v.method === "UTM source").length)}</strong></div><div><span>Identified by referrer</span><strong>${fmt(data.v.filter((v) => v.method === "Referrer").length)}</strong></div></div><h3>Sample</h3><ol class="step-list"><li><span class="step-number">1</span><span>A session arrives with an AI source in the UTM or referrer.</span></li><li><span class="step-number">2</span><span>An engaged visit views another page or stays for at least 30 seconds.</span></li><li><span class="step-number">3</span><span>A lead is a form completion in that same session.</span></li></ol><div class="notice">Referrer loss means some AI visits cannot be identified. A UTM does not expose the prompt that produced a visit. This dashboard does not claim to read private chats.</div><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
     ),
   crawlers: () =>
     detail(
       "A clear path for search engines.",
       "CRAWLER ACCESS · SAMPLE SNAPSHOT",
-      `<p>Crawler requests tell you whether AI systems can retrieve your pages. They are separate from mentions, human visits, and conversions.</p><table class="data-table"><thead><tr><th>Crawler / purpose</th><th>Requests</th><th>Access</th></tr></thead><tbody>${CRAWLERS.map((c) => `<tr><td>${c.name}<br><span class="small-label">${c.purpose}</span></td><td>${fmt(c.count)}</td><td><span class="badge ${c.status === "Allowed" ? "green" : "neutral"}">${c.status}</span></td></tr>`).join("")}</tbody></table><div class="notice">Illustrative 30-day server-log snapshot, independent of your dashboard filters. No server or CDN is connected.</div><h3>Search is different from training</h3><p>Allowing a search crawler can help it retrieve a page, but does not guarantee indexing or recommendations. Training crawlers have a different purpose and can be managed separately.</p><button class="button" data-action="sources">Review sources${icon("right")}</button>`,
+      `<p>Crawler requests tell you whether AI systems can retrieve your pages. They are separate from mentions, human visits, and conversions.</p><table class="data-table"><thead><tr><th>Crawler / purpose</th><th>Requests</th><th>Access</th></tr></thead><tbody>${CRAWLERS.map((c) => `<tr><td>${c.name}<br><span class="small-label">${c.purpose}</span></td><td>${fmt(c.count)}</td><td><span class="badge ${c.status === "Allowed" ? "green" : "neutral"}">${c.status}</span></td></tr>`).join("")}</tbody></table><div class="notice">Illustrative 30-day server-log snapshot, independent of your dashboard filters. No server or CDN is connected.</div><h3>Crawler types</h3><p>Allowing a search crawler can help it retrieve a page, but does not guarantee indexing or recommendations. Training crawlers have a different purpose and can be managed separately.</p><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
     ),
   activity: () =>
     detail(
@@ -1126,8 +1190,16 @@ document.addEventListener("click", (event) => {
     const choice = b.dataset.tour;
     if (choice === "try") {
       const step = tourSteps[tourStep];
-      if (step.view === "traffic") actions.attribution();
-      else $(step.target)?.querySelector("button")?.click();
+      if (step.view === "traffic") actions["traffic-funnel"]();
+      else if (step.view === "addons") detail(ADDONS[0].name, "DEMO", addonDemoHTML(ADDONS[0], addonState[ADDONS[0].id], addonPreview(ADDONS[0])));
+      else if (step.view === "questions") {
+        const row = [...$(step.target).querySelectorAll('[data-question]')].find(button => data.questions.some(q => q.id === button.dataset.question && q.samples));
+        const question = data.questions.filter(q => q.samples).sort((a,b) => a.visibility-b.visibility)[0];
+        if (row) row.click();
+        else if (question) openQuestion(question.id);
+      }
+      else $(step.target)?.querySelector(step.action)?.click();
+      if (document.querySelector('dialog[open]')) $('#tour-shade').hidden = true;
       return;
     }
     if (choice === "close" || choice === "finish") {
@@ -1149,6 +1221,7 @@ document.addEventListener("click", (event) => {
     )
       return;
     event.preventDefault();
+    if (b.dataset.sourceScope) Object.assign(state, { source: state.engine || b.dataset.sourceScope, country: "", device: "" });
     navigate(b.dataset.route);
     return;
   }
@@ -1161,7 +1234,19 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (b.dataset.addon) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
     openAddon(b.dataset.addon);
+    return;
+  }
+  if (b.dataset.marketCategory) {
+    document.querySelectorAll('[data-market-category]').forEach(el => el.setAttribute('aria-pressed', String(el === b)));
+    filterMarketplace();
+    return;
+  }
+  if (b.dataset.addonDemo) {
+    const addon = ADDONS.find(a => a.id === b.dataset.addonDemo);
+    detail(addon.name, "DEMO", addonDemoHTML(addon, addonState[addon.id], addonPreview(addon)));
     return;
   }
   if (b.dataset.addonEnable) {
@@ -1184,6 +1269,25 @@ document.addEventListener("click", (event) => {
     setTimeout(() => actions[b.dataset.action]?.(), 0);
     return;
   }
+  if (b.dataset.trafficMetric) { update({ metric: b.dataset.trafficMetric }); return; }
+  if (b.hasAttribute('data-traffic-clear')) { update({ [b.dataset.trafficClear]: '' }); return; }
+  for (const key of ['source', 'country', 'device']) {
+    if (b.hasAttribute('data-traffic-' + key)) {
+      if ($('#detail').open) $('#detail').close();
+      const value = b.getAttribute('data-traffic-' + key);
+      update({ [key]: value });
+      closeMenus();
+      return;
+    }
+  }
+  if (b.dataset.milestone) { openMilestone(b.dataset.milestone); return; }
+  if (b.dataset.funnelStage) { const stage = trafficData.funnel.find(s => s.id === b.dataset.funnelStage); if (stage) openTrafficSessions(stage.name, stage.rows); return; }
+  if (b.dataset.trafficDimension) { openTrafficSessions(b.dataset.trafficValue, trafficData.rows.filter(v => v[b.dataset.trafficDimension] === b.dataset.trafficValue)); return; }
+  if (b.dataset.trafficPage) { const path = b.dataset.trafficPage, mode = b.dataset.pageMode; openTrafficSessions(path, trafficData.rows.filter(v => mode === 'all' ? v.journey.includes(path) : (mode === 'exit' ? v.journey.at(-1) : v.page) === path)); return; }
+  if (b.dataset.trafficJourney) { const journey = journeys(trafficData).find(j => j.id === b.dataset.trafficJourney); if (journey) openTrafficSessions('Journey', journey.rows); return; }
+  if (b.dataset.value && b.closest('#location-view')) { locationView = b.dataset.value; renderTraffic(); return; }
+  if (b.dataset.value && b.closest('#device-view')) { deviceView = b.dataset.value; renderTraffic(); return; }
+  if (b.dataset.value && b.closest('#traffic-page-view')) { trafficPageView = b.dataset.value; renderTraffic(); return; }
   if (b.dataset.days) {
     setTimeout(() => update({ days: Number(b.dataset.days) }), 0);
     return;
@@ -1194,6 +1298,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (b.hasAttribute("data-engine")) {
+    if ($("#detail").open) $("#detail").close();
     setTimeout(() => update({ engine: b.dataset.engine }), 0);
     return;
   }
@@ -1206,16 +1311,11 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (b.dataset.metric) {
-    if (currentView === "overview") {
-      state.metric = b.dataset.metric;
-      navigate(
-        ["referrals", "leads"].includes(state.metric)
-          ? "traffic"
-          : "visibility",
-      );
-      return;
-    }
     update({ metric: b.dataset.metric });
+    return;
+  }
+  if (b.dataset.recommendationQuestion) {
+    openRecommendationEvidence(b.dataset.recommendationQuestion);
     return;
   }
   if (b.dataset.question) {
@@ -1475,7 +1575,7 @@ document.addEventListener("submit", (e) => {
       detail(
         "Your setup plan is saved.",
         "WORKSPACE SETUP · PREVIEW",
-        `<p>We’ve saved <strong>${esc(url.hostname)}</strong> in this browser. Here’s what needs to be connected to make the dashboard yours.</p><ol class="step-list"><li><span class="step-number">1</span><span>Verify your domain and define the buyer questions you want to track.</span></li><li><span class="step-number">2</span><span>Connect answer sampling to collect mentions and citations.</span></li><li><span class="step-number">3</span><span>Install your website collector and define a lead event.</span></li></ol><div class="notice">This is a saved plan, not an active connection. The Acme dashboard continues to show sample data.</div><button class="button" data-action="sources">Review data sources${icon("right")}</button>`,
+        `<p>We’ve saved <strong>${esc(url.hostname)}</strong> in this browser. Here’s what needs to be connected to make the dashboard yours.</p><ol class="step-list"><li><span class="step-number">1</span><span>Verify your domain and define the buyer questions you want to track.</span></li><li><span class="step-number">2</span><span>Connect answer sampling to collect mentions and citations.</span></li><li><span class="step-number">3</span><span>Install your website collector and define a lead event.</span></li></ol><div class="notice">This is a saved plan, not an active connection. The Acme dashboard continues to show sample data.</div><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
       );
       toast("Setup plan saved in this browser.");
     }
@@ -1483,7 +1583,7 @@ document.addEventListener("submit", (e) => {
 });
 showPage();
 addEventListener("popstate", () => {
-  Object.assign(state, parseState(location.search));
+  Object.assign(state, parseState(location.search), parseTrafficState(location.search));
   currentView = resolveView(location);
   state.metric = metricForView(currentView, state.metric);
   document.querySelectorAll("dialog[open]").forEach((dialog) => dialog.close());
@@ -1512,10 +1612,24 @@ try {
 }
 hydrate();
 installMenus();
+filters = createFilters({
+  getState: () => state,
+  onChange: update,
+  getDefinitions: () => currentView === 'traffic' ? [
+    { key: 'source', label: 'Source', icon: 'link', values: [...Object.entries(SOURCE_GROUPS).map(([id,name]) => ({ id, name })), ...TRAFFIC_SOURCES.map(source => ({ ...source, icon: source.logo ? `<img src="/assets/brands/${source.logo}.svg" width="20" height="20" alt="">` : icon(source.glyph || 'globe') }))] },
+    { key: 'country', label: 'Country', icon: 'globe', values: COUNTRIES },
+    { key: 'device', label: 'Device', icon: 'layout', values: DEVICES.map(name => ({ id: name, name })) },
+  ] : [
+    { key: 'engine', label: 'Engine', icon: 'spark', values: ENGINES.map(value => ({ ...value, icon: engineIcon(value) })) },
+    { key: 'topic', label: 'Topic', icon: 'target', values: TOPICS.map(name => ({ id: name, name })) },
+  ],
+});
 render();
 await enhance(document.querySelector(".question-controls"));
 await enhance(document.querySelector(".opportunity-toolbar"));
 await enhance(document.querySelector(".breakdown-grid"));
+await enhance(document.querySelector(".traffic-grid"));
+showPage();
 syncURL();
 window.scrollTo({ top: 0, behavior: "instant" });
 
@@ -1541,43 +1655,83 @@ document
   .forEach((el) => reveal.observe(el));
 
 let resizeTimer;
+const recommendationCard = $('#next-move');
+let recommendationVisible = false;
+const syncRecommendationMotion = () => recommendationCard.classList.toggle('agent-visible', recommendationVisible && !document.hidden);
+const recommendationObserver = new IntersectionObserver(entries => {
+  recommendationVisible = entries.some(entry => entry.isIntersecting);
+  syncRecommendationMotion();
+}, { threshold: 0.05 });
+recommendationObserver.observe(recommendationCard);
+document.addEventListener('visibilitychange', syncRecommendationMotion);
 let tourStep = -1;
 const tourSteps = [
-  { view: "overview", target: ".metrics", title: "See your visibility", copy: "How often AI mentions your brand in sampled answers.", task: "Explore a metric" },
-  { view: "questions", target: ".question-table-wrap", title: "Find the gaps", copy: "Buyer questions where your brand is missing.", task: "Read an answer" },
-  { view: "opportunities", target: "#action-cards", title: "Make your next move", copy: "One page. One improvement. A saved baseline.", task: "Open a plan" },
-  { view: "traffic", target: "#funnel", title: "Follow the click", copy: "Attributed AI visits → engagement → leads.", task: "Explore attribution" },
-  { view: "sources", target: ".connections", title: "Connect your signals", copy: "Sample data today. Your own sources next.", task: "Explore a source" },
-  { view: "addons", target: "#addon-focus", title: "Build your toolkit", copy: "Opt into tools that fit your workflow.", task: "Preview an add-on" },
+  { view: "overview", target: "#discovery-metrics", action: '[data-metric="visibility"]', title: "Choose a signal", copy: "Select a metric to see how it changed. Mention rate measures how often Acme appears in sampled AI answers.", task: "Select mention rate" },
+  { view: "questions", target: ".question-table-wrap", title: "Find a missing answer", copy: "Start with a buyer question where Acme rarely appears. Open a row to inspect the sampled answer.", task: "Open a buyer question" },
+  { view: "opportunities", target: "#action-cards", action: '[data-improvement]', title: "Turn evidence into work", copy: "Each opportunity connects a visibility gap to a page you can improve and a plan you can follow.", task: "Open an improvement" },
+  { view: "traffic", target: ".traffic-card:has(#traffic-funnel)", title: "Follow the visit", copy: "See how website visits progress to engagement, pricing, signup and a lead. Select a stage to inspect its sessions.", task: "Explore the funnel" },
+  { view: "addons", target: ".market-card", title: "Add a capability", copy: "Explore focused tools for content, monitoring and reporting. Each product has a preview and its own pricing.", task: "Preview Brief Studio" },
 ];
+let tourActive = false;
+function positionTour() {
+ const shade = $('#tour-shade');
+ if (!tourActive || document.querySelector('dialog[open]')) { shade.hidden = true; return; }
+ const target = $(tourSteps[tourStep].target);
+ if (!target) { shade.hidden = true; return; }
+ const panel = $('#demo-tour'), rect = target.getBoundingClientRect();
+ const panelHeight = panel.offsetHeight;
+ const maxBottom = Math.max(8,innerHeight-panelHeight-44);
+ const top = Math.min(maxBottom,Math.max(8,rect.top-8)), left = Math.min(innerWidth-8,Math.max(8,rect.left-8));
+ const right = Math.max(left,Math.min(innerWidth-8,rect.right+8));
+ const bottom = Math.max(top,Math.min(rect.bottom+8,maxBottom));
+ const panes = [...shade.querySelectorAll(':scope > div')];
+ const boxes = [[0,0,innerWidth,top],[0,bottom,innerWidth,innerHeight-bottom],[0,top,left,bottom-top],[right,top,innerWidth-right,bottom-top]];
+ panes.forEach((el,i)=>{ const [x,y,w,h]=boxes[i]; Object.assign(el.style,{left:x+'px',top:y+'px',width:Math.max(0,w)+'px',height:Math.max(0,h)+'px'}); });
+ const frame = shade.querySelector('.tour-frame');
+ Object.assign(frame.style,{left:left+'px',top:top+'px',width:Math.max(0,right-left)+'px',height:Math.max(0,bottom-top)+'px'});
+ frame.hidden = bottom <= top || right <= left;
+ shade.hidden = false;
+}
 function endTour(result) {
-  $("#demo-tour").hidden = true;
-  document.querySelectorAll(".tour-highlight").forEach((el) => el.classList.remove("tour-highlight"));
-  store("education-tour", result);
-  if (result === "complete") navigate("overview");
-  document.querySelector('[data-tour="start"]')?.focus({ preventScroll: true });
+ tourActive = false;
+ $('#demo-tour').hidden = true;
+ $('#tour-shade').hidden = true;
+ document.body.classList.remove('tour-active');
+ document.querySelectorAll('.tour-highlight').forEach(el=>el.classList.remove('tour-highlight'));
+ store('education-tour',result);
+ document.querySelector('[data-tour="start"]')?.focus({preventScroll:true});
 }
 function showTour(index) {
-  tourStep = Math.max(0, Math.min(index, tourSteps.length - 1));
-  const step = tourSteps[tourStep];
-  document.querySelectorAll(".tour-highlight").forEach((el) => el.classList.remove("tour-highlight"));
-  navigate(step.view);
-  const target = $(step.target);
-  target?.classList.add("tour-highlight");
-  target?.scrollIntoView({ behavior: "instant", block: "center" });
-  const panel = $("#demo-tour");
-  panel.hidden = false;
-  panel.innerHTML = `<div class="tour-top"><span>GUIDED DEMO · ${tourStep + 1} / ${tourSteps.length}</span><button class="icon-button" data-tour="close" aria-label="Close guided tour">${icon("close")}</button></div><div class="tour-progress" aria-hidden="true">${tourSteps.map((_, i) => `<span class="${i <= tourStep ? "complete" : ""}"></span>`).join("")}</div><h2 tabindex="-1">${step.title}</h2><p>${step.copy}</p><button class="tour-task tour-try" data-tour="try">${icon("cursor")}<span>${step.task}</span>${icon("right")}</button><div class="tour-actions"><button class="button ghost" data-tour="back" ${tourStep === 0 ? "disabled" : ""}>Back</button><button class="button primary" data-tour="${tourStep === tourSteps.length - 1 ? "finish" : "next"}">${tourStep === tourSteps.length - 1 ? "Start exploring" : "Next"}${icon("right")}</button></div>`;
-  animate(panel, [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }], 180);
-  panel.querySelector("h2").focus({ preventScroll: true });
+ tourStep = Math.max(0,Math.min(index,tourSteps.length-1));
+ const step = tourSteps[tourStep];
+ tourActive = true;
+ document.body.classList.add('tour-active');
+ document.querySelectorAll('.tour-highlight').forEach(el=>el.classList.remove('tour-highlight'));
+ navigate(step.view);
+ const target = $(step.target);
+ target?.classList.add('tour-highlight');
+ const panel = $('#demo-tour');
+ panel.hidden = false;
+ panel.innerHTML = `<div class="tour-top"><span>Step ${tourStep+1} of ${tourSteps.length}</span><button class="icon-button" data-tour="close" aria-label="Close guided tour">${icon('close')}</button></div><div class="tour-progress" aria-hidden="true">${tourSteps.map((_,i)=>`<span class="${i<=tourStep?'complete':''}"></span>`).join('')}</div><h2 tabindex="-1">${step.title}</h2><p>${step.copy}</p><button class="tour-task tour-try" data-tour="try">${icon('right')}<span>${step.task}</span></button><div class="tour-actions"><button class="button ghost" data-tour="back" ${tourStep===0?'disabled':''}>Back</button><button class="button" data-tour="${tourStep===tourSteps.length-1?'finish':'next'}">${tourStep===tourSteps.length-1?'Finish tour':'Next'}${icon('right')}</button></div>`;
+ target?.scrollIntoView({behavior:'instant',block:'start'});
+ panel.querySelector('h2').focus({preventScroll:true});
+ requestAnimationFrame(positionTour);
 }
-$("#demo-tour").addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { event.preventDefault(); endTour("dismissed"); }
+addEventListener('scroll',()=>{ if(tourActive) positionTour(); },{passive:true});
+addEventListener('resize',()=>{ if(tourActive) positionTour(); });
+$('#detail').addEventListener('close',()=>{ if(tourActive) requestAnimationFrame(positionTour); });
+document.addEventListener('keydown',event=>{
+ if (!tourActive || document.querySelector('dialog[open]')) return;
+ if (event.key==='Escape') { event.preventDefault(); endTour('dismissed'); }
+ if (event.key!=='Tab') return;
+ const target=$(tourSteps[tourStep].target), panel=$('#demo-tour');
+ const candidates=[...(target?.matches('a,button')?[target]:target?.querySelectorAll('button,a,input,[tabindex="0"]')||[]),...panel.querySelectorAll('button')].filter(el=>!el.disabled && el.getClientRects().length);
+ if (!candidates.length) return;
+ const index=candidates.indexOf(document.activeElement);
+ event.preventDefault();
+ const next = index < 0 ? (event.shiftKey ? candidates.length-1 : 0) : (index+(event.shiftKey?-1:1)+candidates.length)%candidates.length;
+ candidates[next].focus();
 });
-if (!load("education-tour", null)) {
-  $("#demo-tour").hidden = false;
-  $("#demo-tour").innerHTML = `<div class="tour-top"><span>WELCOME TO MENTIONLOOM</span><button class="icon-button" data-tour="close" aria-label="Dismiss tour invitation">${icon("close")}</button></div><h2>See it. Understand it. Grow.</h2><p>Six quick stops through AI discovery.</p><div class="tour-task">${icon("info")}<span>2 minutes · Interactive demo</span></div><div class="tour-actions"><button class="button ghost" data-tour="close">Explore on my own</button><button class="button primary" data-tour="start">Show me around${icon("right")}</button></div>`;
-}
 addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
