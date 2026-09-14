@@ -299,3 +299,19 @@ body:has(.demo-tour:not([hidden])) main { padding-bottom: 360px; }
 .discovery-app .context-report .context-axis { font-size:12px; margin-top:12px; flex-wrap:wrap; }
 .discovery-app .context-report { align-self:start; }
 @media(prefers-reduced-motion:reduce) { .discovery-app .overview-scroll-list.is-expanded { scroll-behavior:auto; } }
+
+/* Shared shell edges; page content aligns with navigation labels and workspace mark. */
+.discovery-app:not(.marketing-app) { --page-gutter:24px; --page-inset:12px; }
+.discovery-app:not(.marketing-app) :is(.header-inner,.page-nav-inner,main#main) {
+  box-sizing:border-box;
+  width:calc(100% - var(--page-gutter) * 2);
+  max-width:var(--content-width);
+  margin-inline:auto;
+}
+.discovery-app:not(.marketing-app) main#main { padding-inline:var(--page-inset); }
+.discovery-app:not(.marketing-app) .page-nav-inner { padding-inline:0; }
+.discovery-app:not(.marketing-app) .page-nav-inner > a,
+.discovery-app:not(.marketing-app) .header-inner .workspace { padding-inline:var(--page-inset); }
+@media(max-width:600px) {
+  .discovery-app:not(.marketing-app) { --page-gutter:16px; --page-inset:8px; }
+}

@@ -21,6 +21,9 @@ const types = {
 };
 const allowed = new Set([
   "index.html",
+  "alternative.html",
+  "alternative.css",
+  "alternative.js",
   "orbit-tokens.css",
   "site.css",
   "product-portal.css",

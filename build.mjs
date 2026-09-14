@@ -6,6 +6,9 @@ import { marketingAssets } from "./scripts/marketing-assets.mjs";
 const output = new URL("./dist/", import.meta.url);
 const files = [
   "index.html",
+  "alternative.html",
+  "alternative.css",
+  "alternative.js",
   "orbit-tokens.css",
   "site.css",
   "product-portal.css",

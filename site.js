@@ -302,7 +302,8 @@ function selectScene(index, animate = true) {
  $('.signal-float strong').textContent = item.action;
  $('.signal-float span').textContent = 'Click a message to explore the evidence.';
  document.querySelectorAll('[data-globe-question]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.globeQuestion)===index)));
- if (!animate) return;
+ document.dispatchEvent(new CustomEvent("mentionloom:scene", {detail:{index,item,animate}}));
+ if (!animate || $(".discovery-scene").classList.contains("connected-scene")) return;
  const pin = $(`[data-globe-question="${index}"]`).getBoundingClientRect();
  for (const [i, card] of [...document.querySelectorAll('.question-float,.answer-float')].entries()) {
    const rect = card.getBoundingClientRect();
@@ -328,7 +329,7 @@ function scheduleScene() {
  sceneTimer = setTimeout(() => {
    selectScene((sceneIndex + 1) % sceneQuestions.length);
    scheduleScene();
- }, 6500);
+ }, discoveryScene.classList.contains("connected-scene") ? 9000 : 6500);
 }
 const sceneObserver = new IntersectionObserver(([entry]) => {
  sceneVisible = entry.isIntersecting;

@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Mentionloom — Find the questions where AI recommends your competitors</title>
+    <meta name="robots" content="noindex" />
+    <meta
+      name="description"
+      content="See why AI recommends your competitors. Find the buyer questions you lose, inspect the evidence, and decide what to change."
+    />
+    <link rel="preload" href="/assets/SpaceGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <link rel="icon" href="/assets/mark.svg" type="image/svg+xml" />
+    <meta
+      property="og:title"
+      content="See why AI recommends your competitors. — Mentionloom"
+    />
+    <meta
+      property="og:description"
+      content="AI Recommendation Intelligence. Find the questions you lose, who wins instead, and what to change."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mentionloom.vercel.app/" />
+    <link
+      rel="preload"
+      href="/app/components/orbit/runtime/assets/OpenRunde-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/app/components/orbit/runtime/assets/OpenRunde-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/tokens.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/styles.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/motion.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/numbers.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/controls.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/starter.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/agents.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/extras.css" />
+    <link rel="stylesheet" href="/app/tokens.css" />
+    <link rel="stylesheet" href="/app/foundation.css" />
+    <link rel="stylesheet" href="/waitlist.css" />
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/alternative.css" />
+    <script src="/alternative.js" defer></script>
+    <script src="/waitlist.js" defer></script>
+    <script type="module" src="/site.js"></script>
+  </head>
+  <body class="discovery-app marketing-app">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="marketing-header">
+      <div class="header-content wrap">
+        <a class="wordmark" href="/" aria-label="Mentionloom home"
+          ><img
+            src="/assets/mark.svg"
+            width="30"
+            height="30"
+            alt=""
+          />mentionloom</a
+        >
+        <nav aria-label="Main navigation">
+          <a href="#product">Product</a><a href="#approach">How it works</a
+          ><a href="#faq">FAQs</a>
+        </nav>
+        <div class="header-actions">
+          <a class="demo-link" href="/app/"
+            >Open demo
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-external" /></svg></a
+          ><button class="button primary" data-join="navigation">
+            Find my AI gaps
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <div class="hero-composition wrap">
+      <section class="hero hero-copy-column">
+        <span class="eyebrow">AI answers. Your next opportunity.</span>
+        <h1>Find the questions where AI recommends your competitors.</h1>
+        <p class="hero-copy">
+          See who gets recommended instead, understand the evidence, and turn missing buyer questions into your next move.
+        </p>
+        <form class="gap-form" id="gap-form">
+          <input id="scan-url" type="hidden" value="" />
+          <button class="button primary" type="button" data-join="hero">Find my AI gaps <span aria-hidden="true">→</span></button><a class="button secondary" href="/app/questions/">Live demo <span aria-hidden="true">↗</span></a>
+        </form>
+        <p class="hero-note" id="scan-note">Join the waitlist. We’ll email you when access opens.</p>
+      </section>
+      <section
+        class="discovery-scene connected-scene" id="discovery" data-location="0"
+        aria-label="Illustrative AI discovery journey"
+      >
+        <div class="scene-grid" aria-hidden="true"></div>
+        <div class="scene-orbit orbit-one" aria-hidden="true"></div>
+        <div class="scene-orbit orbit-two" aria-hidden="true"></div>
+        <div class="globe-wrap">
+          <div class="css-globe"><span></span><span></span><span></span></div>
+          <canvas data-palette="blue" id="discovery-globe" aria-hidden="true"></canvas>
+          <div class="engine-network" aria-label="AI answer engines">
+            <span class="network-engine engine-0" data-network-engine="chatgpt"><img src="/assets/brands/chatgpt.svg" width="26" height="26" alt="" /><small>ChatGPT</small></span>
+            <span class="network-engine engine-1" data-network-engine="claude"><img src="/assets/brands/claude.svg" width="26" height="26" alt="" /><small>Claude</small></span>
+            <span class="network-engine engine-2" data-network-engine="gemini"><img src="/assets/brands/gemini.svg" width="26" height="26" alt="" /><small>Gemini</small></span>
+            <span class="network-engine engine-3" data-network-engine="perplexity"><img src="/assets/brands/perplexity.svg" width="26" height="26" alt="" /><small>Perplexity</small></span>
+            <span class="network-engine engine-4" data-network-engine="google"><img src="/assets/brands/google.svg" width="26" height="26" alt="" /><small>Google AI</small></span>
+            <span class="network-engine engine-5" data-network-engine="grok"><img src="/assets/brands/grok.svg" width="26" height="26" alt="" /><small>Grok</small></span>
+          </div>
+          <button class="globe-explore" aria-label="Explore sample buyer questions on the globe"></button>
+          <button class="globe-pin pin-west" data-globe-question="0" aria-label="San Francisco sample question" aria-pressed="true"><span>San Francisco</span></button>
+          <button class="globe-pin pin-center" data-globe-question="1" aria-label="London sample question" aria-pressed="false"><span>London</span></button>
+          <button class="globe-pin pin-east" data-globe-question="2" aria-label="Singapore sample question" aria-pressed="false"><span>Singapore</span></button>
+        </div>
+        <div class="scene-cards wrap">
+          <svg class="connection-lines" viewBox="0 0 1120 640" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="currentColor"><path d="M290 135 Q420 110 480 235"/><path d="M640 235 Q730 105 820 135"/><path d="M820 195 Q740 245 820 305"/><path d="M820 330 Q600 550 290 360"/><path d="M290 420 Q530 590 820 485"/></g></svg>
+          <button type="button" class="floating-card question-float" data-scene-detail aria-label="Read the sample question and answer">
+            <div class="card-label">
+              <img
+                src="/assets/brands/chatgpt.svg"
+                width="24"
+                height="24"
+                alt=""
+              />
+              <span>Buyer question · San Francisco</span><span class="tiny-dot"></span>
+            </div>
+            <p>“What’s the best project tool<br />for a small team?”</p>
+            <div class="question-tags">
+              <span>Discovery</span><span>High intent</span>
+            </div>
+          </button>
+          <button type="button" class="floating-card answer-float" data-scene-detail aria-label="Read the sample answer evidence">
+            <div class="card-label">
+              <img
+                src="/assets/brands/perplexity.svg"
+                width="24"
+                height="24"
+                alt=""
+              />
+              <span>A competitor makes the shortlist</span
+              ><svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-circlecheck" />
+              </svg>
+            </div>
+            <p><mark>Asana</mark> makes the shortlist. Acme is missing from this answer.</p>
+            <div class="citation-pill">
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-link" />
+              </svg>
+              Source: G2 comparison
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-external" />
+              </svg>
+            </div>
+          </button>
+          <button type="button" class="floating-card missing-float" data-scene-detail aria-label="Read the missing brand evidence"><div class="card-label"><i class="flow-number">3</i>Your brand</div><p><img src="/assets/brands/acme.svg" width="22" height="22" alt="" /> Acme is not mentioned.</p><span class="flow-caption">In this sample answer</span></button>
+          <button type="button" class="floating-card why-float" data-scene-detail aria-label="Inspect the sample sources and reasoning"><div class="card-label"><i class="flow-number">4</i>What the evidence suggests</div><p class="why-copy">The answer emphasizes team size and setup.</p><div class="evidence-source"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-link" /></svg><span>G2 comparison</span></div></button>
+          <button type="button" class="floating-card signal-float" data-scene-detail aria-label="Read the recommended action"><div class="card-label"><i class="flow-number">5</i>Your next move<svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg></div><strong>Explain which team sizes Acme supports.</strong><span>Review the brief and plan a follow-up check.</span></button>
+          <div class="provider-node node-claude">
+            <img
+              src="/assets/brands/claude.svg"
+              width="24"
+              height="24"
+              alt="Claude"
+            />
+          </div>
+          <div class="provider-node node-gemini">
+            <img
+              src="/assets/brands/gemini.svg"
+              width="24"
+              height="24"
+              alt="Gemini"
+            />
+          </div>
+        </div>
+      </section>
+      </div>
+      <section class="provider-strip" aria-label="AI platforms Mentionloom monitors">
+        <div class="provider-marquee">
+          <div class="provider-track">
+            <div class="provider-group">
+              <span><img src="/assets/brands/chatgpt.svg" width="24" height="24" alt="" /><strong>ChatGPT</strong></span>
+              <span><img src="/assets/brands/claude.svg" width="24" height="24" alt="" /><strong>Claude</strong></span>
+              <span><img src="/assets/brands/perplexity.svg" width="24" height="24" alt="" /><strong>Perplexity</strong></span>
+              <span><img src="/assets/brands/gemini.svg" width="24" height="24" alt="" /><strong>Gemini</strong></span>
+              <span><img src="/assets/brands/google.svg" width="24" height="24" alt="" /><strong>Google AI</strong></span>
+              <span><img src="/assets/brands/grok.svg" width="24" height="24" alt="" /><strong>Grok</strong></span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="wrap narrative-row buyer-context" id="buyer-context">
+        <div class="narrative-copy"><span class="eyebrow">The buyer moment</span><h2>AI answers before visits.</h2><a class="text-link" href="#product">See the gaps <span aria-hidden="true">→</span></a></div>
+        <div class="buyer-example"><div class="buyer-prompt"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-chat" /></svg>Best project tool for a small team?</div><div class="buyer-answer"><div class="card-label"><img src="/assets/brands/chatgpt.svg" width="22" height="22" alt="" />Sample answer</div><ol><li><img src="/assets/brands/asana.svg" width="22" height="22" alt="" />Asana</li><li><img src="/assets/brands/notion.svg" width="22" height="22" alt="" />Notion</li><li><img src="/assets/brands/clickup.svg" width="22" height="22" alt="" />ClickUp</li></ol><span class="badge neutral">Acme missing</span></div></div>
+      </section>
+      <section class="product-section wrap narrative-row" id="product">
+        <div class="product-demo">        <div
+          class="story-nav tabs"
+          role="tablist"
+          aria-label="Explore Mentionloom"
+        >
+          <button
+            role="tab"
+            id="story-tab-visibility"
+            aria-controls="story-panel-visibility"
+            aria-selected="true"
+            tabindex="0"
+            class="active"
+            data-story="visibility"
+          >
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-target" />
+            </svg>
+            Measure</button
+          ><button
+            role="tab"
+            id="story-tab-questions"
+            aria-controls="story-panel-questions"
+            aria-selected="false"
+            tabindex="-1"
+            data-story="questions"
+          >
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-chat" />
+            </svg>
+            Buyer questions</button
+          ><button
+            role="tab"
+            id="story-tab-opportunities"
+            aria-controls="story-panel-opportunities"
+            aria-selected="false"
+            tabindex="-1"
+            data-story="opportunities"
+          >
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-spark" />
+            </svg>
+            Recommended actions
+          </button>
+        </div>
+        <div class="product-stage">
+          <div class="stage-toolbar">
+            <div class="sample-company">
+              <span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>
+              <div>
+                <strong>Acme</strong
+                ><span>Sample workspace · Aug 11–Sep 9, 2026</span>
+              </div>
+            </div>
+            <span class="badge neutral">Illustrative data</span>
+          </div>
+          <div class="engine-controls">
+            <span>Explore by engine</span>
+            <div
+              class="segmented"
+              data-segment
+              role="group"
+              aria-label="AI engine filter"
+            >
+              <button class="active" aria-pressed="true" data-engine="">
+                All engines</button
+              ><button aria-pressed="false" data-engine="chatgpt">
+                <img
+                  src="/assets/brands/chatgpt.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">ChatGPT</span></button
+              ><button aria-pressed="false" data-engine="claude">
+                <img
+                  src="/assets/brands/claude.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Claude</span></button
+              ><button aria-pressed="false" data-engine="perplexity">
+                <img
+                  src="/assets/brands/perplexity.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Perplexity</span></button
+              >
+            </div>
+            <div class="dropdown engine-more"><button class="button" data-menu-toggle aria-expanded="false" aria-haspopup="menu" aria-controls="extra-engines"><span id="more-engine-label">+6 engines</span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-down"/></svg></button><div class="dropdown-panel" role="menu" aria-label="More AI engines" id="extra-engines" hidden>
+<button aria-pressed="false" data-engine="gemini">
+                <img
+                  src="/assets/brands/gemini.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Gemini</span>
+              </button
+              ><button aria-pressed="false" data-engine="google">
+                <img
+                  src="/assets/brands/google.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Google AI</span></button
+              ><button aria-pressed="false" data-engine="grok">
+                <img
+                  src="/assets/brands/grok.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Grok</span></button
+              ><button aria-pressed="false" data-engine="deepseek">
+                <img
+                  src="/assets/brands/deepseek.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">DeepSeek</span></button
+              ><button aria-pressed="false" data-engine="meta">
+                <img
+                  src="/assets/brands/meta.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Meta AI</span></button
+              ><button aria-pressed="false" data-engine="mistral">
+                <img
+                  src="/assets/brands/mistral.svg"
+                  width="24"
+                  height="24"
+                  alt=""
+                /><span class="engine-name">Mistral</span>
+              </button>
+            </div></div>
+          </div>
+          <div
+            id="story-panel-visibility"
+            class="story-panel visibility-panel"
+            role="tabpanel"
+            aria-labelledby="story-tab-visibility"
+            tabindex="0"
+          >
+            <div class="visibility-main">
+              <div class="visibility-metric">
+                <span>Share of monitored answers</span>
+                <div>
+                  <strong id="visibility-number">48.1%</strong
+                  ><span class="delta" id="visibility-delta">+2.2 pp</span>
+                </div>
+                <p>Your brand’s mentions across your chosen questions.</p>
+              </div>
+              <div id="visibility-chart" class="visibility-chart"></div>
+              <div class="chart-legend">
+                <span><i></i>Acme visibility</span
+                ><span><i class="previous-key"></i>Previous 30 days</span>
+              </div>
+            </div>
+            <div class="competitor-panel">
+              <div class="panel-title">
+                <h3>Who gets recommended?</h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="/assets/icons/lucide.svg#i-layers" />
+                </svg>
+              </div>
+              <p>Mentions in sampled answers</p>
+              <div id="competitor-rows"></div>
+              <div class="competitor-note">
+                The companies are real.<br />The comparison data is
+                illustrative.
+              </div>
+            </div>
+          </div>
+          <div
+            id="story-panel-questions"
+            class="story-panel questions-panel"
+            role="tabpanel"
+            aria-labelledby="story-tab-questions"
+            tabindex="0"
+            hidden
+          >
+            <div>
+              <div class="panel-title">
+                <h3>Questions worth showing up for</h3>
+              </div>
+              <p class="panel-description">
+                Choose a monitored question to see its sample answer.
+              </p>
+              <div id="question-rows"></div>
+            </div>
+            <article class="sample-answer" id="sample-answer"></article>
+          </div>
+          <div
+            id="story-panel-opportunities"
+            class="story-panel opportunities-panel"
+            role="tabpanel"
+            aria-labelledby="story-tab-opportunities"
+            tabindex="0"
+            hidden
+          >
+            <div class="opportunity-intro">
+              <span class="icon-tile"
+                ><svg class="icon" aria-hidden="true">
+                  <use href="/assets/icons/lucide.svg#i-spark" /></svg
+              ></span>
+              <h3>Your next move,<br />backed by a question.</h3>
+              <p>
+                Turn a missing buyer question into a focused content brief your team can
+                act on.
+              </p>
+              <a class="text-link" href="/app/#actions"
+                >Explore all opportunities
+                <svg class="icon" aria-hidden="true">
+                  <use href="/assets/icons/lucide.svg#i-arrow" /></svg
+              ></a>
+            </div>
+            <div id="opportunity-rows"></div>
+          </div>
+          <div class="stage-bottom">
+            <a href="/app/" id="scoped-demo" class="text-link"
+              >Open the full dashboard
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-external" /></svg
+            ></a>
+          </div>
+        </div>
+        </div>
+        <div class="narrative-copy"><span class="eyebrow">Question → action</span><h2>Turn one missing answer into a clear next move.</h2><a class="text-link" href="/app/questions/">Open the questions demo <span aria-hidden="true">↗</span></a></div>
+      </section>
+      <section class="wrap narrative-row business-impact" id="insights"><div class="narrative-copy"><span class="eyebrow">What changed</span><h2>From answer<br />to visit.</h2><a class="text-link" href="/app/traffic/">Explore traffic <span aria-hidden="true">↗</span></a></div><div class="business-preview">            <div class="funnel-visual">
+              <div class="funnel-stats">
+                <div>
+                  <span>AI referrals</span
+                  ><strong id="referral-number">54</strong>
+                </div>
+                <div>
+                  <span>Converted leads</span
+                  ><strong id="lead-number">2</strong>
+                </div>
+              </div>
+              <div class="funnel-bars" id="funnel-bars"></div>
+            </div>
+          <p class="sample-caption">Sample data</p></div></section>
+      <section class="approach-section wrap section-space compact-workflow" id="approach">
+        <div class="section-heading">
+          <span class="eyebrow">A CLEARER START</span>
+          <h2>A clear path from question to action.</h2>
+          <p>From website to next move.</p>
+        </div>
+        <div class="steps-grid">
+          <article>
+            <button class="step-visual domain-visual" data-workflow="domain" aria-label="Preview website setup"><span class="workflow-window"><span class="workflow-address">acme.work <b>✓</b></span><span class="workflow-lines"><i></i><i></i><i></i></span><span class="workflow-result">Website mapped <b>12 pages</b></span></span></button>
+            <span class="step-number">01</span>
+            <h3>Start with your company.</h3>
+            <p>
+              Add your website and the competitors your buyers compare you with.
+            </p>
+          </article>
+          <article>
+            <button class="step-visual prompt-visual" data-workflow="prompt" aria-label="Preview question tracking"><span class="workflow-questions"><span>Best tools for a small team?<b>ChatGPT</b></span><span>Alternatives to Monday?<b>Claude</b></span><span>Which tool fits our budget?<b>Gemini</b></span></span></button>
+            <span class="step-number">02</span>
+            <h3>Choose your questions.</h3>
+            <p>
+              Monitor the questions that matter to your market, from discovery
+              to decision.
+            </p>
+          </article>
+          <article>
+            <button class="step-visual insight-visual" data-workflow="insight" aria-label="Preview an opportunity"><span class="workflow-opportunity"><span class="workflow-result">Comparison gap <b>Found</b></span><strong>Make the shortlist.</strong><span class="workflow-lines"><i></i><i></i></span><span class="workflow-result">Create a comparison brief <b>↗</b></span></span></button>
+            <span class="step-number">03</span>
+            <h3>Turn the gap into a brief.</h3>
+            <p>
+              Prioritize a specific page improvement, review the brief, and
+              follow up with fresh answer samples.
+            </p>
+          </article>
+          <article><a class="step-visual measure-visual" href="/app/visibility/" aria-label="Explore follow-up measurement"><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-wave" /></svg><strong>Recheck the same questions</strong><small>Compare answers over time</small></span></a><span class="step-number">04</span><h3>Measure what changed.</h3><p>Review new samples after publishing. Track progress without assuming that your edit caused it.</p></article>
+        </div>
+        <div id="workflow-preview" class="workflow-preview" hidden></div>
+      </section>
+
+      <section class="wrap evidence-workbench"><details><summary>Explore the evidence and working brief <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-plus" /></svg></summary><div class="feature-grid"><article class="feature-card source-card">
+            <div class="feature-copy">
+              <span class="feature-label"
+                ><svg class="icon" aria-hidden="true">
+                  <use href="/assets/icons/lucide.svg#i-link" />
+                </svg>
+                CITED CONTENT</span
+              >
+              <h3>See the sources<br />behind the recommendation.</h3>
+              <p>
+                Trace cited pages across answers. Compare the evidence behind
+                competing brands with what your own content explains.
+              </p>
+            </div>
+            <div class="source-visual">
+              <div class="visual-table-head">
+                <span>Your pages</span><span>Citations</span>
+              </div>
+              <div id="source-rows"></div>
+            </div>
+          </article><article class="feature-card action-card">
+            <div class="feature-copy">
+              <span class="feature-label"
+                ><svg class="icon" aria-hidden="true">
+                  <use href="/assets/icons/lucide.svg#i-flag" />
+                </svg>
+                CONTENT OPPORTUNITIES</span
+              >
+              <h3>A useful answer to<br />“what should we do next?”</h3>
+              <p>
+                Start with the gap, see the evidence, and leave with a practical
+                brief. Less reporting. More progress.
+              </p>
+            </div>
+            <div class="action-visual">
+              <div class="action-card-heading">
+                <span class="badge purple">Comparison gap</span
+                ><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-clock" />
+                  </svg>
+                  ~2 hours</span
+                >
+              </div>
+              <h4>Give buyers a better<br />Asana comparison.</h4>
+              <p>“What is a simpler alternative to Asana?”</p>
+              <div class="action-checks">
+                <label class="choice"
+                  ><input type="checkbox" checked /> Compare setup and
+                  collaboration</label
+                ><label class="choice"
+                  ><input type="checkbox" /> Answer who your product is
+                  for</label
+                ><label class="choice"
+                  ><input type="checkbox" /> Link from product and pricing
+                  pages</label
+                >
+              </div>
+              <div class="brief-progress">
+                <span id="brief-count">1 of 3 brief items ready</span>
+                <div><span id="brief-bar" style="width: 33.33%"></span></div>
+              </div>
+            </div>
+          </article></div></details></section>
+      <section class="wrap section-space methodology" id="methodology"><details><summary>How Mentionloom measures this <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-plus" /></svg></summary><div class="steps-grid"><article><h3>Repeat the questions.</h3><p>Run the same buyer questions across supported engines.</p></article><article><h3>Review the evidence.</h3><p>Keep observed answers separate from the explanation behind them.</p></article><article><h3>Measure again.</h3><p>Compare new samples after publishing.</p></article></div></details></section>
+      <section class="faq-section wrap section-space" id="faq">
+        <div>
+          <span class="eyebrow">GOOD QUESTIONS</span>
+          <h2>A little more<br />clarity.</h2>
+          <p>What’s real, what’s planned,<br />and how it all fits together.</p>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>
+              What does Mentionloom measure?<svg
+                class="icon"
+                aria-hidden="true"
+              >
+                <use href="/assets/icons/lucide.svg#i-plus" />
+              </svg>
+            </summary>
+            <p>
+              The product is designed around three separate signals: mentions
+              and citations in a defined set of AI answers, identifiable AI
+              referrals to your website, and crawler requests in connected
+              server logs. Each signal answers a different question; a bot visit
+              alone does not mean your brand was recommended.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Can you see what people ask ChatGPT?<svg
+                class="icon"
+                aria-hidden="true"
+              >
+                <use href="/assets/icons/lucide.svg#i-plus" />
+              </svg>
+            </summary>
+            <p>
+              We cannot read people’s private conversations. You choose the
+              buyer questions to monitor. Mentionloom is being built to run
+              those questions through supported answer sources and compare the
+              results over time. They are monitored prompts, not a feed of
+              actual users’ searches.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Is this real customer data?<svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-plus" />
+              </svg>
+            </summary>
+            <p>
+              The preview uses a fictional company, Acme, and clearly labeled
+              sample data. Real provider and competitor logos make the examples
+              easier to understand; they do not imply a partnership or
+              endorsement. Early-access availability and collection coverage
+              will be confirmed with your invitation.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Do I need to install a script?<svg
+                class="icon"
+                aria-hidden="true"
+              >
+                <use href="/assets/icons/lucide.svg#i-plus" />
+              </svg>
+            </summary>
+            <p>
+              The planned answer-monitoring workflow starts with your website
+              and chosen questions. Website referral and conversion reporting
+              needs a connected analytics source or tracking integration.
+              Crawler reporting requires server or CDN logs. None of these can
+              reveal every AI recommendation or unattributed visit.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Will this replace SEO or guarantee recommendations?<svg
+                class="icon"
+                aria-hidden="true"
+              >
+                <use href="/assets/icons/lucide.svg#i-plus" />
+              </svg>
+            </summary>
+            <p>
+              It complements your SEO work. The goal is to show which questions
+              and sources deserve attention, so you can improve useful, accurate
+              content. AI answers vary by engine, time, and context. No tool can
+              guarantee that a model will recommend your company.
+            </p>
+          </details>
+          <details>
+            <summary>
+              What happens after I join?<svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-plus" />
+              </svg>
+            </summary>
+            <p>
+              You’ll get an email when early access is available. Tell us your
+              website and priorities if you’d like to help shape the first
+              release. Joining is free, with no payment details or commitment.
+              Your confirmation includes a private link to manage or remove your
+              signup.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+    <dialog id="scene-detail" class="scene-detail" aria-labelledby="scene-detail-title"><div class="scene-detail-heading"><span>Sample answer</span><button class="button" data-scene-close aria-label="Close sample answer">Close</button></div><div id="scene-detail-content"></div></dialog>
+    <footer class="closing-footer">
+          <div class="early-decoration" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+      <section class="early-access-section section-space" id="early-access">
+        <div class="early-access-card wrap">
+
+          <span class="eyebrow">PUT YOUR NEXT AUDIT TO WORK</span>
+          <h2>Find your next opportunity<br />in the answers you’re missing.</h2>
+          <p>
+            See the questions, follow the evidence, and plan what to change.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#join-dialog" data-join="closing-gaps">
+              Find my AI gaps
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-arrow" />
+              </svg></a
+            ><button class="button secondary" data-join="early-access"
+              >Join early access
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-external" /></svg
+            ></button>
+          </div>
+          <div class="offer-notes">
+            <span
+              ><svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-check" />
+              </svg>
+              Free to join</span
+            ><span
+              ><svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-check" />
+              </svg>
+              No payment details</span
+            ><span
+              ><svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-check" />
+              </svg>
+              Your priorities help shape it</span
+            >
+          </div>
+        </div>
+      </section>
+<div class="marketing-footer wrap">
+      <div>
+        <a class="wordmark" href="/" aria-label="Mentionloom home"
+          ><img
+            src="/assets/mark.svg"
+            width="28"
+            height="28"
+            alt=""
+          />mentionloom</a
+        >
+        <p>From missing answers to meaningful action.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/app/"
+          >Product demo
+          <svg class="icon" aria-hidden="true">
+            <use href="/assets/icons/lucide.svg#i-external" /></svg></a
+        ><a href="#early-access" data-join="footer">Join the waitlist</a
+        ><a href="https://giovanitier.github.io/orbit/guides/getting-started/"
+          >Built with Orbit
+          <svg class="icon" aria-hidden="true">
+            <use href="/assets/icons/lucide.svg#i-external" /></svg
+        ></a>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Mentionloom</span
+        ><span>Early access · Sample data</span>
+      </div>
+    </div>
+</footer>
+    <dialog
+      id="join-dialog"
+      aria-labelledby="join-title"
+      aria-describedby="join-description"
+    >
+      <button class="icon-button dialog-close" aria-label="Close waitlist">
+        <svg class="icon" aria-hidden="true">
+          <use href="/assets/icons/lucide.svg#i-close" />
+        </svg>
+      </button>
+      <div class="waitlist-progress" aria-label="Step 1 of 3">
+        <span class="is-current"></span><span></span><span></span>
+      </div>
+      <span class="eyebrow" id="join-eyebrow">A little ahead of the curve</span>
+      <h2 id="join-title" tabindex="-1">Be there<br />when it begins.</h2>
+      <p id="join-description">
+        A clearer picture of AI discovery is on its way. Get your invitation
+        when access opens.
+      </p>
+      <div data-waitlist-stage="signup">
+        <form id="join-form">
+          <label for="email">Your email</label
+          ><input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength="254"
+            required
+            placeholder="you@company.com"
+            aria-describedby="join-error"
+          />
+          <div class="waitlist-trap" aria-hidden="true">
+            <label for="company-fax">Leave this empty</label
+            ><input
+              id="company-fax"
+              name="company_fax"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          <label class="consent-label"
+            ><input id="waitlist-consent" type="checkbox" required /><span
+              >Email me about Mentionloom early access and launch updates.</span
+            ></label
+          >
+          <p class="waitlist-error" id="join-error" role="alert" hidden></p>
+          <button class="button primary large" type="submit">
+            <span>Join the waitlist</span
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+          <p class="form-note">
+            Free to join. No payment details. No unrelated marketing.
+          </p>
+        </form>
+      </div>
+      <div data-waitlist-stage="profile" hidden>
+        <div class="waitlist-saved">
+          <span class="check-circle"
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-check" /></svg></span
+          ><span
+            ><strong>You’re on the list.</strong><br />These details are
+            optional.</span
+          ><button class="waitlist-skip" id="skip-profile" type="button">
+            Skip for now
+          </button>
+        </div>
+        <form id="profile-form">
+          <label for="website"
+            >Your website <span class="optional">Optional</span></label
+          ><input
+            id="website"
+            name="website"
+            autocomplete="url"
+            maxlength="300"
+            placeholder="company.com"
+            aria-describedby="profile-error"
+          />
+          <fieldset>
+            <legend>What’s your role?</legend>
+            <div class="waitlist-choices roles">
+              <label
+                ><input type="radio" name="role" value="founder" /><span
+                  >Founder</span
+                ></label
+              ><label
+                ><input type="radio" name="role" value="marketing" /><span
+                  >Marketing</span
+                ></label
+              ><label
+                ><input type="radio" name="role" value="agency" /><span
+                  >Agency</span
+                ></label
+              ><label
+                ><input type="radio" name="role" value="other" /><span
+                  >Other</span
+                ></label
+              >
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>What would you like to understand first?</legend>
+            <div class="waitlist-choices goals">
+              <label
+                ><input type="radio" name="goal" value="visibility" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-chat" /></svg
+                  >Where AI mentions us</span
+                ></label
+              ><label
+                ><input type="radio" name="goal" value="traffic" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-wave" /></svg
+                  >The traffic AI sends us</span
+                ></label
+              ><label
+                ><input type="radio" name="goal" value="improvements" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-spark" /></svg
+                  >What we should improve</span
+                ></label
+              >
+            </div>
+          </fieldset>
+          <p class="waitlist-error" id="profile-error" role="alert" hidden></p>
+          <button class="button primary large" type="submit">
+            <span>Save my preferences</span
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      <div data-waitlist-stage="success" hidden>
+        <div class="waitlist-next">
+          <div>
+            <span>01</span>
+            <p>
+              <strong>We’re building with intention.</strong> Your input helps
+              us focus on the useful things.
+            </p>
+          </div>
+          <div>
+            <span>02</span>
+            <p>
+              <strong>Your invitation comes next.</strong> We’ll email as access
+              opens. There’s nothing else you need to do.
+            </p>
+          </div>
+        </div>
+        <div class="waitlist-share">
+          <span class="brand-mark"></span>
+          <div>
+            <strong>Know someone who’d get it?</strong>
+            <p>Give them a first look, too.</p>
+          </div>
+          <button class="button" id="share-waitlist">Copy invite link</button>
+        </div>
+        <div class="waitlist-management" hidden>
+          <button class="text-link" id="save-signup-link">
+            Save your private signup link
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-external" />
+            </svg>
+          </button>
+          <p>
+            Keep this link to view your confirmation or remove your signup
+            later. Don’t share it.
+          </p>
+          <button class="waitlist-skip" id="remove-signup">
+            Remove my signup
+          </button>
+        </div>
+        <p class="copy-status" id="copy-status" role="status"></p>
+        <input id="copy-fallback" readonly aria-label="Link to copy" hidden />
+        <p class="waitlist-error" id="manage-error" role="alert" hidden></p>
+        <div id="remove-confirm" hidden>
+          <p>Remove your email and preferences from the waitlist?</p>
+          <div>
+            <button class="button" id="keep-signup">Keep my place</button
+            ><button class="button" id="confirm-remove">
+              Yes, remove my signup
+            </button>
+          </div>
+        </div>
+        <button class="button primary large" id="back-to-product">
+          Explore the full dashboard
+          <svg class="icon" aria-hidden="true">
+            <use href="/assets/icons/lucide.svg#i-arrow" />
+          </svg>
+        </button>
+      </div>
+      <div data-waitlist-stage="removed" hidden>
+        <div class="waitlist-saved">
+          <span class="check-circle"
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-check" /></svg></span
+          ><span>Your email and preferences have been removed.</span>
+        </div>
+        <button class="button primary large" id="close-removed">
+          Back to Mentionloom
+        </button>
+      </div>
+      <details class="waitlist-privacy">
+        <summary>
+          How we use your details<svg class="icon" aria-hidden="true">
+            <use href="/assets/icons/lucide.svg#i-down" />
+          </svg>
+        </summary>
+        <p>
+          We use your email for Mentionloom invitations and launch updates.
+          Optional website, role, and goal details help us plan the product. We
+          record the signup button and campaign source, and store your details
+          privately on Vercel. We don’t sell them. Save your private signup link
+          from the confirmation to remove your details whenever you like.
+        </p>
+      </details>
+    </dialog>
+  </body>
+</html>
