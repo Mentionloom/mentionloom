@@ -804,11 +804,6 @@
   font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
-.marketing-app .competitor-note {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 18px;
-}
 .marketing-app .stage-bottom {
   display: flex;
   justify-content: space-between;
@@ -1942,9 +1937,6 @@
     border-top: 1px solid var(--border);
     padding: 23px 20px;
   }
-  .marketing-app .competitor-note br {
-    display: none;
-  }
   .marketing-app .stage-bottom {
     padding: 12px 18px;
     flex-direction: column;
@@ -2158,29 +2150,6 @@
 .marketing-app .visibility-chart svg {
   height: 155px;
 }
-.marketing-app .chart-scrubber {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding-left: 32px;
-  margin-top: 5px;
-  min-height: 44px;
-}
-.marketing-app .chart-scrubber input {
-  width: 110px;
-  min-width: 70px;
-  height: 44px;
-  accent-color: var(--accent-text);
-  margin: 0;
-  background: none;
-}
-.marketing-app .chart-scrubber output {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
 .marketing-app .delta.negative {
   background: var(--amber-1);
   color: var(--warning-text);
@@ -2281,6 +2250,11 @@
 /* Landing refinements: Orbit tokens, purposeful disclosure, finite motion. */
 @font-face { font-family:'Space Grotesk'; src:url('/assets/SpaceGrotesk-Variable.woff2') format('woff2'); font-style:normal; font-weight:300 700; font-display:swap; }
 .marketing-app .hero h1 { font-family:'Space Grotesk',var(--font-sans); font-weight:500; letter-spacing:-.055em; }
+/* Every landing title uses the hero's display face. Body copy keeps --font-sans. */
+.marketing-app :is(h1,h2,h3,h4,h5,h6),
+.marketing-app :is(.value-trio,.visibility-metric,.funnel-stats) strong,
+.marketing-app .scene-detail-heading,
+.marketing-app .panel-title h3 { font-family:'Space Grotesk',var(--font-sans); }
 .marketing-app #approach { padding-top:80px; }
 .marketing-app #approach .section-heading { margin-bottom:32px; }
 .marketing-app #early-access { padding-top:72px; }
@@ -2480,3 +2454,114 @@
 
 /* Geographic positions are written by the globe’s shared rotation loop. */
 .marketing-app .globe-wrap.globe-ready .css-globe { opacity:0; }
+
+/* Landing motion: each section tells its own story once it enters the viewport.
+   Hidden states live inside the keyframes, so content stays visible without JS. */
+@keyframes rise-in { from { opacity:0; transform:translateY(12px); } }
+@keyframes draw-in { from { transform:scaleX(0); } }
+@keyframes grow-bar { from { transform:scaleX(0); } }
+@keyframes pop-in { from { opacity:0; transform:scale(.72); } }
+@keyframes tick-in { from { opacity:0; transform:translateX(-6px); } }
+
+.marketing-app .section-heading.step-revealed { animation:rise-in 640ms var(--ease-out) both; }
+
+/* Insights: the four widgets build themselves in view. */
+.marketing-app #insights .feature-card.step-revealed .feature-copy { animation:rise-in 560ms var(--ease-out) both; }
+.marketing-app #insights .feature-card.step-revealed .feature-copy h3 { animation:rise-in 520ms var(--ease-out) 70ms both; }
+.marketing-app #insights .feature-card.step-revealed .feature-copy p { animation:rise-in 520ms var(--ease-out) 140ms both; }
+.marketing-app #insights .source-row { animation:rise-in 460ms var(--ease-out) both; }
+.marketing-app #insights .source-row:nth-child(2) { animation-delay:90ms; }
+.marketing-app #insights .source-row:nth-child(3) { animation-delay:180ms; }
+.marketing-app #insights .source-row:nth-child(4) { animation-delay:270ms; }
+.marketing-app #insights .funnel-stats > div { animation:rise-in 480ms var(--ease-out) both; }
+.marketing-app #insights .funnel-stats > div:nth-child(2) { animation-delay:110ms; }
+.marketing-app #insights .marketing-funnel-step { animation:rise-in 480ms var(--ease-out) both; }
+.marketing-app #insights .marketing-funnel-step:nth-child(1) { animation-delay:180ms; }
+.marketing-app #insights .marketing-funnel-step:nth-child(2) { animation-delay:300ms; }
+.marketing-app #insights .marketing-funnel-step:nth-child(3) { animation-delay:420ms; }
+.marketing-app #insights .marketing-funnel-track > span { transform-origin:left; animation:grow-bar 720ms var(--ease-out) both; }
+.marketing-app #insights .marketing-funnel-step:nth-child(2) .marketing-funnel-track > span { animation-delay:120ms; }
+.marketing-app #insights .marketing-funnel-step:nth-child(3) .marketing-funnel-track > span { animation-delay:240ms; }
+.marketing-app #insights .action-card .action-card-heading { animation:rise-in 460ms var(--ease-out) 60ms both; }
+.marketing-app #insights .action-card h4 { animation:rise-in 520ms var(--ease-out) 140ms both; }
+.marketing-app #insights .action-card .choice { animation:tick-in 460ms var(--ease-out) both; }
+.marketing-app #insights .action-card .choice:nth-child(2) { animation-delay:120ms; }
+.marketing-app #insights .action-card .choice:nth-child(3) { animation-delay:240ms; }
+.marketing-app #insights .action-card .brief-progress { animation:rise-in 460ms var(--ease-out) 360ms both; }
+.marketing-app #insights .shortlist-question { animation:rise-in 520ms var(--ease-out) both; }
+.marketing-app #insights .shortlist-brands > span { animation:pop-in 520ms var(--ease-out) both; }
+.marketing-app #insights .shortlist-brands > span:nth-child(1) { animation-delay:160ms; }
+.marketing-app #insights .shortlist-brands > span:nth-child(2) { animation-delay:260ms; }
+.marketing-app #insights .shortlist-brands > span:nth-child(3) { animation-delay:360ms; }
+.marketing-app #insights .shortlist-brands > span:nth-child(4) { animation-delay:460ms; }
+
+/* Workflow step 1: the site is mapped, so the company mark loads with the domain. */
+.workflow-address .workflow-site { display:flex; align-items:center; gap:8px; }
+.workflow-address .workflow-brand { border-radius:6px; }
+.marketing-app .domain-visual > .workflow-window .workflow-brand { animation:pop-in 520ms var(--ease-out) 120ms both; }
+.marketing-app .domain-visual > .workflow-window .workflow-lines i { animation:workflow-line 3.5s ease-in-out infinite alternate; }
+.marketing-app .domain-visual > .workflow-window .workflow-lines i:nth-child(2) { animation-delay:.3s; }
+.marketing-app .domain-visual > .workflow-window .workflow-lines i:nth-child(3) { animation-delay:.6s; }
+
+/* Workflow step 2: a cursor picks the questions one at a time. */
+.marketing-app .steps-grid .step-visual > .workflow-cursor {
+  position:absolute; left:198px; top:20px; display:block; width:0; height:0; padding:0; background:none;
+  border:0; border-radius:0; box-shadow:none; z-index:3;
+}
+.marketing-app .steps-grid .step-visual > .workflow-cursor::before {
+  content:''; display:block; flex:none; width:15px; height:15px;
+  border:1.5px solid #fff; border-radius:3px 3px 3px 0; background:var(--accent-text);
+  box-shadow:0 3px 8px #182c5033; transform:rotate(-14deg); transform-origin:top left;
+}
+.marketing-app .steps-grid .step-visual > .workflow-cursor::after {
+  content:''; position:absolute; left:-9px; top:-9px; width:32px; height:32px;
+  border-radius:50%; background:var(--accent-text); opacity:0;
+}
+.marketing-app .steps-grid article.step-revealed .step-visual.prompt-visual > .workflow-cursor { animation:cursor-tour 7.5s var(--ease-out) 400ms infinite; }
+.marketing-app .steps-grid article.step-revealed .step-visual.prompt-visual > .workflow-cursor::after { animation:cursor-tap 2.5s ease-out 400ms infinite; }
+.marketing-app .steps-grid article.step-revealed .step-visual.prompt-visual .workflow-questions > span { animation:question-pick 7.5s ease-in-out 400ms infinite; }
+.marketing-app .steps-grid article.step-revealed .step-visual.prompt-visual .workflow-questions > span:nth-child(2) { animation-delay:2.9s; }
+.marketing-app .steps-grid article.step-revealed .step-visual.prompt-visual .workflow-questions > span:nth-child(3) { animation-delay:5.4s; }
+@keyframes cursor-tour {
+  0%, 22% { transform:translate(0,0); }
+  30%, 55% { transform:translate(16px,80px); }
+  63%, 88% { transform:translate(0,160px); }
+  100% { transform:translate(0,0); }
+}
+@keyframes cursor-tap {
+  0%, 8% { transform:scale(.35); opacity:.42; }
+  16%, 100% { transform:scale(1.5); opacity:0; }
+}
+@keyframes question-pick {
+  0%, 26%, 100% { border-color:var(--border); background:var(--surface); }
+  8%, 18% { border-color:var(--accent-text); background:var(--sky-1); }
+}
+
+/* Workflow step 3: the shortlist assembles, then the brief is generated. */
+.marketing-app .workflow-shortlist { display:flex; align-items:center; gap:8px; padding:14px 14px 0; }
+.marketing-app .workflow-shortlist img { display:block; }
+.marketing-app .workflow-shortlist > img { padding:6px; background:var(--surface); border:1px solid var(--border); border-radius:8px; }
+.marketing-app .workflow-you { display:grid; place-items:center; padding:6px; border:1px dashed var(--accent-text); border-radius:8px; background:var(--sky-1); }
+.marketing-app .insight-visual.step-revealed .workflow-shortlist > img { animation:pop-in 460ms var(--ease-out) both; }
+.marketing-app .insight-visual.step-revealed .workflow-shortlist > img:nth-child(1) { animation-delay:.1s; }
+.marketing-app .insight-visual.step-revealed .workflow-shortlist > img:nth-child(2) { animation-delay:.35s; }
+.marketing-app .insight-visual.step-revealed .workflow-shortlist > img:nth-child(3) { animation-delay:.6s; }
+.marketing-app .insight-visual.step-revealed .workflow-you { animation:pop-in 520ms var(--ease-out) .95s both; }
+.marketing-app .insight-visual.step-revealed > .workflow-opportunity > strong { animation:rise-in 520ms var(--ease-out) 1.25s both; }
+.marketing-app .insight-visual.step-revealed > .workflow-opportunity > .workflow-result:last-child { animation:rise-in 520ms var(--ease-out) 1.55s both; }
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app .section-heading.step-revealed,
+  .marketing-app #insights .feature-card.step-revealed *,
+  .marketing-app .step-visual.step-revealed *,
+  .marketing-app .step-visual.step-revealed *::before,
+  .marketing-app .step-visual.step-revealed *::after { animation:none !important; }
+}
+
+/* Motion holds its frame while its section is off screen, and picks up on return.
+   The hosts are #approach, #insights, the closing footer and the discovery scene. */
+.marketing-app [data-in-view="false"] *,
+.marketing-app [data-in-view="false"] *::before,
+.marketing-app [data-in-view="false"] *::after,
+.marketing-app :is(#approach,#insights,.closing-footer,.discovery-scene)[data-in-view="false"],
+.marketing-app :is(#approach,#insights,.closing-footer,.discovery-scene)[data-in-view="false"]::before,
+.marketing-app :is(#approach,#insights,.closing-footer,.discovery-scene)[data-in-view="false"]::after { animation-play-state:paused !important; }

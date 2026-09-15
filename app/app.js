@@ -1738,3 +1738,22 @@ addEventListener("resize", () => {
     if (data) renderMainChart();
   }, 160);
 });
+
+// The waitlist invitation stays put until it is dismissed, then stays gone.
+{
+  const cta = document.querySelector("#waitlist-cta");
+  const key = "mentionloom-app-cta";
+  if (cta) {
+    let dismissed = false;
+    try {
+      dismissed = sessionStorage.getItem(key) === "dismissed";
+    } catch {}
+    if (dismissed) cta.hidden = true;
+    document.querySelector("#waitlist-cta-close")?.addEventListener("click", () => {
+      cta.hidden = true;
+      try {
+        sessionStorage.setItem(key, "dismissed");
+      } catch {}
+    });
+  }
+}

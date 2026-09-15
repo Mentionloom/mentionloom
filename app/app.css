@@ -2100,3 +2100,93 @@ main {
     transform: none;
   }
 }
+
+/* The demo keeps one persistent invitation to join the waitlist. */
+.waitlist-cta {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 70;
+  display: grid;
+  gap: 10px;
+  width: min(320px, calc(100vw - 32px));
+  padding: 18px 20px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 18px);
+  background: var(--surface);
+  box-shadow: 0 20px 45px #182c501f, 0 2px 6px #182c500f;
+  animation: waitlist-cta-in 520ms var(--ease-out, cubic-bezier(.22, 1, .36, 1)) 900ms both;
+}
+.waitlist-cta[hidden] {
+  display: none;
+}
+.waitlist-cta-eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-text, #2457c5);
+}
+.waitlist-cta-copy {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--muted);
+}
+.waitlist-cta .button {
+  width: 100%;
+  justify-content: center;
+}
+.waitlist-cta-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.waitlist-cta-close:hover {
+  background: var(--bg-a2);
+  color: var(--text);
+}
+.waitlist-cta-close .icon {
+  width: 15px;
+  height: 15px;
+}
+@keyframes waitlist-cta-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .waitlist-cta {
+    animation: none;
+  }
+}
+@media (max-width: 700px) {
+  .waitlist-cta {
+    right: 16px;
+    left: 16px;
+    bottom: 16px;
+    width: auto;
+  }
+}
+
+/* Ranked lists inside the drawer need breathing room between rows. */
+.drawer-body .rank-row {
+  min-height: 52px;
+  padding-block: 10px;
+}
+.drawer-body .rank-row + .rank-row {
+  border-top: 1px solid var(--border);
+}
+.drawer-body .rank-row:before {
+  inset: 7px auto 7px 0;
+}

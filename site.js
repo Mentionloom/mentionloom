@@ -50,7 +50,7 @@ function chart() {
       .join(" ");
   const main = path("visibility");
   $("#visibility-chart").innerHTML =
-    `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Acme's daily share of monitored answers, on a zero to 100 percent scale. Use the date slider below for exact values."><defs><linearGradient id="landing-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="var(--accent)" stop-opacity=".18"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${[
+    `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Acme's daily share of monitored answers, on a zero to 100 percent scale. Move the pointer across the chart to read a date."><defs><linearGradient id="landing-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="var(--accent)" stop-opacity=".18"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${[
       0, 50, 100,
     ]
       .map((v) => {
@@ -59,7 +59,7 @@ function chart() {
       })
       .join(
         "",
-      )}<path d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg><div class="chart-scrubber"><label for="chart-day" class="sr-only">Inspect a date on the visibility chart</label><input id="chart-day" type="range" min="0" max="29" step="1" value="29"><output id="chart-readout" for="chart-day"></output></div>`;
+      )}<path d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg>`;
   function inspect(index) {
     const r = report.series[index];
     const [x, y] = point(r.visibility, index);
@@ -72,15 +72,11 @@ function chart() {
       day: "numeric",
       timeZone: "UTC",
     });
-    $("#chart-readout").textContent = `${label} · ${r.visibility.toFixed(1)}%`;
-    $("#chart-day").setAttribute(
-      "aria-valuetext",
-      `${label}, Acme ${r.visibility.toFixed(1)} percent, previous period ${r.previous.visibility.toFixed(1)} percent`,
+    $("#visibility-chart svg").setAttribute(
+      "aria-label",
+      `${label}: Acme ${r.visibility.toFixed(1)} percent, previous period ${r.previous.visibility.toFixed(1)} percent.`,
     );
   }
-  $("#chart-day").addEventListener("input", (e) =>
-    inspect(Number(e.target.value)),
-  );
   $("#visibility-chart svg").addEventListener("pointermove", (e) => {
     if (e.pointerType === "touch") return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -94,7 +90,6 @@ function chart() {
         ),
       ) * 29,
     );
-    $("#chart-day").value = index;
     inspect(index);
   });
   inspect(29);
@@ -269,8 +264,24 @@ try {
     { threshold: 0.12 },
   );
   document
-    .querySelectorAll(".feature-card,.steps-grid article,.early-access-card")
+    .querySelectorAll(
+      ".feature-card,.steps-grid article,.early-access-card,#insights .section-heading,#approach .section-heading",
+    )
     .forEach((el) => reveal.observe(el));
+  // Looping motion only runs while its section is on screen.
+  const inView = new IntersectionObserver(
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        target.dataset.inView = String(isIntersecting);
+      }
+    },
+    { threshold: 0 },
+  );
+  document
+    .querySelectorAll(
+      "#approach,#insights,.provider-strip,.closing-footer,.discovery-scene",
+    )
+    .forEach((el) => inView.observe(el));
 } catch (error) {
   console.warn(
     "Orbit enhancements unavailable; native controls remain usable.",

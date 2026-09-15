@@ -36,7 +36,9 @@
     <link rel="stylesheet" href="/app/addons.css" />
     <link rel="stylesheet" href="/app/density.css" />
     <link rel="stylesheet" href="/app/traffic.css" />
+    <link rel="stylesheet" href="/waitlist.css" />
     <script type="module" src="/app/app.js"></script>
+    <script src="/waitlist.js" defer></script>
   </head>
   <body class="discovery-app">
     <a class="skip-link" href="#main">Skip to dashboard</a>
@@ -661,6 +663,28 @@
     <div id="tour-shade" aria-hidden="true" hidden><div></div><div></div><div></div><div></div><span class="tour-frame"></span></div>
     <aside id="demo-tour" class="demo-tour" role="region" aria-label="Guided demo" hidden></aside>
     <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
+    <aside id="waitlist-cta" class="waitlist-cta" aria-label="Join the waitlist">
+      <button
+        class="waitlist-cta-close"
+        id="waitlist-cta-close"
+        type="button"
+        aria-label="Dismiss waitlist invitation"
+      >
+        <svg class="icon" aria-hidden="true">
+          <use href="/assets/icons/lucide.svg#i-close" />
+        </svg>
+      </button>
+      <span class="waitlist-cta-eyebrow">Early access</span>
+      <p class="waitlist-cta-copy">
+        This is a sample workspace. Join the waitlist to connect your own site.
+      </p>
+      <button class="button primary" type="button" data-join="app">
+        Join the waitlist
+        <svg class="icon" aria-hidden="true">
+          <use href="/assets/icons/lucide.svg#i-arrow" />
+        </svg>
+      </button>
+    </aside>
     <div
       id="filter-status"
       class="sr-only"
@@ -672,5 +696,226 @@
         Please enable JavaScript to explore the interactive dashboard.
       </div></noscript
     >
+    <dialog
+      id="join-dialog"
+      aria-labelledby="join-title"
+      aria-describedby="join-description"
+    >
+      <button class="icon-button dialog-close" aria-label="Close waitlist">
+        <svg class="icon" aria-hidden="true">
+          <use href="/assets/icons/lucide.svg#i-close" />
+        </svg>
+      </button>
+      <div class="waitlist-progress" aria-label="Step 1 of 3">
+        <span class="is-current"></span><span></span><span></span>
+      </div>
+      <span class="eyebrow" id="join-eyebrow">A little ahead of the curve</span>
+      <h2 id="join-title" tabindex="-1">Be there<br />when it begins.</h2>
+      <p id="join-description">
+        A clearer picture of AI discovery is on its way. Get your invitation
+        when access opens.
+      </p>
+      <div data-waitlist-stage="signup">
+        <form id="join-form">
+          <label for="email">Your email</label
+          ><input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength="254"
+            required
+            placeholder="you@company.com"
+            aria-describedby="join-error"
+          />
+          <div class="waitlist-trap" aria-hidden="true">
+            <label for="company-fax">Leave this empty</label
+            ><input
+              id="company-fax"
+              name="company_fax"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          <label class="consent-label"
+            ><input id="waitlist-consent" type="checkbox" required /><span
+              >Email me about Mentionloom early access and launch updates.</span
+            ></label
+          >
+          <p class="waitlist-error" id="join-error" role="alert" hidden></p>
+          <button class="button primary large" type="submit">
+            <span>Join the waitlist</span
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+          <p class="form-note">
+            Free to join. No payment details. No unrelated marketing.
+          </p>
+        </form>
+      </div>
+      <div data-waitlist-stage="profile" hidden>
+        <div class="waitlist-saved">
+          <span class="check-circle"
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-check" /></svg></span
+          ><span
+            ><strong>You’re on the list.</strong><br />These details are
+            optional.</span
+          ><button class="waitlist-skip" id="skip-profile" type="button">
+            Skip for now
+          </button>
+        </div>
+        <form id="profile-form">
+          <label for="website"
+            >Your website <span class="optional">Optional</span></label
+          ><input
+            id="website"
+            name="website"
+            autocomplete="url"
+            maxlength="300"
+            placeholder="company.com"
+            aria-describedby="profile-error"
+          />
+          <fieldset>
+            <legend>What’s your role?</legend>
+            <div class="waitlist-choices roles">
+              <label
+                ><input type="radio" name="role" value="founder" /><span
+                  >Founder</span
+                ></label
+              ><label
+                ><input type="radio" name="role" value="marketing" /><span
+                  >Marketing</span
+                ></label
+              ><label
+                ><input type="radio" name="role" value="agency" /><span
+                  >Agency</span
+                ></label
+              ><label
+                ><input type="radio" name="role" value="other" /><span
+                  >Other</span
+                ></label
+              >
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>What would you like to understand first?</legend>
+            <div class="waitlist-choices goals">
+              <label
+                ><input type="radio" name="goal" value="visibility" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-chat" /></svg
+                  >Where AI mentions us</span
+                ></label
+              ><label
+                ><input type="radio" name="goal" value="traffic" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-wave" /></svg
+                  >The traffic AI sends us</span
+                ></label
+              ><label
+                ><input type="radio" name="goal" value="improvements" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="/assets/icons/lucide.svg#i-spark" /></svg
+                  >What we should improve</span
+                ></label
+              >
+            </div>
+          </fieldset>
+          <p class="waitlist-error" id="profile-error" role="alert" hidden></p>
+          <button class="button primary large" type="submit">
+            <span>Save my preferences</span
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      <div data-waitlist-stage="success" hidden>
+        <div class="waitlist-next">
+          <div>
+            <span>01</span>
+            <p>
+              <strong>We’re building with intention.</strong> Your input helps
+              us focus on the useful things.
+            </p>
+          </div>
+          <div>
+            <span>02</span>
+            <p>
+              <strong>Your invitation comes next.</strong> We’ll email as access
+              opens. There’s nothing else you need to do.
+            </p>
+          </div>
+        </div>
+        <div class="waitlist-share">
+          <span class="brand-mark"></span>
+          <div>
+            <strong>Know someone who’d get it?</strong>
+            <p>Give them a first look, too.</p>
+          </div>
+          <button class="button" id="share-waitlist">Copy invite link</button>
+        </div>
+        <div class="waitlist-management" hidden>
+          <button class="text-link" id="save-signup-link">
+            Save your private signup link
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-external" />
+            </svg>
+          </button>
+          <p>
+            Keep this link to view your confirmation or remove your signup
+            later. Don’t share it.
+          </p>
+          <button class="waitlist-skip" id="remove-signup">
+            Remove my signup
+          </button>
+        </div>
+        <p class="copy-status" id="copy-status" role="status"></p>
+        <input id="copy-fallback" readonly aria-label="Link to copy" hidden />
+        <p class="waitlist-error" id="manage-error" role="alert" hidden></p>
+        <div id="remove-confirm" hidden>
+          <p>Remove your email and preferences from the waitlist?</p>
+          <div>
+            <button class="button" id="keep-signup">Keep my place</button
+            ><button class="button" id="confirm-remove">
+              Yes, remove my signup
+            </button>
+          </div>
+        </div>
+        <button class="button primary large" id="back-to-product">
+          Explore the full dashboard
+          <svg class="icon" aria-hidden="true">
+            <use href="/assets/icons/lucide.svg#i-arrow" />
+          </svg>
+        </button>
+      </div>
+      <div data-waitlist-stage="removed" hidden>
+        <div class="waitlist-saved">
+          <span class="check-circle"
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-check" /></svg></span
+          ><span>Your email and preferences have been removed.</span>
+        </div>
+        <button class="button primary large" id="close-removed">
+          Back to Mentionloom
+        </button>
+      </div>
+      <details class="waitlist-privacy">
+        <summary>
+          How we use your details<svg class="icon" aria-hidden="true">
+            <use href="/assets/icons/lucide.svg#i-down" />
+          </svg>
+        </summary>
+        <p>
+          We use your email for Mentionloom invitations and launch updates.
+          Optional website, role, and goal details help us plan the product. We
+          record the signup button and campaign source, and store your details
+          privately on Vercel. We don’t sell them. Save your private signup link
+          from the confirmation to remove your details whenever you like.
+        </p>
+      </details>
+    </dialog>
   </body>
 </html>
