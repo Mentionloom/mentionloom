@@ -222,6 +222,8 @@
           website: form.get("website").trim(),
           role: form.get("role") || "",
           goal: form.get("goal") || "",
+          urgency: form.get("urgency") || "",
+          tracking: form.get("tracking") || "",
         });
         show("success");
       },

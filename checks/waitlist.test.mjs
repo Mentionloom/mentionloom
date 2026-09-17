@@ -41,11 +41,14 @@ test('profile requires ownership and stores only valid, optional qualification f
   await assert.rejects(service.profile({ token, website: 'invalid' }, '1'), { status: 400 });
   await assert.rejects(service.profile({ token, website: 'https://user:password@example.com' }, '1'), { status: 400 });
   await assert.rejects(service.profile({ token, role: 'injected' }, '1'), { status: 400 });
+  await assert.rejects(service.profile({ token, goal: 'injected' }, '1'), { status: 400 });
+  await assert.rejects(service.profile({ token, urgency: 'whenever' }, '1'), { status: 400 });
+  await assert.rejects(service.profile({ token, tracking: 'spreadsheet-of-doom' }, '1'), { status: 400 });
   await service.profile({ token }, '1');
   assert.equal([...store.records.values()].find(r => r.value.email).value.stage, 'joined');
-  await service.profile({ token, website: 'example.com/a?private=1', role: 'founder', goal: 'visibility' }, '1');
+  await service.profile({ token, website: 'example.com/a?private=1', role: 'founder', goal: 'visibility', urgency: 'now', tracking: 'manual' }, '1');
   const record = [...store.records.values()].find(row => row.value.email).value;
-  assert.deepEqual(record.profile, { website: 'https://example.com', role: 'founder', goal: 'visibility' });
+  assert.deepEqual(record.profile, { website: 'https://example.com', role: 'founder', goal: 'visibility', urgency: 'now', tracking: 'manual' });
   assert.equal(record.stage, 'qualified');
 });
 test('invalid email, missing consent, invalid request IDs and honeypots never persist subscribers', async () => {

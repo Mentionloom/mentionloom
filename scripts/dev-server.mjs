@@ -22,6 +22,7 @@ const types = {
 const allowed = new Set([
   "index.html",
   "alternative.html",
+  "methodology.html",
   "alternative.css",
   "alternative.js",
   "orbit-tokens.css",
@@ -54,6 +55,7 @@ const allowed = new Set([
   "waitlist.css",
   "waitlist.js",
   "assets/mark.svg",
+  "assets/og.png",
   "assets/woven-light.png",
   "assets/OpenRunde-Regular.woff2",
   "assets/OpenRunde-Medium.woff2",

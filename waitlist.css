@@ -4,3 +4,7 @@
 @keyframes waitlist-spin{to{transform:rotate(360deg)}}
 @media(max-width:550px){#join-dialog{padding:29px 23px 23px}#join-dialog h2{font-size:31px}#join-dialog input:not([type=checkbox]):not([type=radio]){font-size:16px}.waitlist-share>.button{margin:2px 0 0 34px}.waitlist-offer h3{font-size:28px}#join-dialog .waitlist-choices.roles{grid-template-columns:repeat(2,1fr)}.waitlist-progress{margin-bottom:24px}}
 @media(prefers-reduced-motion:reduce){#join-dialog .button[aria-busy=true]:after{animation:none}}
+#join-dialog .waitlist-choices.tracking{grid-template-columns:repeat(2,1fr)}
+#join-dialog .waitlist-choices.urgency{grid-template-columns:repeat(3,1fr)}
+#join-dialog .waitlist-choices.tracking label>span,#join-dialog .waitlist-choices.urgency label>span{padding:9px 10px}
+@media(max-width:550px){#join-dialog .waitlist-choices.urgency{grid-template-columns:repeat(2,1fr)}}

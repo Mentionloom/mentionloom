@@ -3,7 +3,7 @@
 The live funnel has one primary action: **Join the waitlist**.
 
 1. **Join:** email and explicit permission for early-access/launch emails. The signup is saved immediately.
-2. **Qualify, optionally:** website, role, and the first thing the visitor wants to understand. Skipping preserves the signup.
+2. **Qualify, optionally:** website, role, the first thing the visitor wants to understand, how they track AI recommendations today, and how soon it matters. Skipping preserves the signup. Website and role help prioritise the first cohort; tracking and urgency separate teams with a live problem from visitors watching the space.
 3. **Confirm and share:** what happens next, a public invite link, and a separate private signup-management link.
 
 The page makes no promise of immediate access, a queue position, a launch date, or a free product plan. Joining is free. The product dashboard still uses illustrative data.
@@ -12,7 +12,7 @@ The page makes no promise of immediate access, a queue position, a launch date, 
 
 Signups live in the private `mentionloom-waitlist` Vercel Blob store in Frankfurt. They are not stored in GitHub, shipped to the browser, or exposed by a list endpoint.
 
-Each subscriber record contains email, timestamps, consent text/version, CTA source, optional campaign attribution, qualification, and a hashed ownership nonce. Referrers and company websites are reduced to hostname/origin; arbitrary browsing URLs are not saved. Email addresses are normalized and deduplicated. Emails are currently **unverified**.
+Each subscriber record contains email, timestamps, consent text/version, CTA source, optional campaign attribution, qualification, and a hashed ownership nonce. Qualification holds the website origin, role, goal, current tracking approach, and urgency. Referrers and company websites are reduced to hostname/origin; arbitrary browsing URLs are not saved. Email addresses are normalized and deduplicated. Emails are currently **unverified**.
 
 The server uses bounded input, same-origin checks, a honeypot, and persistent rate limits. Rate-limit records contain an HMAC of the network address, count, and window; they never contain the raw address. Private management links require a server signature and matching ownership. Failed or timed-out saves show a retry message, never a false confirmation. Retries from the same form retain their request ID.
 

@@ -946,6 +946,10 @@ function search() {
   openDialog($("#search-dialog"));
   $("#global-search").focus();
 }
+function demoInfo() {
+  closeMenus();
+  openDialog($("#demo-info"));
+}
 function renderSearch(term) {
   term = term.toLowerCase().trim();
   const results = [
@@ -1086,6 +1090,7 @@ const actions = {
   "recommendation-details": recommendationDetails,
   "lost-questions": lostQuestions,
   "tour-start": () => showTour(0),
+  "demo-info": demoInfo,
   search,
   setup,
   sources: sourceDetails,

@@ -7,6 +7,7 @@ const output = new URL("./dist/", import.meta.url);
 const files = [
   "index.html",
   "alternative.html",
+  "methodology.html",
   "alternative.css",
   "alternative.js",
   "orbit-tokens.css",
@@ -40,6 +41,7 @@ const files = [
   "waitlist.css",
   "waitlist.js",
   "assets/mark.svg",
+  "assets/og.png",
   "assets/brands/acme.svg",
   "assets/woven-light.png",
   "assets/OpenRunde-Regular.woff2",

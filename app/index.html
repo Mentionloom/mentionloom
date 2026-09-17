@@ -51,7 +51,14 @@
         >
           <span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span> Acme
           <span data-app-icon="chevrons"></span></button
-        ><span class="badge demo-badge">Demo</span>
+        ><button
+          class="badge demo-badge"
+          type="button"
+          data-action="demo-info"
+          aria-haspopup="dialog"
+          title="How this demo works"
+        >
+          Demo</button>
         <a class="brand workspace-brand" href="/" aria-label="Mentionloom home" title="Mentionloom"><img src="/assets/mark.svg" alt="" width="18" height="18" /></a>
         <div class="header-spacer"></div>
         <button class="button ghost tour-launch" data-tour="start"><span class="tour-pulse" aria-hidden="true"></span>Take a tour</button>
@@ -660,6 +667,46 @@
         Search this sample workspace<span>Esc to close</span>
       </div>
     </dialog>
+    <dialog
+      id="demo-info"
+      class="demo-dialog"
+      aria-labelledby="demo-info-title"
+    >
+      <button
+        class="icon-button dialog-close"
+        type="button"
+        data-close
+        aria-label="Close"
+      >
+        <svg class="icon" aria-hidden="true">
+          <use href="/assets/icons/lucide.svg#i-close" />
+        </svg>
+      </button>
+      <span class="eyebrow">How this demo works</span>
+      <h2 id="demo-info-title">A sample workspace, not your data.</h2>
+      <p>
+        Acme is a fictional company. The questions, answers, and sources you see
+        are written examples that show the shape of a real result — they are not
+        live probes of your site, and no number here describes your brand.
+      </p>
+      <p>
+        A real workspace runs the questions you choose across the supported
+        engines, keeps every raw answer, and measures how often you are
+        shortlisted or recommended — reported with a noise band and a control
+        set, so a movement means something.
+      </p>
+      <div class="demo-dialog-note">
+        <span>Illustrative data</span>
+        <span>Controlled prompts</span>
+        <span>No account connected</span>
+      </div>
+      <div class="demo-dialog-actions">
+        <button class="button primary" type="button" data-join="demo-info">
+          Join the waitlist
+        </button>
+        <a class="button ghost" href="/methodology.html">Read the methodology</a>
+      </div>
+    </dialog>
     <div id="tour-shade" aria-hidden="true" hidden><div></div><div></div><div></div><div></div><span class="tour-frame"></span></div>
     <aside id="demo-tour" class="demo-tour" role="region" aria-label="Guided demo" hidden></aside>
     <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
@@ -676,7 +723,10 @@
       </button>
       <span class="waitlist-cta-eyebrow">Early access</span>
       <p class="waitlist-cta-copy">
-        This is a sample workspace. Join the waitlist to connect your own site.
+        This is a sample workspace.
+        <button class="link-button" type="button" data-action="demo-info">
+          How this demo works
+        </button>
       </p>
       <button class="button primary" type="button" data-join="app">
         Join the waitlist
@@ -819,6 +869,46 @@
                   ><svg class="icon" aria-hidden="true">
                     <use href="/assets/icons/lucide.svg#i-spark" /></svg
                   >What we should improve</span
+                ></label
+              >
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>How do you track AI recommendations today?</legend>
+            <div class="waitlist-choices tracking">
+              <label
+                ><input type="radio" name="tracking" value="nothing" /><span
+                  >Nothing yet</span
+                ></label
+              ><label
+                ><input type="radio" name="tracking" value="manual" /><span
+                  >Manual checks</span
+                ></label
+              ><label
+                ><input type="radio" name="tracking" value="tool" /><span
+                  >A monitoring tool</span
+                ></label
+              ><label
+                ><input type="radio" name="tracking" value="agency" /><span
+                  >An agency</span
+                ></label
+              >
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>How soon does this matter?</legend>
+            <div class="waitlist-choices urgency">
+              <label
+                ><input type="radio" name="urgency" value="now" /><span
+                  >This quarter</span
+                ></label
+              ><label
+                ><input type="radio" name="urgency" value="soon" /><span
+                  >Next 6 months</span
+                ></label
+              ><label
+                ><input type="radio" name="urgency" value="exploring" /><span
+                  >Just exploring</span
                 ></label
               >
             </div>

@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Mentionloom — Methodology</title>
+    <meta
+      name="description"
+      content="How Mentionloom defines and measures AI Recommendation Share, the answer states, the sampling rules, and the three signals it reports."
+    />
+    <link rel="canonical" href="https://mentionloom.vercel.app/methodology.html" />
+    <link rel="icon" href="/assets/mark.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/assets/SpaceGrotesk-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/tokens.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/styles.css" />
+    <link rel="stylesheet" href="/app/tokens.css" />
+    <link rel="stylesheet" href="/app/foundation.css" />
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/waitlist.css" />
+    <script src="/waitlist.js" defer></script>
+    <style>
+      .m-page {
+        --measure: 760px;
+      }
+      .m-page .m-inner {
+        width: min(var(--measure), calc(100% - 48px));
+        margin-inline: auto;
+      }
+      .m-hero {
+        padding: 88px 0 56px;
+      }
+      .m-hero h1 {
+        font-family: "Space Grotesk", var(--font-sans);
+        font-size: clamp(36px, 5vw, 56px);
+        line-height: 1.05;
+        letter-spacing: -0.045em;
+        margin: 18px 0 20px;
+      }
+      .m-hero p {
+        font-size: 17px;
+        line-height: 1.7;
+        color: var(--muted);
+        max-width: 620px;
+      }
+      .m-section {
+        padding: 34px 0 8px;
+      }
+      .m-section h2 {
+        font-family: "Space Grotesk", var(--font-sans);
+        font-size: 27px;
+        letter-spacing: -0.03em;
+        margin: 0 0 8px;
+      }
+      .m-section > p {
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+      .m-formula {
+        margin: 22px 0;
+        padding: 22px 24px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--subtle);
+        font-family: "Space Grotesk", var(--font-sans);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .m-formula strong {
+        display: block;
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+      .m-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0 28px;
+        font-size: 14px;
+      }
+      .m-table th,
+      .m-table td {
+        text-align: left;
+        padding: 12px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      .m-table th {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .m-table td:last-child {
+        white-space: nowrap;
+        color: var(--muted);
+      }
+      .m-rules {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0 28px;
+        counter-reset: rule;
+      }
+      .m-rules li {
+        counter-increment: rule;
+        display: flex;
+        gap: 16px;
+        padding: 16px 0;
+        border-top: 1px solid var(--border);
+      }
+      .m-rules li::before {
+        content: counter(rule, decimal-leading-zero);
+        font-family: "Space Grotesk", var(--font-sans);
+        color: var(--accent-text, #2457c5);
+        font-size: 14px;
+        padding-top: 2px;
+      }
+      .m-rules p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.65;
+        color: var(--text);
+      }
+      .m-rules strong {
+        font-weight: 600;
+      }
+      .m-note {
+        margin: 24px 0;
+        padding: 18px 20px;
+        border: 1px solid #dce4f1;
+        border-radius: 14px;
+        background: #f5f8fd;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+      .m-cta {
+        margin: 56px 0 80px;
+        padding: 32px;
+        border-radius: 18px;
+        background: linear-gradient(125deg, #faf9ff, #eaf1ff);
+      }
+      .m-cta h2 {
+        font-family: "Space Grotesk", var(--font-sans);
+        font-size: 28px;
+        letter-spacing: -0.03em;
+        margin: 0 0 10px;
+      }
+      .m-cta p {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0 0 20px;
+      }
+      .m-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
+      }
+      .m-header a {
+        text-decoration: none;
+      }
+      .m-nav {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 13px;
+      }
+      .m-nav a {
+        color: var(--muted);
+      }
+      .m-nav a:hover {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body class="discovery-app marketing-app m-page">
+    <header class="wrap m-header">
+      <a class="wordmark" href="/" aria-label="Mentionloom home"
+        ><img src="/assets/mark.svg" width="28" height="28" alt="" />mentionloom</a
+      >
+      <nav class="m-nav" aria-label="Methodology navigation">
+        <a href="/app/">Product demo</a>
+        <a href="/" data-join="methodology">Join the waitlist</a>
+      </nav>
+    </header>
+    <main class="m-inner">
+      <section class="m-hero">
+        <span class="eyebrow">Methodology</span>
+        <h1>A recommendation, measured honestly.</h1>
+        <p>
+          Mentionloom's headline number is how often an AI answer engine
+          shortlists or recommends you, against the buyer questions that carry
+          revenue. This page defines that number, the rules that keep it
+          honest, and the three signals that sit around it.
+        </p>
+      </section>
+
+      <section class="m-section">
+        <h2>The metric</h2>
+        <p>
+          AI Recommendation Share is the proportion of sampled answers in which
+          a brand is shortlisted or recommended, across its question set and
+          engine set, over a fixed window.
+        </p>
+        <div class="m-formula">
+          <strong>AI Recommendation Share</strong>
+          = answers where you are shortlisted or recommended
+          ÷ total sampled answers
+        </div>
+        <p>
+          Every answer resolves to exactly one state per brand, and only the
+          last two count toward the metric:
+        </p>
+        <table class="m-table">
+          <thead>
+            <tr><th>State</th><th>Definition</th><th>Counts</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Absent</td><td>You do not appear, and no competitor is named.</td><td>No</td></tr>
+            <tr><td>Mentioned</td><td>Your name appears in any context, including a dismissal.</td><td>No</td></tr>
+            <tr><td>Shortlisted</td><td>You are named as one of several viable options.</td><td>Yes</td></tr>
+            <tr><td>Recommended</td><td>You are endorsed directly, named first, or given as the primary answer.</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Mention rate and recommendation share are different numbers.
+          Monitoring tools stop at the first. Recommendation share is the one
+          that changes a decision.
+        </p>
+        <div class="m-note">
+          <strong>Lost Recommendation Share</strong> is reported alongside it:
+          the share of answers where a competitor is shortlisted or recommended
+          and you are absent or merely mentioned. It is the number that maps
+          onto the briefs that follow.
+        </div>
+      </section>
+
+      <section class="m-section">
+        <h2>The sampling rules</h2>
+        <p>
+          These exist so the number survives a skeptical question. Omit one and
+          the metric collapses under it.
+        </p>
+        <ol class="m-rules">
+          <li><p><strong>Five runs per question per engine per cycle.</strong> One run is an anecdote. Five gives a variance estimate and makes the noise band honest.</p></li>
+          <li><p><strong>Publish the band, not the point.</strong> "45.4%, ±2.5" is a different claim from "45.4%".</p></li>
+          <li><p><strong>Hold back a control set.</strong> Roughly 20% of questions receive no intervention, so movement in the treated set is compared against the control.</p></li>
+          <li><p><strong>Segment by intent stage.</strong> Discovery, comparison and decision move at different speeds, and decision questions are worth more.</p></li>
+          <li><p><strong>Declare the surface.</strong> Every report states whether it measured an API surface or a consumer surface, and which model, region and date.</p></li>
+          <li><p><strong>Check the consumer surface monthly.</strong> Re-run a sample of prompts directly in the consumer products and record the divergence.</p></li>
+          <li><p><strong>Keep the raw answer.</strong> Engine, model, timestamp, question, raw text and cited URLs are retained so any number can be traced to the answer behind it.</p></li>
+          <li><p><strong>Never imply causation from one cycle.</strong> Movement is reported with the control comparison, the window, and the other changes in that window.</p></li>
+        </ol>
+      </section>
+
+      <section class="m-section">
+        <h2>Three signals, three jobs</h2>
+        <p>
+          The metric is one signal. Two others are reported beside it, never
+          folded into it.
+        </p>
+        <table class="m-table">
+          <thead>
+            <tr><th>Signal</th><th>What it is</th><th>Its job</th><th>In the metric</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A — Answers</td><td>Sampled recommendations across engines and questions</td><td>The metric</td><td>Yes</td></tr>
+            <tr><td>B — Referrals</td><td>Attributed sessions from AI sources</td><td>The outcome</td><td>No</td></tr>
+            <tr><td>C — Crawlers</td><td>Bot requests in server or CDN logs</td><td>Diagnostics: has the content been fetched at all</td><td>No</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Bot traffic is not a recommendation, and referral traffic is an
+          outcome rather than a visibility measure. Mixing them into one score
+          produces a number nobody can explain when it moves.
+        </p>
+      </section>
+
+      <section class="m-section">
+        <h2>What this is today</h2>
+        <div class="m-note">
+          The product preview uses an illustrative Acme workspace. Questions,
+          answers and sources are written examples that show the shape of a
+          real result — they are not live probes of your site, and no number
+          describes your brand. A real workspace runs your own questions,
+          retains the raw answers, and reports the band and the control
+          comparison described here.
+        </div>
+      </section>
+
+      <section class="m-cta">
+        <h2>Measure your own questions.</h2>
+        <p>
+          Join the waitlist to get a real workspace built from your site,
+          competitors and analytics as the first cohort opens.
+        </p>
+        <button class="button primary" type="button" data-join="methodology">
+          Join the waitlist
+        </button>
+      </section>
+    </main>
+    <footer class="marketing-footer wrap">
+      <div class="footer-bottom">
+        <span>© 2026 Mentionloom</span
+        ><span
+          >Join details are stored privately and removable from your
+          confirmation.</span
+        >
+      </div>
+    </footer>
+    <dialog
+      id="join-dialog"
+      aria-labelledby="join-title"
+      aria-describedby="join-description"
+    >
+      <button class="icon-button dialog-close" aria-label="Close waitlist">
+        <svg class="icon" aria-hidden="true">
+          <use href="/assets/icons/lucide.svg#i-close" />
+        </svg>
+      </button>
+      <div class="waitlist-progress" aria-label="Step 1 of 3">
+        <span class="is-current"></span><span></span><span></span>
+      </div>
+      <span class="eyebrow" id="join-eyebrow">A little ahead of the curve</span>
+      <h2 id="join-title" tabindex="-1">Be there<br />when it begins.</h2>
+      <p id="join-description">
+        A clearer picture of AI discovery is on its way. Get your invitation
+        when access opens.
+      </p>
+      <div data-waitlist-stage="signup">
+        <form id="join-form">
+          <label for="email">Your email</label
+          ><input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength="254"
+            required
+            placeholder="you@company.com"
+            aria-describedby="join-error"
+          />
+          <div class="waitlist-trap" aria-hidden="true">
+            <label for="company-fax">Leave this empty</label
+            ><input id="company-fax" name="company_fax" tabindex="-1" autocomplete="off" />
+          </div>
+          <label class="consent-label"
+            ><input id="waitlist-consent" type="checkbox" required /><span
+              >Email me about Mentionloom early access and launch updates.</span
+            ></label
+          >
+          <p class="waitlist-error" id="join-error" role="alert" hidden></p>
+          <button class="button primary large" type="submit">
+            <span>Join the waitlist</span
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+          <p class="form-note">
+            Free to join. No payment details. No unrelated marketing.
+          </p>
+        </form>
+      </div>
+      <div data-waitlist-stage="profile" hidden>
+        <div class="waitlist-saved">
+          <span class="check-circle"
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-check" /></svg></span
+          ><span><strong>You’re on the list.</strong><br />These details are optional.</span
+          ><button class="waitlist-skip" id="skip-profile" type="button">Skip for now</button>
+        </div>
+        <form id="profile-form">
+          <label for="website">Your website <span class="optional">Optional</span></label
+          ><input id="website" name="website" autocomplete="url" maxlength="300" placeholder="company.com" aria-describedby="profile-error" />
+          <fieldset>
+            <legend>What’s your role?</legend>
+            <div class="waitlist-choices roles">
+              <label><input type="radio" name="role" value="founder" /><span>Founder</span></label>
+              <label><input type="radio" name="role" value="marketing" /><span>Marketing</span></label>
+              <label><input type="radio" name="role" value="agency" /><span>Agency</span></label>
+              <label><input type="radio" name="role" value="other" /><span>Other</span></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>What would you like to understand first?</legend>
+            <div class="waitlist-choices goals">
+              <label><input type="radio" name="goal" value="visibility" /><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-chat" /></svg>Where AI mentions us</span></label>
+              <label><input type="radio" name="goal" value="traffic" /><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-wave" /></svg>The traffic AI sends us</span></label>
+              <label><input type="radio" name="goal" value="improvements" /><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-spark" /></svg>What we should improve</span></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>How do you track AI recommendations today?</legend>
+            <div class="waitlist-choices tracking">
+              <label><input type="radio" name="tracking" value="nothing" /><span>Nothing yet</span></label>
+              <label><input type="radio" name="tracking" value="manual" /><span>Manual checks</span></label>
+              <label><input type="radio" name="tracking" value="tool" /><span>A monitoring tool</span></label>
+              <label><input type="radio" name="tracking" value="agency" /><span>An agency</span></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>How soon does this matter?</legend>
+            <div class="waitlist-choices urgency">
+              <label><input type="radio" name="urgency" value="now" /><span>This quarter</span></label>
+              <label><input type="radio" name="urgency" value="soon" /><span>Next 6 months</span></label>
+              <label><input type="radio" name="urgency" value="exploring" /><span>Just exploring</span></label>
+            </div>
+          </fieldset>
+          <p class="waitlist-error" id="profile-error" role="alert" hidden></p>
+          <button class="button primary large" type="submit">
+            <span>Save my preferences</span
+            ><svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-arrow" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      <div data-waitlist-stage="success" hidden>
+        <div class="waitlist-next">
+          <div><span>01</span><p><strong>We’re building with intention.</strong> Your input helps us focus on the useful things.</p></div>
+          <div><span>02</span><p><strong>Your invitation comes next.</strong> We’ll email as access opens. There’s nothing else you need to do.</p></div>
+        </div>
+        <div class="waitlist-share">
+          <span class="brand-mark"></span>
+          <div><strong>Know someone who’d get it?</strong><p>Give them a first look, too.</p></div>
+          <button class="button" id="share-waitlist">Copy invite link</button>
+        </div>
+        <div class="waitlist-management" hidden>
+          <button class="text-link" id="save-signup-link">Save your private signup link
+            <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-external" /></svg>
+          </button>
+          <p>Keep this link to view your confirmation or remove your signup later. Don’t share it.</p>
+          <button class="waitlist-skip" id="remove-signup">Remove my signup</button>
+        </div>
+        <p class="copy-status" id="copy-status" role="status"></p>
+        <input id="copy-fallback" readonly aria-label="Link to copy" hidden />
+        <p class="waitlist-error" id="manage-error" role="alert" hidden></p>
+        <div id="remove-confirm" hidden>
+          <p>Remove your email and preferences from the waitlist?</p>
+          <div>
+            <button class="button" id="keep-signup">Keep my place</button
+            ><button class="button" id="confirm-remove">Yes, remove my signup</button>
+          </div>
+        </div>
+        <button class="button primary large" id="back-to-product">Explore the full dashboard
+          <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg>
+        </button>
+      </div>
+      <div data-waitlist-stage="removed" hidden>
+        <div class="waitlist-saved">
+          <span class="check-circle"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span
+          ><span>Your email and preferences have been removed.</span>
+        </div>
+        <button class="button primary large" id="close-removed">Back to Mentionloom</button>
+      </div>
+      <details class="waitlist-privacy">
+        <summary>How we use your details<svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-down" /></svg></summary>
+        <p>We use your email for Mentionloom invitations and launch updates. Optional website, role, and goal details help us plan the product. We record the signup button and campaign source, and store your details privately on Vercel. We don’t sell them. Save your private signup link from the confirmation to remove your details whenever you like.</p>
+      </details>
+    </dialog>
+  </body>
+</html>
