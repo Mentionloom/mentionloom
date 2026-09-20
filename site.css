@@ -78,14 +78,13 @@
 .marketing-app .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 21px;
-  font-weight: 500;
-  letter-spacing: -0.6px;
   min-height: 44px;
+  flex-shrink: 0;
 }
 .marketing-app .wordmark img {
-  border-radius: 8px;
+  display: block;
+  width: 184px;
+  height: auto;
 }
 .marketing-app .marketing-header {
   height: 88px;
@@ -1707,9 +1706,8 @@
   .marketing-app .header-content nav {
     display: none;
   }
-  .marketing-app .wordmark {
-    font-size: 19px;
-    gap: 8px;
+  .marketing-app .wordmark img {
+    width: 168px;
   }
   .marketing-app .header-actions .button {
     font-size: var(--text-xs);
@@ -2088,12 +2086,9 @@
   .marketing-app .wrap {
     width: calc(100% - 28px);
   }
-  .marketing-app .wordmark {
-    font-size: 17px;
-  }
   .marketing-app .wordmark img {
-    width: 26px;
-    height: 26px;
+    width: 148px;
+    height: auto;
   }
   .marketing-app .hero h1 {
     font-size: 2.85rem;
