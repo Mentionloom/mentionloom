@@ -41,6 +41,7 @@ const files = [
   "waitlist.css",
   "waitlist.js",
   "assets/dark-ml.svg",
+  "assets/blue-ml.svg",
   "assets/og.png",
   "assets/brands/acme.svg",
   "assets/woven-light.png",
