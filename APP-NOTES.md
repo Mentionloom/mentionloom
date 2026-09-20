@@ -10,18 +10,18 @@ The standalone app lives at `/app/`. It is an interactive sample workspace, not 
 
 ## Information architecture
 
-The top navigation opens six separate page URLs, rather than scrolling through one long dashboard or switching ARIA tabs:
+The top navigation exposes six primary page URLs, rather than scrolling through one long dashboard or switching ARIA tabs:
 
 | Page                  | Primary content                                                               | Details on demand                                            |
 | --------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `/app/overview/`      | Contextual KPIs, trend, recommended next move, engine and competitor rankings | Metric cards open reports; the next move starts a saved plan |
 | `/app/visibility/`    | Mention rate, citations, engine and competitor rankings                       | Sampled answers and cited pages                              |
-| `/app/traffic/`       | Referrals, leads, conversion funnel, landing pages                            | Session and conversion evidence                              |
-| `/app/questions/`     | Coverage KPIs, distribution chart, searchable question table                  | Per-engine answers, pending question controls                |
-| `/app/opportunities/` | Open/shipped counts, missing-answer bars, compact improvement rows            | Full brief, suggested page, shipping status                  |
-| `/app/sources/`       | Connection status and crawler request counts                                  | Requirements for each individual source                      |
+| `/app/traffic/`       | Visits, visitors, page views, leads, source/country/device breakdowns and funnel stages | Session, journey and conversion evidence                     |
+| `/app/questions/`     | Coverage KPIs, distribution chart, searchable question table                  | Per-engine answers and browser-local pending questions       |
+| `/app/opportunities/` | Open/shipped counts, missing-answer bars, improvement rows and saved baselines | Full brief, suggested page, checklist and measurement review |
+| `/app/addons/`        | Experimental content, monitoring, reporting and attribution add-ons           | Product preview, sample offer and browser-local activation   |
 
-Date, engine and topic scope carries between pages in the URL. Browser history, refresh, direct links and opening a page in a new tab work. Older `#questions`, `#actions`, `#sources` and referral links resolve to the appropriate page. Coverage, source ownership and status are Orbit dropdowns. Detailed methodology, answer excerpts and setup instructions live in modal drawers with a back path and keyboard focus handling.
+Date and view-specific scope carry between pages in the URL. Browser history, refresh, direct links and opening a page in a new tab work. Older `#questions`, `#actions`, `#sources`, referral links, and `/app/sources/` resolve into the current app flow; Sources is no longer a primary navigation view. Detailed methodology, answer excerpts, setup instructions and source requirements live in modal drawers with a back path and keyboard focus handling.
 
 Question additions, shipped status and setup plans remain local to this browser. The small sample-data label and Demo badge stay visible; a real connection is never implied.
 
@@ -42,8 +42,10 @@ New product compositions, built from Orbit primitives: **recommended next move**
 - `app/lib/data.js`: a deterministic 180-day fixture, four engines, twelve questions, separate answer/session records, sample crawler snapshot and improvement plans.
 - `app/lib/model.js`: pure scope selection, correct denominators, comparisons and CSV encoding.
 - `app/lib/navigation.js`: page paths, metric compatibility, shared URL filters and legacy link resolution.
+- `app/lib/traffic.js` and `app/lib/traffic-view.js`: an illustrative website-session model kept separate from answer sampling, with source/country/device filters, journeys and funnel stages.
 - `app/lib/growth.js`: evidence ranking, frozen baselines, validated progress and shipping readiness.
 - `app/lib/growth-view.js`: reusable next-move, workflow, checklist and measurement compositions.
+- `app/lib/addons.js` and `app/lib/addons-view.js`: the experimental add-on catalogue, sample commercial state and product previews.
 - `app/components/orbit/runtime`: the installed Orbit 0.2.0 runtime, tokens, control behaviors, fonts and overlay templates.
 - `app/lib/ui.js`: a thin Orbit initializer/adapter plus product-specific persistence and export helpers.
 - `app/tokens.css`: the application density scale and accessible semantic foregrounds.
@@ -53,7 +55,9 @@ New product compositions, built from Orbit primitives: **recommended next move**
 - `app/app.css`: domain layout and mobile adaptations.
 - `app/pages.css`: focused page layouts and compact responsive controls, using the installed Orbit tokens.
 - `app/growth.css`: the hierarchy and responsive layout for guided growth, using Orbit tokens and controls.
-- `build.mjs`: creates an actual static entry point for each page, so Vercel deep links work without a catch-all rewrite.
+- `app/addons.css`: add-on marketplace and product-detail layouts.
+- `app/traffic.css`: traffic analysis, breakdown, journey and funnel layouts.
+- `build.mjs`: creates static entries for each primary app view, the legacy Sources route, and every add-on detail page so Vercel deep links work without a catch-all rewrite.
 
 ## Data boundaries
 
@@ -65,7 +69,7 @@ To connect real data, implement tenant authentication and domain verification, a
 
 ## Verification
 
-- `npm test`: 25 checks, including dashboard/waitlist suites, complete Orbit assets and six static page entry points, URL routing, filter round trips, progress persistence, baseline stability, evidence ranking, and semantic text/control contrast.
+- `npm test`: the current dashboard/waitlist, Orbit runtime, navigation, growth, add-on, brand, traffic and globe suites. The build checks direct static entries for the six primary views plus the legacy Sources route.
 - Lighthouse 12.8.2 accessibility audits cover Overview, Questions and Opportunities. This automated check is not a claim of complete WCAG conformance.
 - Browser checks: native Orbit filter selection with arrow keys and Enter; focus restoration; Escape closes the drawer and returns focus; the app owns Cmd+K without opening Orbit's sample command palette; inline form errors focus and describe the invalid field.
 - Responsive checks at 320px, 390px and desktop. Larger labels contract before control targets shrink; the page has no horizontal overflow at 320px. Page navigation remains intentionally horizontally scrollable and keeps the active page in view.
