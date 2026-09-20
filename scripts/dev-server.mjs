@@ -56,6 +56,7 @@ const allowed = new Set([
   "waitlist.js",
   "assets/dark-ml.svg",
   "assets/blue-ml.svg",
+  "assets/favicon.svg",
   "assets/og.png",
   "assets/woven-light.png",
   "assets/OpenRunde-Regular.woff2",
