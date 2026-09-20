@@ -4,7 +4,7 @@ Light-only landing page with an interactive product preview and a working waitli
 
 For a local page and isolated waitlist test, run `node scripts/dev-server.mjs --test-storage` and open `http://127.0.0.1:4323`.
 
-Production build: `npm run build`. This copies only the current page, styles, script, and licensed assets into `dist/`. Vercel uses `vercel.json` to build and publish that directory. The [GitHub repository](https://github.com/giovanitier/mentionloom) is private; the deployed landing page is public. The repository is connected to the `mentionloom` project in the Vercel `tier` workspace, with automatic production deployments from `main`.
+Production build: `npm run build`. This copies only the current page, styles, script, and licensed assets into `dist/`. Vercel uses `vercel.json` to build and publish that directory. The [GitHub repository](https://github.com/Mentionloom/mentionloom) is private; the deployed landing page is public. The repository is connected to the `mentionloom` project in the Vercel `tier` workspace, with automatic production deployments from `main`.
 
 The workspace has four views: Overview, AI visits, Answers, and Opportunities. It includes selectable metrics, date ranges, question examples, opportunity completion/reset, and mouse/keyboard chart inspection. All dashboard data is illustrative. The waitlist saves real signups, offers optional qualification, and supports private signup removal. No payment is collected.
 
