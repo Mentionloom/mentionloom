@@ -1450,3 +1450,5 @@ $('#scene-detail').addEventListener('close', scheduleScene);
 document.addEventListener('visibilitychange', scheduleScene);
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
+
+// cloudflare deploy sync: insight motion 2026-09-21
