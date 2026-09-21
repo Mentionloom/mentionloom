@@ -358,8 +358,8 @@ function chart(animateChart = false) {
           { opacity: 0.48 },
           { opacity: 0 },
         ],
-        300,
-        { fill: "both" },
+        390,
+        { fill: "both", easing: LANDING_EASE },
       );
     if (currentPath) {
       const length = currentPath.getTotalLength();
@@ -369,16 +369,16 @@ function chart(animateChart = false) {
           { strokeDasharray: `${length} ${length}`, strokeDashoffset: length, opacity: 0.58 },
           { strokeDasharray: `${length} ${length}`, strokeDashoffset: 0, opacity: 1 },
         ],
-        820,
-        { delay: 80, fill: "backwards" },
+        1040,
+        { delay: 110, fill: "backwards", easing: LANDING_EASE },
       );
     }
     previousPath &&
       animate(
         previousPath,
         [{ opacity: 0 }, { opacity: 1 }],
-        460,
-        { delay: 150, fill: "backwards" },
+        620,
+        { delay: 190, fill: "backwards", easing: LANDING_EASE },
       );
     fillPath &&
       animate(
@@ -387,8 +387,8 @@ function chart(animateChart = false) {
           { opacity: 0, transform: "scaleX(.04)" },
           { opacity: 1, transform: "scaleX(1)" },
         ],
-        650,
-        { delay: 140, fill: "backwards" },
+        840,
+        { delay: 180, fill: "backwards", easing: LANDING_EASE },
       );
     [...svg.querySelectorAll(".plot-grid,.plot-axis")].forEach((el, index) =>
       microReveal(el, 25 + index * 18, 220, 1, 0.38),
@@ -654,9 +654,17 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
-function microReveal(el, delay = 0, duration = 260, scale = 0.985, fromOpacity = 0.55) {
+const LANDING_EASE = "cubic-bezier(.16, 1, .3, 1)";
+function motionAnimate(el, frames, duration = 320, extra = {}) {
+  return animate(el, frames, Math.round(duration * 1.18), {
+    easing: LANDING_EASE,
+    ...extra,
+  });
+}
+
+function microReveal(el, delay = 0, duration = 360, scale = 0.99, fromOpacity = 0.42) {
   if (!el) return;
-  animate(
+  motionAnimate(
     el,
     [
       { opacity: fromOpacity, transform: `scale(${scale})` },
@@ -667,14 +675,14 @@ function microReveal(el, delay = 0, duration = 260, scale = 0.985, fromOpacity =
   );
 }
 
-function microRevealMany(elements, delay = 0, step = 45, options = {}) {
+function microRevealMany(elements, delay = 0, step = 65, options = {}) {
   [...elements].forEach((el, index) =>
     microReveal(
       el,
       delay + index * step,
-      options.duration ?? 260,
-      options.scale ?? 0.985,
-      options.opacity ?? 0.55,
+      options.duration ?? 360,
+      options.scale ?? 0.99,
+      options.opacity ?? 0.42,
     ),
   );
 }
@@ -732,9 +740,9 @@ function playProductMotion() {
 const insightMotionPlayed = new WeakSet();
 const approachMotionPlayed = new WeakSet();
 
-function motionEnter(el, delay = 0, distance = 8, duration = 320, scale = 0.994) {
+function motionEnter(el, delay = 0, distance = 8, duration = 420, scale = 0.996) {
   if (!el) return;
-  animate(
+  motionAnimate(
     el,
     [
       { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
@@ -745,14 +753,14 @@ function motionEnter(el, delay = 0, distance = 8, duration = 320, scale = 0.994)
   );
 }
 
-function motionEnterMany(elements, delay = 0, step = 65, options = {}) {
+function motionEnterMany(elements, delay = 0, step = 85, options = {}) {
   [...elements].forEach((el, index) =>
     motionEnter(
       el,
       delay + index * step,
       options.distance ?? 8,
-      options.duration ?? 320,
-      options.scale ?? 0.994,
+      options.duration ?? 420,
+      options.scale ?? 0.996,
     ),
   );
 }
@@ -803,7 +811,7 @@ function playSourceCard(card) {
 
   setTimeout(() => {
     if (loading) {
-      animate(
+      motionAnimate(
         loading,
         [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
         170,
@@ -817,7 +825,7 @@ function playSourceCard(card) {
     }
 
     if (head) {
-      animate(
+      motionAnimate(
         head,
         [
           { opacity: 0, maxHeight: "0px", marginBottom: "0px" },
@@ -837,7 +845,7 @@ function playSourceCard(card) {
     metrics.forEach(({ row, height }, index) => {
       const delay = 90 + index * 140;
       row.classList.add("is-loading");
-      animate(
+      motionAnimate(
         row,
         [
           {
@@ -863,7 +871,7 @@ function playSourceCard(card) {
       setTimeout(() => {
         row.classList.remove("is-loading");
         [...row.children].forEach((child) =>
-          animate(child, [{ opacity: 0 }, { opacity: 1 }], 165, { fill: "backwards" }),
+          motionAnimate(child, [{ opacity: 0 }, { opacity: 1 }], 165, { fill: "backwards" }),
         );
         rollInitial(row.querySelector("b"), 15);
       }, delay + 180);
@@ -891,7 +899,7 @@ function playTrafficCard(card) {
   steps.forEach((step, index) => {
     const bar = step.querySelector(".marketing-funnel-track > span");
     if (!bar) return;
-    animate(
+    motionAnimate(
       bar,
       [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
       620,
@@ -921,7 +929,7 @@ function runActionChecklistDemo(visual) {
   const cancel = () => {
     cancelled = true;
     cursor.getAnimations().forEach((animation) => animation.cancel());
-    animate(cursor, [{ opacity: 1 }, { opacity: 0 }], 120, { fill: "forwards" });
+    motionAnimate(cursor, [{ opacity: 1 }, { opacity: 0 }], 120, { fill: "forwards" });
   };
   visual.addEventListener("pointerdown", cancel, { once: true });
 
@@ -934,7 +942,7 @@ function runActionChecklistDemo(visual) {
       const nextX = cr.left - vr.left + 5;
       const nextY = cr.top - vr.top + Math.min(17, cr.height / 2);
       cursor.getAnimations().forEach((animation) => animation.cancel());
-      animate(
+      motionAnimate(
         cursor,
         [
           { opacity: 1, transform: `translate(${x}px,${y}px) scale(1)` },
@@ -950,7 +958,7 @@ function runActionChecklistDemo(visual) {
 
     setTimeout(() => {
       if (cancelled || !visual.isConnected) return;
-      animate(
+      motionAnimate(
         cursor,
         [
           { transform: `translate(${x}px,${y}px) scale(1)` },
@@ -970,7 +978,7 @@ function runActionChecklistDemo(visual) {
   });
 
   setTimeout(() => {
-    if (!cancelled) animate(cursor, [{ opacity: 1 }, { opacity: 0 }], 170, { fill: "forwards" });
+    if (!cancelled) motionAnimate(cursor, [{ opacity: 1 }, { opacity: 0 }], 170, { fill: "forwards" });
   }, 500 + choices.length * 540 + 60);
 }
 
@@ -1027,7 +1035,7 @@ function playCompetitiveCard(card) {
 
       setTimeout(() => {
         if (thinking) {
-          animate(
+          motionAnimate(
             thinking,
             [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
             170,
@@ -1037,13 +1045,13 @@ function playCompetitiveCard(card) {
         }
 
         if (brandGroup) {
-          animate(brandGroup, [{ opacity: 0.75 }, { opacity: 1 }], 240, { fill: "backwards" });
+          motionAnimate(brandGroup, [{ opacity: 0.75 }, { opacity: 1 }], 240, { fill: "backwards" });
         }
 
         const order = [brands[0], brands[1], brands[3], brands[2]].filter(Boolean);
         order.forEach((brand, index) => {
           const self = brand.classList.contains("your-brand");
-          animate(
+          motionAnimate(
             brand,
             [
               { opacity: 0, transform: "translateY(8px) scale(.8)" },
@@ -1065,7 +1073,7 @@ function playCompetitiveCard(card) {
           visual.classList.add("is-acme-highlighted");
           visual.classList.remove("is-sequencing");
           if (acme) {
-            animate(
+            motionAnimate(
               acme,
               [
                 { transform: "translateY(0) scale(.96)" },
@@ -1116,7 +1124,7 @@ function playApproachCardMotion(step) {
     motionEnter(step.querySelector(".mini-product-heading"), 145, 4, 235, 1);
     const progress = step.querySelector(".company-progress > span");
     progress &&
-      animate(progress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 650, {
+      motionAnimate(progress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 650, {
         delay: 205,
         fill: "backwards",
       });
@@ -1136,7 +1144,7 @@ function playApproachCardMotion(step) {
     const rows = [...step.querySelectorAll(".generated-question")];
     motionEnterMany(rows, 280, 82, { distance: 5, duration: 260, scale: 0.997 });
     [...step.querySelectorAll(".question-check")].forEach((check, index) =>
-      animate(
+      motionAnimate(
         check,
         [
           { opacity: 0.18, transform: "scale(.82)" },
@@ -1151,7 +1159,7 @@ function playApproachCardMotion(step) {
     if (selection && rows.length === 3) {
       const y2 = rows[1].offsetTop - rows[0].offsetTop;
       const y3 = rows[2].offsetTop - rows[0].offsetTop;
-      animate(
+      motionAnimate(
         selection,
         [
           { transform: "translateY(0) scale(1)", offset: 0 },
@@ -1175,7 +1183,7 @@ function playApproachCardMotion(step) {
       scale: 0.996,
     });
     [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
-      animate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 570, {
+      motionAnimate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 570, {
         delay: 300 + index * 95,
         fill: "backwards",
       }),
@@ -1257,7 +1265,7 @@ try {
   registerReveal(
     ".hero",
     ".announcement,h1,.hero-copy,.hero-detail,.hero-actions .button,.hero-note",
-    { step: 45 },
+    { step: 60 },
   );
   registerReveal(
     ".discovery-scene",
@@ -1269,16 +1277,16 @@ try {
     scale: 0.96,
   });
   registerReveal("#product .section-heading", ".eyebrow,h2,p", { step: 45 });
-  registerReveal("#product .story-nav", "button", { step: 38, scale: 0.96 });
-  registerReveal("#insights .section-heading", ".eyebrow,h2,p", { step: 42 });
+  registerReveal("#product .story-nav", "button", { step: 55, scale: 0.97 });
+  registerReveal("#insights .section-heading", ".eyebrow,h2,p", { step: 58 });
   registerReveal("#approach .section-heading", ".eyebrow,h2,p", { step: 42 });
   registerReveal("#product .value-trio > div", ":scope>.icon,:scope>p", {
-    step: 35,
+    step: 52,
     scale: 0.97,
   });
   registerReveal("#faq > div:first-child", ".eyebrow,h2,p", {
-    step: 38,
-    scale: 0.985,
+    step: 55,
+    scale: 0.99,
   });
   registerReveal("#faq .faq-list details", ":scope>summary", {
     step: 0,
@@ -1287,12 +1295,12 @@ try {
   registerReveal(
     ".early-access-card",
     ":scope>.eyebrow,:scope>h2,:scope>p,.hero-actions .button,.offer-notes>span",
-    { step: 42, scale: 0.975 },
+    { step: 60, scale: 0.985 },
   );
   registerReveal(
     ".brand-footer",
     ".brand-footer-label,.brand-footer-col a,.brand-footer-note,.brand-footer-meta>*,.brand-footer-logo",
-    { step: 30, scale: 0.98 },
+    { step: 45, scale: 0.99 },
   );
 
   const structureReveal = new IntersectionObserver(
@@ -1303,7 +1311,7 @@ try {
         const plan = revealPlans.get(target);
         if (!plan || paused || reduced.matches) continue;
         microRevealMany(target.querySelectorAll(plan.itemSelector), 0, plan.step ?? 40, {
-          duration: plan.duration ?? 250,
+          duration: plan.duration ?? 340,
           scale: plan.scale ?? 0.985,
           opacity: plan.opacity ?? 0.55,
         });
