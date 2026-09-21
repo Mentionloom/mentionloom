@@ -621,6 +621,55 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
+let productMotionPlayed = false;
+function playProductMotion() {
+  const stage = $(".product-stage");
+  if (!stage || productMotionPlayed) return;
+  productMotionPlayed = true;
+  stage.dataset.motionState = reduced.matches || paused ? "complete" : "running";
+
+  if (reduced.matches || paused || !window.OrbitMotion) return;
+
+  const enter = (el, delay = 0, distance = 7, duration = 300, scale = 0.995) => {
+    if (!el) return;
+    animate(
+      el,
+      [
+        { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      duration,
+      { delay, fill: "backwards" },
+    );
+  };
+
+  // The shell appears immediately, then the actual data resolves inside it.
+  enter(stage, 0, 10, 340, 0.996);
+  enter(stage.querySelector(".stage-toolbar"), 35, 6, 260, 0.998);
+  enter(stage.querySelector(".engine-controls"), 85, 6, 260, 0.998);
+
+  const metric = stage.querySelector(".visibility-metric");
+  enter(metric?.querySelector(":scope > span"), 130, 5, 240, 1);
+  enter(metric?.querySelector(":scope > div"), 175, 7, 280, 0.997);
+  enter(metric?.querySelector(":scope > p"), 220, 5, 240, 1);
+
+  enter(stage.querySelector(".competitor-panel .panel-title"), 190, 5, 250, 1);
+  enter(stage.querySelector(".competitor-panel > p"), 235, 5, 240, 1);
+  enter(stage.querySelector(".chart-legend"), 390, 5, 250, 1);
+  enter(stage.querySelector(".stage-bottom"), 455, 5, 260, 1);
+
+  // Re-render once on first viewport entry so the number, chart and ranked bars
+  // visibly build instead of already being in their final state.
+  setTimeout(() => {
+    if (!stage.isConnected) return;
+    render(report, true);
+  }, 115);
+
+  setTimeout(() => {
+    stage.dataset.motionState = "complete";
+  }, 1050);
+}
+
 let insightsMotionPlayed = false;
 function playInsightsMotion() {
   const section = $("#insights");
@@ -1001,6 +1050,22 @@ try {
     approachObserver.observe(approach);
   }
 
+  const productStage = $(".product-stage");
+  if (productStage) {
+    const productObserver = new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        playProductMotion();
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -5% 0px" },
+    );
+    productObserver.observe(productStage);
+  }
+
+  // Fast, consistent viewport motion for the rest of the marketing page.
+  // Complex product/insight/workflow sections keep their bespoke build animations;
+  // everything else gets the same restrained 280ms Syntari entrance.
   const simpleReveal = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
@@ -1010,11 +1075,39 @@ try {
         if (!paused && !reduced.matches) window.OrbitMotion.enter(target);
       }
     },
-    { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+    { threshold: 0.1, rootMargin: "0px 0px -4% 0px" },
   );
-  document
-    .querySelectorAll("#product .section-heading,.story-nav,.product-stage,.value-trio>div,#faq>div,.faq-list details,.early-access-card")
-    .forEach((el) => simpleReveal.observe(el));
+
+  const revealSelectors = [
+    ".hero > .announcement",
+    ".hero > h1",
+    ".hero > .hero-copy",
+    ".hero > .hero-detail",
+    ".hero > .hero-actions",
+    ".hero > .hero-note",
+    ".discovery-scene .globe-wrap",
+    ".discovery-scene .question-float",
+    ".discovery-scene .answer-float",
+    ".discovery-scene .signal-float",
+    ".discovery-scene .provider-node",
+    ".provider-strip .provider-marquee",
+    "#product .section-heading",
+    "#product .story-nav",
+    "#product .value-trio > div",
+    "#faq > div:first-child",
+    "#faq .faq-list details",
+    ".early-access-card > .eyebrow",
+    ".early-access-card > h2",
+    ".early-access-card > p",
+    ".early-access-card > .hero-actions",
+    ".early-access-card > .offer-notes",
+    ".brand-footer-col",
+    ".brand-footer-note",
+    ".brand-footer-meta",
+    ".brand-footer-logo",
+  ].join(",");
+
+  document.querySelectorAll(revealSelectors).forEach((el) => simpleReveal.observe(el));
 
   const inView = new IntersectionObserver(
     (entries) => {
