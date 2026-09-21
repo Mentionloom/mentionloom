@@ -3641,6 +3641,8 @@
 }
 
 .marketing-app .scene-detail {
+  display:flex;
+  flex-direction:column;
   width:min(720px,calc(100% - 32px));
   max-height:min(86vh,760px);
   padding:0;
@@ -3674,6 +3676,8 @@
   background:var(--surface);
 }
 .marketing-app #scene-detail-content {
+  flex:1 1 auto;
+  min-height:0;
   padding:26px;
   overflow:auto;
 }
