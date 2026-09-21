@@ -1054,6 +1054,40 @@
   font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
+.marketing-app .source-loading {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:26px;
+  color:var(--muted);
+  font-size:11px;
+}
+.marketing-app .source-loading[hidden] { display:none; }
+.marketing-app .source-loading-spinner {
+  width:12px;
+  height:12px;
+  border:1.5px solid var(--border);
+  border-top-color:var(--accent-text);
+  border-radius:50%;
+  animation:source-loading-spin .7s linear infinite;
+}
+.marketing-app .source-row.is-loading {
+  position:relative;
+  min-height:44px;
+}
+.marketing-app .source-row.is-loading > * { opacity:0; }
+.marketing-app .source-row.is-loading::after {
+  content:"";
+  position:absolute;
+  inset:12px 0;
+  border-radius:5px;
+  background:
+    linear-gradient(90deg,var(--bg-a1) 20%,var(--bg-a2) 42%,var(--bg-a1) 64%);
+  background-size:220% 100%;
+  animation:source-skeleton 700ms ease-in-out infinite;
+}
+@keyframes source-loading-spin { to { transform:rotate(360deg); } }
+@keyframes source-skeleton { from { background-position:100% 0; } to { background-position:-100% 0; } }
 .marketing-app .visual-footnote {
   font-size: 11px;
   display: block;
@@ -1146,13 +1180,83 @@
   margin-top: 17px;
 }
 .marketing-app .action-checks .choice {
+  position:relative;
   font-size: var(--text-xs);
-  min-height: 39px;
+  min-height:39px;
+  padding:6px 8px;
+  margin-inline:-8px;
+  border-radius:9px;
+  transition:
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-fast) var(--ease-out);
+}
+.marketing-app .action-checks .choice:hover,
+.marketing-app .action-checks .choice.demo-hover {
+  background:var(--bg-a1);
+}
+.marketing-app .action-checks .choice.demo-hover {
+  transform:translateX(2px);
+}
+.marketing-app .action-checks .choice.is-complete {
+  color:var(--success-text);
 }
 .marketing-app .action-checks input {
-  width: 17px;
-  height: 17px;
+  width:17px;
+  height:17px;
+  accent-color:var(--success-text);
 }
+.marketing-app .gap-status {
+  display:flex;
+  align-items:center;
+  min-width:132px;
+}
+.marketing-app .gap-resolution {
+  display:none;
+  align-items:center;
+  gap:0;
+  color:var(--success-text);
+}
+.marketing-app .gap-resolution strong {
+  margin-left:8px;
+  font-size:11px;
+  font-weight:500;
+  white-space:nowrap;
+}
+.marketing-app .gap-brand {
+  display:grid;
+  place-items:center;
+  width:27px;
+  height:27px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  box-shadow:var(--shadow-soft);
+}
+.marketing-app .gap-brand + .gap-brand { margin-left:-8px; }
+.marketing-app .gap-brand img { width:18px; height:18px; }
+.marketing-app .gap-brand-acme {
+  position:relative;
+  z-index:2;
+  background:var(--sky-2);
+  border-color:var(--sky-3);
+}
+.marketing-app .action-visual.gap-resolved [data-gap-badge] { display:none; }
+.marketing-app .action-visual.gap-resolved .gap-resolution { display:flex; }
+.marketing-app .demo-cursor {
+  position:absolute;
+  z-index:8;
+  left:0;
+  top:0;
+  width:22px;
+  height:22px;
+  color:#151723;
+  pointer-events:none;
+  opacity:0;
+  filter:drop-shadow(0 2px 3px #0003);
+  transform-origin:4px 4px;
+}
+.marketing-app .demo-cursor svg { display:block; width:100%; height:100%; }
 .marketing-app .brief-progress {
   display: flex;
   align-items: center;
@@ -1205,6 +1309,51 @@
   color: var(--accent-text);
   width: 17px;
 }
+.marketing-app .typing-caret {
+  width:1px;
+  height:15px;
+  background:var(--accent-text);
+  opacity:0;
+}
+.marketing-app .shortlist-visual.is-typing .typing-caret {
+  opacity:1;
+  animation:typing-caret-blink .65s steps(1,end) infinite;
+}
+.marketing-app .shortlist-ai-thinking {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:14px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--surface);
+  box-shadow:var(--shadow-soft);
+  color:var(--muted);
+  font-size:11px;
+}
+.marketing-app .shortlist-ai-thinking[hidden] { display:none; }
+.marketing-app .shortlist-ai-thinking .icon {
+  width:13px;
+  height:13px;
+  color:var(--accent-text);
+}
+.marketing-app .thinking-dots {
+  display:flex;
+  align-items:center;
+  gap:3px;
+}
+.marketing-app .thinking-dots i {
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:currentColor;
+  animation:thinking-dot 720ms ease-in-out infinite;
+}
+.marketing-app .thinking-dots i:nth-child(2) { animation-delay:120ms; }
+.marketing-app .thinking-dots i:nth-child(3) { animation-delay:240ms; }
+@keyframes typing-caret-blink { 50% { opacity:0; } }
+@keyframes thinking-dot { 50% { transform:translateY(-2px); opacity:.45; } }
 .marketing-app .shortlist-brands {
   display: flex;
   gap: 18px;
@@ -1243,6 +1392,26 @@
   transform: translateY(-7px);
   outline: 5px solid var(--sky-1);
   border-color: var(--sky-3);
+}
+.marketing-app .shortlist-visual.is-sequencing .shortlist-brands:before {
+  opacity:0;
+}
+.marketing-app .shortlist-visual.is-sequencing .shortlist-brands > span {
+  opacity:0;
+  transform:translateY(8px) scale(.84);
+}
+.marketing-app .shortlist-visual.is-sequencing .shortlist-brands > span.your-brand {
+  background:var(--surface);
+  outline-color:transparent;
+  border-color:var(--border);
+}
+.marketing-app .shortlist-visual.is-sequencing .your-brand-caption {
+  opacity:0;
+}
+.marketing-app .shortlist-visual.is-acme-highlighted .shortlist-brands > span.your-brand {
+  background:var(--sky-2);
+  border-color:var(--sky-3);
+  outline:5px solid var(--sky-1);
 }
 .marketing-app .your-brand-caption {
   display: flex;
@@ -3025,6 +3194,16 @@
 .marketing-app .globe-pin[aria-pressed="true"] {
   background:#16a36a;
   box-shadow:0 0 0 5px #dcf5e8,0 0 0 6px #96d6b5;
+}
+
+/* Viewport motion is armed only after JS is ready. Each visual/card is revealed by
+   its own observer so off-screen demos never play early. */
+.marketing-app :is(#insights .feature-card,#approach .clearer-step).motion-card-armed:not(.card-visible) {
+  opacity:0;
+  transform:translateY(16px) scale(.994);
+}
+.marketing-app :is(#insights .feature-card,#approach .clearer-step).motion-card-armed.card-visible {
+  animation:ml-card-build 460ms var(--ease-out) both;
 }
 
 /* FROM A LOST ANSWER: everything is readable without JS.
