@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" role="img" aria-label="Singapore flag">
+<rect width="36" height="12" fill="#EF3340"/><rect y="12" width="36" height="12" fill="#fff"/>
+<circle cx="8.2" cy="6" r="4.3" fill="#fff"/><circle cx="9.8" cy="6" r="3.5" fill="#EF3340"/>
+<defs><path id="s" d="M0,-1 0.2245,-0.309 0.9511,-0.309 0.3633,0.118 0.5878,0.809 0,0.382 -0.5878,0.809 -0.3633,0.118 -0.9511,-0.309 -0.2245,-0.309Z"/></defs>
+<use href="#s" transform="translate(12.2 2.8) scale(.9)" fill="#fff"/>
+<use href="#s" transform="translate(14.1 4.6) scale(.9)" fill="#fff"/>
+<use href="#s" transform="translate(13.3 7.2) scale(.9)" fill="#fff"/>
+<use href="#s" transform="translate(10.9 7.2) scale(.9)" fill="#fff"/>
+<use href="#s" transform="translate(10.1 4.6) scale(.9)" fill="#fff"/>
+</svg>
