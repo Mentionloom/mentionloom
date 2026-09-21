@@ -1,6 +1,7 @@
 import { requireUser } from '../lib/auth.js';
 import { createWorkspace, listWorkspaces } from '../lib/workspaces.js';
 import { InfraError } from '../lib/supabase.js';
+import { requireJsonBody, requireSameOrigin } from '../lib/http.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -12,7 +13,9 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const workspace = await createWorkspace(user.id, req.body || {});
+      requireSameOrigin(req);
+      const body = requireJsonBody(req, 4096);
+      const workspace = await createWorkspace(user.id, body);
       return res.status(201).json({ ok: true, workspace });
     }
 
