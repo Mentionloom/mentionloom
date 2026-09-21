@@ -353,16 +353,4 @@ $('#scene-detail').addEventListener('close', scheduleScene);
 document.addEventListener('visibilitychange', scheduleScene);
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
-const workflow = {
- domain:['Website ready','Acme and its competitors are ready to compare.','Join early access','#early-access'],
- prompt:['Questions selected','Compare discovery, alternatives and pricing questions.','Join early access','#early-access'],
- insight:['Opportunity found','Review a comparison gap and the steps to improve it.','Join early access','#early-access']
-};
-document.querySelectorAll('[data-workflow]').forEach(b=>b.addEventListener('click',()=>{
- const [title,copy,cta,url]=workflow[b.dataset.workflow];
- document.querySelectorAll('[data-workflow]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
- b.getAnimations().forEach(a=>a.cancel());
- b.animate(reduced.matches || document.body.classList.contains('reduce-motion') ? [{opacity:.6},{opacity:1}] : [{transform:'translateY(0)'},{transform:'translateY(-4px)'},{transform:'translateY(0)'}],{duration:350,easing:'ease-out'});
- $('#workflow-preview').hidden=false;
- $('#workflow-preview').innerHTML=`<div><strong>${title}</strong><p>${copy}</p></div><a class="button" href="${url}">${cta} ${icon('arrow')}</a>`;
-}));
+
