@@ -15,9 +15,12 @@ function trackKobbe(name, props = {}) {
       .filter(([, value]) => value !== undefined && value !== null && value !== "")
       .map(([key, value]) => [key, String(value).slice(0, 120)]),
   );
-  try {
-    window.kobbe?.track?.(name, clean);
-  } catch {}
+  const event = { name, properties: clean, timestamp: Date.now() };
+  window.__kobbeEvents = window.__kobbeEvents || [];
+  window.__kobbeEvents.push(event);
+  if (window.__kobbeEvents.length > 200) window.__kobbeEvents.shift();
+  try { window.kobbe?.track?.(name, clean); } catch {}
+  try { window.dispatchEvent(new CustomEvent("kobbe:event", { detail: event })); } catch {}
 }
 let engine = "",
   story = "visibility",
