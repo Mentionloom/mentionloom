@@ -3074,22 +3074,31 @@
 
 .marketing-app #insights.motion-armed:not(.build-visible) :is(
   .source-row,
+  .funnel-stats > div,
   .marketing-funnel-step,
+  .action-card-heading,
+  .action-card h4,
   .action-checks .choice,
+  .brief-progress,
   .shortlist-question,
   .shortlist-brands > span,
   .your-brand-caption
 ) {
-  opacity:0;
-  transform:translateY(8px);
+  animation:none !important;
+  opacity:0 !important;
+  transform:translateY(8px) !important;
 }
 .marketing-app #insights.motion-armed.build-visible .source-row,
+.marketing-app #insights.motion-armed.build-visible .funnel-stats > div,
 .marketing-app #insights.motion-armed.build-visible .marketing-funnel-step,
+.marketing-app #insights.motion-armed.build-visible .action-card-heading,
+.marketing-app #insights.motion-armed.build-visible .action-card h4,
 .marketing-app #insights.motion-armed.build-visible .action-checks .choice,
+.marketing-app #insights.motion-armed.build-visible .brief-progress,
 .marketing-app #insights.motion-armed.build-visible .shortlist-question,
 .marketing-app #insights.motion-armed.build-visible .shortlist-brands > span,
 .marketing-app #insights.motion-armed.build-visible .your-brand-caption {
-  animation:ml-content-build 480ms var(--ease-out) both;
+  animation:ml-content-build 480ms var(--ease-out) both !important;
 }
 .marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(2),
 .marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(2) { animation-delay:160ms; }
