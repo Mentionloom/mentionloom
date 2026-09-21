@@ -1188,7 +1188,9 @@ function playApproachCardMotion(step) {
   }
 }
 
-// Product structures stay rendered at all times. Viewport observers below only animate their internal content.\n\ntry {
+// Product structures stay rendered at all times. Viewport observers below only animate their internal content.
+
+try {
   await initializeOrbit();
   ready = true;
   await enhance($(".engine-controls"));
