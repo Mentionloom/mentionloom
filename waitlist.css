@@ -8,3 +8,114 @@
 #join-dialog .waitlist-choices.urgency{grid-template-columns:repeat(3,1fr)}
 #join-dialog .waitlist-choices.tracking label>span,#join-dialog .waitlist-choices.urgency label>span{padding:9px 10px}
 @media(max-width:550px){#join-dialog .waitlist-choices.urgency{grid-template-columns:repeat(2,1fr)}}
+
+
+/* App waitlist modal: match the homepage early-access dialog. */
+.discovery-app:not(.marketing-app) #join-dialog {
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--marketing-shadow, var(--shadow-command, 0 24px 70px rgba(24, 44, 80, 0.16)));
+  color: var(--text);
+}
+.discovery-app:not(.marketing-app) #join-dialog::backdrop {
+  background: var(--overlay-backdrop);
+  backdrop-filter: blur(5px);
+}
+.discovery-app:not(.marketing-app) #join-dialog .dialog-close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 0;
+}
+.discovery-app:not(.marketing-app) #join-dialog h2 {
+  font-size: 38px;
+  letter-spacing: -1.5px;
+  margin-top: 18px;
+}
+.discovery-app:not(.marketing-app) #join-dialog > p {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.discovery-app:not(.marketing-app) #join-dialog label,
+.discovery-app:not(.marketing-app) #join-dialog legend {
+  font-size: var(--text-sm);
+  display: block;
+  margin-top: 18px;
+}
+.discovery-app:not(.marketing-app) #join-dialog input:not([type="checkbox"]):not([type="radio"]) {
+  width: 100%;
+  border: 1px solid var(--border-control);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 16px;
+  min-height: 48px;
+  background: var(--surface);
+  margin-top: 7px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .consent-label {
+  display: flex;
+  font-size: var(--text-xs);
+}
+.discovery-app:not(.marketing-app) #join-dialog .consent-label input {
+  width: 19px;
+  height: 19px;
+  flex-basis: 19px;
+  border-color: var(--border-control);
+}
+.discovery-app:not(.marketing-app) #join-dialog .consent-label input:checked::after {
+  margin: 5px 4px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .button.large {
+  width: 100%;
+  margin-top: 20px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .form-note {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 12px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-choices label > span {
+  min-height: 44px;
+  font-size: var(--text-xs);
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-choices label {
+  margin-top: 0;
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-privacy summary {
+  font-size: var(--text-xs);
+  min-height: 44px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-privacy p,
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-next p,
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-management > p {
+  font-size: var(--text-xs);
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-skip,
+.discovery-app:not(.marketing-app) #join-dialog #skip-profile {
+  font-size: var(--text-xs);
+  min-height: 44px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-share strong {
+  font-size: var(--text-sm);
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-share p {
+  font-size: var(--text-xs);
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-share > .button {
+  font-size: var(--text-xs);
+  min-height: 44px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-management > .text-link {
+  font-size: var(--text-xs);
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-saved {
+  font-size: var(--text-xs);
+}
