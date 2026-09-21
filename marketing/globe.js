@@ -27,7 +27,8 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   let frame = 0;
   let visible = false;
   let disposed = false;
-  let phi = 2.3;
+  const initialPhi = 0.565;
+  let phi = initialPhi;
   let theta = 0.22;
   let last = 0;
   let dragging = false;
@@ -37,6 +38,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   let dragMoved = false;
   let holdUntil = 0;
   let resumeTimer;
+  let firstReveal = true;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -292,6 +294,17 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   const observer = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     canvas.closest(".discovery-scene")?.classList.toggle("scene-visible", visible);
+
+    if (visible && firstReveal) {
+      // Start with the selected San Francisco probe facing the user instead of
+      // letting the first active dot initialize on the back edge of the globe.
+      firstReveal = false;
+      phi = initialPhi;
+      theta = 0.22;
+      holdUntil = performance.now() + 4200;
+      draw();
+    }
+
     sync();
   });
   observer.observe(canvas);
