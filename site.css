@@ -2904,35 +2904,7 @@
 .marketing-app .globe-pin > * { display:none !important; }
 
 
-/* Warm canvas + viewport-only component motion */
-:root { --marketing-beige:#f6f2ea; }
-
-.marketing-app,
-.marketing-app.info-page,
-.marketing-app main,
-.marketing-app .marketing-header,
-.marketing-app .provider-strip,
-.marketing-app .product-section,
-.marketing-app .feature-section,
-.marketing-app .approach-section,
-.marketing-app .faq-section {
-  background:var(--marketing-beige);
-}
-
-.marketing-app .discovery-scene {
-  background:radial-gradient(
-    ellipse at 50% 70%,
-    var(--sky-1) 0%,
-    #f4f1ec 40%,
-    var(--marketing-beige) 76%
-  );
-}
-
-.marketing-app .early-access-section,
-.marketing-app .early-access-card {
-  background:var(--marketing-beige);
-}
-
+/* Viewport-only component motion */
 .marketing-app.motion-ready [data-reveal] {
   opacity:0;
   transform:translateY(18px);
