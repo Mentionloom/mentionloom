@@ -26,6 +26,7 @@ const allowed = new Set([
   "about.html",
   "contact.html",
   "privacy.html",
+  "terms.html",
   "alternative.css",
   "alternative.js",
   "orbit-tokens.css",
