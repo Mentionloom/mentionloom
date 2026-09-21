@@ -110,9 +110,9 @@
             <span class="network-engine engine-5" data-network-engine="grok"><img src="/assets/brands/grok.svg" width="26" height="26" alt="" /><small>Grok</small></span>
           </div>
           <button class="globe-explore" aria-label="Explore buyer questions on the globe"></button>
-          <button class="globe-pin pin-west" data-globe-question="0" aria-label="San Francisco question" aria-pressed="true"><span>San Francisco</span></button>
-          <button class="globe-pin pin-center" data-globe-question="1" aria-label="London question" aria-pressed="false"><span>London</span></button>
-          <button class="globe-pin pin-east" data-globe-question="2" aria-label="Singapore question" aria-pressed="false"><span>Singapore</span></button>
+          <button class="globe-pin pin-west" data-globe-question="0" aria-label="San Francisco question" aria-pressed="true"><span><img src="/assets/flags/us.svg" alt="" />United States</span></button>
+          <button class="globe-pin pin-center" data-globe-question="1" aria-label="London question" aria-pressed="false"><span><img src="/assets/flags/gb.svg" alt="" />United Kingdom</span></button>
+          <button class="globe-pin pin-east" data-globe-question="2" aria-label="Singapore question" aria-pressed="false"><span><img src="/assets/flags/sg.svg" alt="" />Singapore</span></button>
         </div>
         <div class="scene-cards wrap">
           <svg class="connection-lines" viewBox="0 0 1120 640" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="currentColor"><path d="M290 135 Q420 110 480 235"/><path d="M640 235 Q730 105 820 135"/><path d="M820 195 Q740 245 820 305"/><path d="M820 330 Q600 550 290 360"/><path d="M290 420 Q530 590 820 485"/></g></svg>
@@ -260,26 +260,23 @@
               <button class="active" aria-pressed="true" data-engine="">
                 All engines</button
               ><button aria-pressed="false" data-engine="chatgpt">
-                <img
-                  src="/assets/brands/chatgpt.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">ChatGPT</span></button
+                <img src="/assets/brands/chatgpt.svg" width="24" height="24" alt="" />
+                <span class="engine-name">ChatGPT</span></button
               ><button aria-pressed="false" data-engine="claude">
-                <img
-                  src="/assets/brands/claude.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Claude</span></button
+                <img src="/assets/brands/claude.svg" width="24" height="24" alt="" />
+                <span class="engine-name">Claude</span></button
               ><button aria-pressed="false" data-engine="perplexity">
-                <img
-                  src="/assets/brands/perplexity.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Perplexity</span></button
+                <img src="/assets/brands/perplexity.svg" width="24" height="24" alt="" />
+                <span class="engine-name">Perplexity</span></button
+              ><button aria-pressed="false" data-engine="gemini">
+                <img src="/assets/brands/gemini.svg" width="24" height="24" alt="" />
+                <span class="engine-name">Gemini</span></button
+              ><button aria-pressed="false" data-engine="google">
+                <img src="/assets/brands/google.svg" width="24" height="24" alt="" />
+                <span class="engine-name">Google AI</span></button
+              ><button aria-pressed="false" data-engine="grok">
+                <img src="/assets/brands/grok.svg" width="24" height="24" alt="" />
+                <span class="engine-name">Grok</span></button
               >
             </div>
           </div>
@@ -673,10 +670,7 @@
       </div>
       <span class="eyebrow" id="join-eyebrow">A little ahead of the curve</span>
       <h2 id="join-title" tabindex="-1">Be there<br />when it begins.</h2>
-      <p id="join-description">
-        A clearer picture of AI discovery is on its way. Get your invitation
-        when access opens.
-      </p>
+      <p id="join-description">See where AI recommends your brand—and what to improve.</p>
       <div data-waitlist-stage="signup">
         <form id="join-form">
           <label for="email">Your email</label
@@ -701,19 +695,16 @@
           </div>
           <label class="consent-label"
             ><input id="waitlist-consent" type="checkbox" required /><span
-              >Email me about Mentionloom early access and launch updates.</span
+              >Email me when early access opens.</span
             ></label
           >
           <p class="waitlist-error" id="join-error" role="alert" hidden></p>
           <button class="button primary large" type="submit">
-            <span>Join the waitlist</span
+            <span>Join early access</span
             ><svg class="icon" aria-hidden="true">
               <use href="/assets/icons/lucide.svg#i-arrow" />
             </svg>
           </button>
-          <p class="form-note">
-            Free to join. No payment details. No unrelated marketing.
-          </p>
         </form>
       </div>
       <div data-waitlist-stage="profile" hidden>
