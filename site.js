@@ -121,7 +121,7 @@ function renderQuestions() {
     record = q.rows.filter((r) => r.engine === (engine || "chatgpt")).at(-1),
     e = ENGINES.find((e) => e.id === record.engine);
   $("#sample-answer").innerHTML =
-    `<div class="card-label">${logo(e.id)}<span>${e.name} · Sample answer</span></div><p>${record.mention ? "<mark>Acme</mark> " + q.excerpt : q.missing}</p><div class="citation-pill">${icon("link")} ${record.cited ? "acme.work" + q.page : record.external}</div><span class="badge ${record.mention ? "green" : "neutral"}">${record.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record.date} · Sample response to a monitored prompt, not a private conversation.</p>`;
+    `<div class="card-label">${logo(e.id)}<span>${e.name} · Answer</span></div><p>${record.mention ? "<mark>Acme</mark> " + q.excerpt : q.missing}</p><div class="citation-pill">${icon("link")} ${record.cited ? "acme.work" + q.page : record.external}</div><span class="badge ${record.mention ? "green" : "neutral"}">${record.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record.date} · Monitored prompt response.</p>`;
   $("#question-rows")
     .querySelectorAll("button")
     .forEach((b) =>
@@ -169,7 +169,7 @@ function render(initialReport) {
   const scopeStatus = $("#scope-status");
   if (scopeStatus)
     scopeStatus.textContent =
-      `12 monitored questions · ${engine ? ENGINES.find((e) => e.id === engine).name : `${ENGINES.length} engines`} · ${format(report.a.length)} sample answers`;
+      `12 monitored questions · ${engine ? ENGINES.find((e) => e.id === engine).name : `${ENGINES.length} engines`} · ${format(report.a.length)} answers`;
   $("#scoped-demo").href =
     `/app/?days=30${engine ? "&engine=" + engine : ""}${story === "questions" ? "#questions" : story === "opportunities" ? "#actions" : ""}`;
   if (ready) void enhance($("#opportunity-rows"));
@@ -232,7 +232,8 @@ document.querySelectorAll("[data-engine]").forEach((b) => {
       if (x.closest("#extra-engines")) x.setAttribute("aria-checked", String(x === b));
     });
     const extra = b.closest('#extra-engines');
-    $('#more-engine-label').textContent = extra ? b.getAttribute('aria-label') : '+6 engines';
+    const moreLabel = $('#more-engine-label');
+    if (moreLabel) moreLabel.textContent = extra ? b.getAttribute('aria-label') : '+6 engines';
     if (extra) { extra.hidden = true; extra.previousElementSibling.setAttribute('aria-expanded', 'false'); extra.previousElementSibling.focus(); }
     render();
   });
@@ -333,11 +334,11 @@ window.addEventListener("pagehide", (event) => {
   if (!event.persisted) globe.destroy();
 });
 
-// The scene is a browsable set of sample questions, not live geolocation.
+// The scene is a browsable set of buyer questions, not live geolocation.
 const sceneQuestions = [
- { city:'San Francisco', country:'United States', engine:'chatgpt', question:'What’s the best project tool for a small team?', answer:'Asana makes the shortlist. Acme is missing from this answer.', source:'G2 comparison', action:'Explain which team sizes Acme supports.', evidence:'The sample answer discusses team size and setup effort, but does not mention Acme.' },
- { city:'London', country:'United Kingdom', engine:'claude', question:'Which Notion alternative is best for project tracking?', answer:'ClickUp is recommended for task dependencies. Acme is not mentioned.', source:'Product comparison', action:'Show how dependencies work in Acme.', evidence:'The sample answer focuses on dependency tracking and project views. A clear comparison page would help explain Acme’s fit.' },
- { city:'Singapore', country:'Singapore', engine:'perplexity', question:'What is an affordable tool for a growing remote team?', answer:'Notion appears for its entry price. Acme is missing from the comparison.', source:'Pricing guide', action:'Make the per-seat cost easy to compare.', evidence:'The sample answer compares entry plans. Explain included features and the cost as a team grows.' }
+ { city:'San Francisco', country:'United States', engine:'chatgpt', question:'What’s the best project tool for a small team?', answer:'Asana makes the shortlist. Acme is missing from this answer.', source:'G2 comparison', action:'Explain which team sizes Acme supports.', evidence:'The answer discusses team size and setup effort, but does not mention Acme.' },
+ { city:'London', country:'United Kingdom', engine:'claude', question:'Which Notion alternative is best for project tracking?', answer:'ClickUp is recommended for task dependencies. Acme is not mentioned.', source:'Product comparison', action:'Show how dependencies work in Acme.', evidence:'The answer focuses on dependency tracking and project views. A clear comparison page would help explain Acme’s fit.' },
+ { city:'Singapore', country:'Singapore', engine:'perplexity', question:'What is an affordable tool for a growing remote team?', answer:'Notion appears for its entry price. Acme is missing from the comparison.', source:'Pricing guide', action:'Make the per-seat cost easy to compare.', evidence:'The answer compares entry plans. Explain included features and the cost as a team grows.' }
 ];
 let sceneIndex = 0;
 function selectScene(index, animate = true) {
@@ -348,7 +349,7 @@ function selectScene(index, animate = true) {
  $('.question-float .card-label > span').textContent = item.city === item.country ? item.city : `${item.city} · ${item.country}`;
  $('.question-float p').textContent = item.question;
  $('.answer-float .card-label img').src = `/assets/brands/${item.engine}.svg`;
- $('.answer-float .card-label > span').textContent = 'Sample answer';
+ $('.answer-float .card-label > span').textContent = 'Answer';
  $('.answer-float p').textContent = item.answer;
  $('.citation-pill').innerHTML = `${icon('link')} ${item.source}`;
  $('.signal-float strong').textContent = item.action;
@@ -365,7 +366,7 @@ function selectScene(index, animate = true) {
 }
 function openScene() {
  const item=sceneQuestions[sceneIndex];
- $('#scene-detail-content').innerHTML=`<h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.city} · ${item.engine} · sample</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
+ $('#scene-detail-content').innerHTML=`<h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.city} · ${item.engine}</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
  $('#scene-detail').showModal();
 }
 document.querySelectorAll('[data-globe-question]').forEach(b=>b.addEventListener('click',()=>selectScene(Number(b.dataset.globeQuestion))));
