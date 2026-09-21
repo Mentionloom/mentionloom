@@ -1,7 +1,7 @@
 import { select } from "./app/lib/model.js";
 import { ACTIONS, ENGINES, QUESTIONS } from "./app/lib/data.js";
 import { initializeOrbit, enhance, number, animate, openDialog, closeDialog } from "./app/lib/ui.js";
-import { mountGlobe } from "./assets/globe.js?v=20260921-3";
+import { mountGlobe } from "./assets/globe.js?v=20260921-4";
 
 const $ = (s) => document.querySelector(s);
 const icon = (name) =>
@@ -370,25 +370,24 @@ function syncActionChecklist({ animateResolution = true } = {}) {
   if (resolved && !wasResolved && animateResolution && !paused && !reduced.matches) {
     const resolution = visual.querySelector(".gap-resolution");
     if (resolution) {
-      animate(
+      motionAnimate(
         resolution,
         [
-          { opacity: 0, transform: "translateX(-6px) scale(.96)" },
-          { opacity: 1, transform: "translateX(0) scale(1)" },
+          { opacity: 0, transform: "translateY(3px)" },
+          { opacity: 1, transform: "translateY(0)" },
         ],
-        300,
+        440,
         { fill: "backwards" },
       );
       [...resolution.querySelectorAll(".gap-brand")].forEach((brand, index) =>
-        animate(
+        motionAnimate(
           brand,
           [
-            { opacity: 0, transform: `translateX(${index ? -7 : 7}px) scale(.78)` },
-            { opacity: 1, transform: "translateX(0) scale(1.04)", offset: 0.72 },
+            { opacity: 0, transform: `translateX(${index ? -5 : 5}px) scale(.92)` },
             { opacity: 1, transform: "translateX(0) scale(1)" },
           ],
-          320,
-          { delay: 55 + index * 70, fill: "backwards" },
+          460,
+          { delay: 80 + index * 90, fill: "backwards" },
         ),
       );
     }
@@ -828,10 +827,10 @@ function playCompetitiveCard(card) {
           motionAnimate(
             brand,
             [
-              { opacity: 0, transform: "translateY(8px) scale(.8)" },
+              { opacity: 0, transform: "translateY(6px) scale(.92)" },
               {
                 opacity: 1,
-                transform: self ? "translateY(0) scale(1)" : "translateY(0) scale(1.04)",
+                transform: self ? "translateY(0) scale(1)" : "translateY(0) scale(1.02)",
                 offset: 0.76,
               },
               { opacity: 1, transform: "translateY(0) scale(1)" },
@@ -906,7 +905,6 @@ function playApproachCardMotion(step) {
     return;
   }
 
-  motionEnter(step.querySelector(".step-visual"), 20, 10, 390, 0.992);
   motionEnter(step.querySelector(".step-number"), 85, 4, 220, 1);
   motionEnter(step.querySelector("h3"), 125, 6, 285, 0.997);
   motionEnter(step.querySelector(":scope > p"), 170, 4, 245, 1);
