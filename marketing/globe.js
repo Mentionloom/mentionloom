@@ -27,6 +27,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     dragMoved = false,
     holdUntil = 0;
 
+  // Cobe requires numeric backing-buffer dimensions; keep them in physical pixels.
   const dpr = Math.min(devicePixelRatio || 1, 1.5);
   const pixelSize = () => Math.max(1, Math.round(size * dpr));
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
