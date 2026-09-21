@@ -121,7 +121,7 @@
       </section>
       <section
         class="discovery-scene" id="discovery"
-        aria-label="Sample AI discovery journey"
+        aria-label="AI discovery journey"
       >
         <div class="scene-grid" aria-hidden="true"></div>
         <div class="scene-orbit orbit-one" aria-hidden="true"></div>
@@ -129,13 +129,13 @@
         <div class="globe-wrap">
           <div class="css-globe"><span></span><span></span><span></span></div>
           <canvas id="discovery-globe" aria-hidden="true"></canvas>
-          <button class="globe-explore" aria-label="Explore sample buyer questions on the globe"></button>
-          <button class="globe-pin pin-west" data-globe-question="0" aria-label="San Francisco sample question" aria-pressed="true"><span>San Francisco</span></button>
-          <button class="globe-pin pin-center" data-globe-question="1" aria-label="London sample question" aria-pressed="false"><span>London</span></button>
-          <button class="globe-pin pin-east" data-globe-question="2" aria-label="Singapore sample question" aria-pressed="false"><span>Singapore</span></button>
+          <button class="globe-explore" aria-label="Explore buyer questions on the globe"></button>
+          <button class="globe-pin pin-west" data-globe-question="0" aria-label="San Francisco question" aria-pressed="true"><span>San Francisco</span></button>
+          <button class="globe-pin pin-center" data-globe-question="1" aria-label="London question" aria-pressed="false"><span>London</span></button>
+          <button class="globe-pin pin-east" data-globe-question="2" aria-label="Singapore question" aria-pressed="false"><span>Singapore</span></button>
         </div>
         <div class="scene-cards wrap">
-          <button type="button" class="floating-card question-float" data-scene-detail aria-label="Read the sample question and answer">
+          <button type="button" class="floating-card question-float" data-scene-detail aria-label="Read the question and answer">
             <div class="card-label">
               <img
                 src="/assets/brands/chatgpt.svg"
@@ -150,7 +150,7 @@
               <span>Discovery</span><span>High intent</span>
             </div>
           </button>
-          <button type="button" class="floating-card answer-float" data-scene-detail aria-label="Read the sample answer evidence">
+          <button type="button" class="floating-card answer-float" data-scene-detail aria-label="Read the answer evidence">
             <div class="card-label">
               <img
                 src="/assets/brands/perplexity.svg"
@@ -276,13 +276,11 @@
               <span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>
               <div>
                 <strong>Acme</strong
-                ><span>Sample workspace · Aug 11–Sep 9, 2026</span>
+                ><span>Aug 11–Sep 9, 2026</span>
               </div>
             </div>
-            <span class="badge neutral">Sample data</span>
           </div>
           <div class="engine-controls">
-            <span>Explore by engine</span>
             <div
               class="segmented"
               data-segment
@@ -314,52 +312,6 @@
                 /><span class="engine-name">Perplexity</span></button
               >
             </div>
-            <div class="dropdown engine-more"><button class="button" data-menu-toggle aria-expanded="false" aria-haspopup="menu" aria-controls="extra-engines"><span id="more-engine-label">+6 engines</span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-down"/></svg></button><div class="dropdown-panel" role="menu" aria-label="More AI engines" id="extra-engines" hidden>
-<button aria-pressed="false" data-engine="gemini">
-                <img
-                  src="/assets/brands/gemini.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Gemini</span>
-              </button
-              ><button aria-pressed="false" data-engine="google">
-                <img
-                  src="/assets/brands/google.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Google AI</span></button
-              ><button aria-pressed="false" data-engine="grok">
-                <img
-                  src="/assets/brands/grok.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Grok</span></button
-              ><button aria-pressed="false" data-engine="deepseek">
-                <img
-                  src="/assets/brands/deepseek.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">DeepSeek</span></button
-              ><button aria-pressed="false" data-engine="meta">
-                <img
-                  src="/assets/brands/meta.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Meta AI</span></button
-              ><button aria-pressed="false" data-engine="mistral">
-                <img
-                  src="/assets/brands/mistral.svg"
-                  width="24"
-                  height="24"
-                  alt=""
-                /><span class="engine-name">Mistral</span>
-              </button>
-            </div></div>
           </div>
           <div
             id="story-panel-visibility"
@@ -390,7 +342,7 @@
                   <use href="/assets/icons/lucide.svg#i-layers" />
                 </svg>
               </div>
-              <p>Mentions in sampled answers</p>
+              <p>Mentions in answers</p>
               <div id="competitor-rows"></div>
             </div>
           </div>
@@ -407,7 +359,7 @@
                 <h3>Questions worth showing up for</h3>
               </div>
               <p class="panel-description">
-                Choose a monitored question to see its sample answer.
+                Choose a monitored question to see its answer.
               </p>
               <div id="question-rows"></div>
             </div>
@@ -765,7 +717,7 @@
         </div>
       </section>
     </main>
-    <dialog id="scene-detail" class="scene-detail" aria-labelledby="scene-detail-title"><div class="scene-detail-heading"><span>Sample answer</span><button class="button" data-scene-close aria-label="Close sample answer">Close</button></div><div id="scene-detail-content"></div></dialog>
+    <dialog id="scene-detail" class="scene-detail" aria-labelledby="scene-detail-title"><div class="scene-detail-heading"><span>Answer</span><button class="button" data-scene-close aria-label="Close answer">Close</button></div><div id="scene-detail-content"></div></dialog>
 
     <section class="early-access-section section-space" id="early-access">
       <div class="early-access-card wrap">
