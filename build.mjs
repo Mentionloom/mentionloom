@@ -1,9 +1,19 @@
+import { execFileSync } from "node:child_process";
 import { copyFile, cp, mkdir, rm } from "node:fs/promises";
 import { ADDONS } from "./app/lib/addons.js";
 import { VIEWS } from "./app/lib/navigation.js";
 import { marketingAssets } from "./scripts/marketing-assets.mjs";
 
 const output = new URL("./dist/", import.meta.url);
+
+// Fail the deployment before publishing static assets if a browser entry point
+// contains invalid JavaScript. The static-asset build copies these files verbatim,
+// so syntax errors would otherwise deploy successfully and only fail in browsers.
+for (const entry of ["site.js", "waitlist.js", "app/app.js"]) {
+  execFileSync(process.execPath, ["--check", new URL(entry, import.meta.url).pathname], {
+    stdio: "inherit",
+  });
+}
 const files = [
   "index.html",
   "alternative.html",
