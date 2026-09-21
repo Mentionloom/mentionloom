@@ -1,5 +1,6 @@
 import { InfraError } from '../../lib/supabase.js';
 import { signUp, setSession } from '../../lib/auth.js';
+import { requireJsonBody, requireSameOrigin } from '../../lib/http.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -8,7 +9,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'Method not allowed.' });
   }
   try {
-    const result = await signUp(req.body?.email, req.body?.password);
+    requireSameOrigin(req);
+    const body = requireJsonBody(req, 4096);
+    const result = await signUp(body.email, body.password);
     if (result?.access_token) setSession(res, result);
     return res.status(200).json({
       ok: true,
