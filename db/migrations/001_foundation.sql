@@ -347,7 +347,9 @@ alter table public.interventions enable row level security;
 alter table public.cost_ledger enable row level security;
 alter table public.jobs enable row level security;
 
+revoke all on function public.handle_new_auth_user() from public, anon, authenticated;
 revoke all on function public.create_workspace_for_user(uuid, text, text) from public, anon, authenticated;
 revoke all on function public.claim_jobs(text, integer) from public, anon, authenticated;
+grant execute on function public.handle_new_auth_user() to service_role;
 grant execute on function public.create_workspace_for_user(uuid, text, text) to service_role;
 grant execute on function public.claim_jobs(text, integer) to service_role;
