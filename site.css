@@ -2797,19 +2797,7 @@
 .marketing-app .engine-controls .segmented::-webkit-scrollbar { display:none; }
 .marketing-app .engine-controls .segmented > button { flex:0 0 auto; }
 
-/* Country flags on the discovery globe */
-.marketing-app .globe-pin > span {
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.marketing-app .globe-pin > span img {
-  width:15px;
-  height:10px;
-  object-fit:cover;
-  border-radius:1px;
-  box-shadow:0 0 0 1px #00000012;
-}
+/* Country flags stay in the question card; globe markers remain plain dots. */
 .marketing-app .question-float .card-label img {
   width:22px;
   height:15px;
@@ -2864,7 +2852,6 @@
 }
 .marketing-app .globe-wrap.is-dragging .globe-explore { cursor:grabbing; }
 .marketing-app .globe-wrap.is-dragging { cursor:grabbing; }
-.marketing-app .globe-pin[aria-pressed="true"] > span img { display:none; }
 
 /* Keep the engine switcher compact and fully visible on phones. */
 @media (max-width:760px) {
@@ -2912,3 +2899,6 @@
   .marketing-app .brand-footer.is-flush { margin:8px 8px 0; }
   .marketing-app .brand-footer.is-flush .brand-footer-shell { border-radius:20px 20px 0 0; }
 }
+
+/* Globe marker hardening: never render nested labels/assets inside map pins. */
+.marketing-app .globe-pin > * { display:none !important; }
