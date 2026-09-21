@@ -729,313 +729,463 @@ function playProductMotion() {
   }, 980);
 }
 
-let insightsMotionPlayed = false;
-function playInsightsMotion() {
-  const section = $("#insights");
-  if (!section || insightsMotionPlayed) return;
-  insightsMotionPlayed = true;
-  section.dataset.motionState = reduced.matches || paused ? "complete" : "running";
-  if (reduced.matches || paused || !window.OrbitMotion) return;
+const insightMotionPlayed = new WeakSet();
+const approachMotionPlayed = new WeakSet();
 
-  const enter = (el, delay = 0, distance = 8, duration = 360, scale = 0.992) => {
-    if (!el) return;
-    microReveal(el, delay, duration, scale, 0.5);
-  };
-  const enterMany = (elements, delay = 0, step = 70, options = {}) => {
-    [...elements].forEach((el, index) =>
-      enter(
-        el,
-        delay + index * step,
-        options.distance ?? 8,
-        options.duration ?? 360,
-        options.scale ?? 0.992,
-      ),
-    );
-  };
-  const rollInitial = (el, delay = 0) => {
-    if (!el || !window.OrbitNumbers) return;
-    const value = Number(el.textContent.replace(/[^\d.-]/g, ""));
-    if (!Number.isFinite(value)) return;
-    setTimeout(() => {
-      if (!el.isConnected) return;
-      window.OrbitNumbers.set(el, value, { initial: true });
-    }, delay);
-  };
+function motionEnter(el, delay = 0, distance = 8, duration = 320, scale = 0.994) {
+  if (!el) return;
+  animate(
+    el,
+    [
+      { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
+      { opacity: 1, transform: "translateY(0) scale(1)" },
+    ],
+    duration,
+    { delay, fill: "backwards" },
+  );
+}
 
-  const cards = [...section.querySelectorAll(".feature-card")];
-  cards.forEach((card, index) => {
-    const base = 80 + index * 120;
-    enter(card.querySelector(".feature-label"), base, 5, 260, 1);
-    enter(card.querySelector(".feature-copy h3"), base + 55, 10, 420, 0.996);
-    enter(card.querySelector(".feature-copy > p"), base + 125, 7, 330, 1);
-    enter(
-      card.querySelector(".source-visual,.funnel-visual,.action-visual,.shortlist-visual"),
-      base + 205,
-      14,
-      520,
-      0.988,
-    );
+function motionEnterMany(elements, delay = 0, step = 65, options = {}) {
+  [...elements].forEach((el, index) =>
+    motionEnter(
+      el,
+      delay + index * step,
+      options.distance ?? 8,
+      options.duration ?? 320,
+      options.scale ?? 0.994,
+    ),
+  );
+}
+
+function rollInitial(el, delay = 0) {
+  if (!el || !window.OrbitNumbers) return;
+  const value = Number(el.textContent.replace(/[^\\d.-]/g, ""));
+  if (!Number.isFinite(value)) return;
+  setTimeout(() => {
+    if (el.isConnected) window.OrbitNumbers.set(el, value, { initial: true });
+  }, delay);
+}
+
+function playSourceCard(card) {
+  const visual = card.querySelector(".source-visual");
+  const loading = card.querySelector("[data-source-loading]");
+  const head = card.querySelector(".visual-table-head");
+  const rows = [...card.querySelectorAll(".source-row")];
+
+  motionEnter(visual, 150, 12, 420, 0.99);
+  if (!visual || reduced.matches || paused) return;
+
+  const headHeight = Math.max(20, head?.getBoundingClientRect().height || 20);
+  if (head) {
+    head.style.opacity = "0";
+    head.style.maxHeight = "0px";
+    head.style.marginBottom = "0";
+    head.style.overflow = "hidden";
+  }
+
+  const metrics = rows.map((row) => ({
+    row,
+    height: Math.max(44, row.getBoundingClientRect().height || 44),
+  }));
+  metrics.forEach(({ row }) => {
+    row.style.opacity = "0";
+    row.style.height = "0px";
+    row.style.paddingTop = "0";
+    row.style.paddingBottom = "0";
+    row.style.overflow = "hidden";
+    row.style.borderColor = "transparent";
   });
 
-  // Cited content — table structure resolves like the product's ranked evidence lists.
-  const sourceCard = section.querySelector(".source-card");
-  if (sourceCard) {
-    const base = 365;
-    enter(sourceCard.querySelector(".visual-table-head"), base, 5, 280, 1);
-    const rows = [...sourceCard.querySelectorAll(".source-row")];
-    enterMany(rows, base + 90, 75, { distance: 6, duration: 320, scale: 0.995 });
-    rows.forEach((row, index) => rollInitial(row.querySelector("b"), base + 150 + index * 75));
-  }
-
-  // Referrals — roll the outcome numbers, then build the funnel from top to bottom.
-  const trafficCard = section.querySelector(".traffic-card");
-  if (trafficCard) {
-    const base = 470;
-    const stats = [...trafficCard.querySelectorAll(".funnel-stats > div")];
-    enterMany(stats, base, 95, { distance: 7, duration: 330, scale: 0.995 });
-    rollInitial($("#referral-number"), base + 45);
-    rollInitial($("#lead-number"), base + 140);
-    const steps = [...trafficCard.querySelectorAll(".marketing-funnel-step")];
-    enterMany(steps, base + 250, 95, { distance: 7, duration: 320, scale: 0.995 });
-    steps.forEach((step, index) => {
-      const bar = step.querySelector(".marketing-funnel-track > span");
-      if (!bar) return;
-      animate(
-        bar,
-        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-        720,
-        { delay: base + 325 + index * 105, fill: "backwards" },
-      );
-    });
-  }
-
-  // Opportunity — assemble the brief as a real task, not a decorative card.
-  const actionCard = section.querySelector(".action-card");
-  if (actionCard) {
-    const base = 650;
-    enter(actionCard.querySelector(".action-card-heading"), base, 5, 280, 1);
-    enter(actionCard.querySelector(".action-visual h4"), base + 70, 9, 360, 0.996);
-    enter(actionCard.querySelector(".action-visual > p"), base + 135, 6, 300, 1);
-    const choices = [...actionCard.querySelectorAll(".action-checks .choice")];
-    enterMany(choices, base + 235, 85, { distance: 6, duration: 300, scale: 0.995 });
-    choices.forEach((choice, index) => {
-      const input = choice.querySelector("input");
-      if (!input) return;
-      animate(
-        input,
-        [
-          { opacity: 0.45, transform: "scale(.76)" },
-          { opacity: 1, transform: "scale(1.08)", offset: 0.72 },
-          { opacity: 1, transform: "scale(1)" },
-        ],
-        300,
-        { delay: base + 315 + index * 85, fill: "backwards" },
-      );
-    });
-    enter(actionCard.querySelector(".brief-progress"), base + 520, 6, 300, 1);
-    const progress = actionCard.querySelector(".brief-progress > div > span");
-    progress &&
-      animate(progress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 650, {
-        delay: base + 585,
-        fill: "backwards",
-      });
-  }
-
-  // Competitive context — question first, shortlist assembles, then Acme lands in context.
-  const audienceCard = section.querySelector(".audience-card");
-  if (audienceCard) {
-    const base = 830;
-    enter(audienceCard.querySelector(".shortlist-question"), base, 8, 340, 0.992);
-    const brandGroup = audienceCard.querySelector(".shortlist-brands");
-    brandGroup &&
-      animate(
-        brandGroup,
-        [{ opacity: 0.18 }, { opacity: 1 }],
-        430,
-        { delay: base + 120, fill: "backwards" },
-      );
-    const brands = [...audienceCard.querySelectorAll(".shortlist-brands > span")];
-    brands.forEach((brand, index) => {
-      const isSelf = brand.classList.contains("your-brand");
-      animate(
-        brand,
-        [
-          {
-            opacity: 0,
-            transform: isSelf
-              ? "translateY(3px) scale(.78)"
-              : "translateY(8px) scale(.82)",
-          },
-          {
-            opacity: 1,
-            transform: isSelf
-              ? "translateY(-7px) scale(1.06)"
-              : "translateY(0) scale(1.04)",
-            offset: 0.76,
-          },
-          {
-            opacity: 1,
-            transform: isSelf
-              ? "translateY(-7px) scale(1)"
-              : "translateY(0) scale(1)",
-          },
-        ],
-        430,
-        { delay: base + 205 + index * 95, fill: "backwards" },
-      );
-    });
-    enter(audienceCard.querySelector(".your-brand-caption"), base + 640, 6, 300, 1);
+  if (loading) {
+    loading.hidden = false;
+    motionEnter(loading, 205, 4, 230, 1);
   }
 
   setTimeout(() => {
-    section.dataset.motionState = "complete";
-  }, 2350);
+    if (loading) {
+      animate(
+        loading,
+        [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
+        170,
+        { fill: "forwards" },
+      );
+      setTimeout(() => {
+        loading.hidden = true;
+        loading.style.removeProperty("opacity");
+        loading.style.removeProperty("transform");
+      }, 180);
+    }
+
+    if (head) {
+      animate(
+        head,
+        [
+          { opacity: 0, maxHeight: "0px", marginBottom: "0px" },
+          { opacity: 1, maxHeight: `${headHeight}px`, marginBottom: "10px" },
+        ],
+        250,
+        { fill: "forwards" },
+      );
+      setTimeout(() => {
+        head.style.removeProperty("opacity");
+        head.style.removeProperty("max-height");
+        head.style.removeProperty("margin-bottom");
+        head.style.removeProperty("overflow");
+      }, 270);
+    }
+
+    metrics.forEach(({ row, height }, index) => {
+      const delay = 90 + index * 140;
+      row.classList.add("is-loading");
+      animate(
+        row,
+        [
+          {
+            opacity: 0.82,
+            height: "0px",
+            paddingTop: "0px",
+            paddingBottom: "0px",
+            borderColor: "transparent",
+            transform: "translateY(-4px)",
+          },
+          {
+            opacity: 1,
+            height: `${height}px`,
+            paddingTop: "13px",
+            paddingBottom: "13px",
+            borderColor: "var(--border)",
+            transform: "translateY(0)",
+          },
+        ],
+        300,
+        { delay, fill: "forwards" },
+      );
+      setTimeout(() => {
+        row.classList.remove("is-loading");
+        [...row.children].forEach((child) =>
+          animate(child, [{ opacity: 0 }, { opacity: 1 }], 165, { fill: "backwards" }),
+        );
+        rollInitial(row.querySelector("b"), 15);
+      }, delay + 180);
+      setTimeout(() => {
+        ["opacity", "height", "padding-top", "padding-bottom", "overflow", "border-color", "transform"].forEach(
+          (property) => row.style.removeProperty(property),
+        );
+      }, delay + 335);
+    });
+  }, 580);
 }
 
-let approachMotionPlayed = false;
-function playApproachMotion() {
-  const section = $("#approach");
-  if (!section || approachMotionPlayed) return;
-  approachMotionPlayed = true;
-  section.dataset.motionState = reduced.matches || paused ? "complete" : "running";
+function playTrafficCard(card) {
+  motionEnter(card.querySelector(".funnel-visual"), 150, 12, 420, 0.99);
+  motionEnterMany(card.querySelectorAll(".funnel-stats > div"), 235, 85, {
+    distance: 6,
+    duration: 290,
+    scale: 0.996,
+  });
+  rollInitial(card.querySelector("#referral-number"), 275);
+  rollInitial(card.querySelector("#lead-number"), 365);
 
-  const statusLabel = section.querySelector("[data-company-status] span");
+  const steps = [...card.querySelectorAll(".marketing-funnel-step")];
+  motionEnterMany(steps, 430, 95, { distance: 6, duration: 285, scale: 0.997 });
+  steps.forEach((step, index) => {
+    const bar = step.querySelector(".marketing-funnel-track > span");
+    if (!bar) return;
+    animate(
+      bar,
+      [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
+      620,
+      { delay: 485 + index * 105, fill: "backwards" },
+    );
+  });
+}
+
+function runActionChecklistDemo(visual) {
+  const choices = [...visual.querySelectorAll(".action-checks .choice")];
+  const cursor = visual.querySelector(".demo-cursor");
+  if (!choices.length || !cursor) return;
+
+  choices.forEach((choice) => {
+    const input = choice.querySelector("input");
+    if (input) input.checked = false;
+    choice.classList.remove("is-complete", "demo-hover");
+  });
+  syncActionChecklist({ animateResolution: false });
+
+  let cancelled = false;
+  let x = Math.max(18, visual.clientWidth - 42);
+  let y = Math.max(18, visual.clientHeight - 48);
+  cursor.style.opacity = "1";
+  cursor.style.transform = `translate(${x}px,${y}px)`;
+
+  const cancel = () => {
+    cancelled = true;
+    cursor.getAnimations().forEach((animation) => animation.cancel());
+    animate(cursor, [{ opacity: 1 }, { opacity: 0 }], 120, { fill: "forwards" });
+  };
+  visual.addEventListener("pointerdown", cancel, { once: true });
+
+  choices.forEach((choice, index) => {
+    const moveAt = 500 + index * 540;
+    setTimeout(() => {
+      if (cancelled || !visual.isConnected) return;
+      const vr = visual.getBoundingClientRect();
+      const cr = choice.getBoundingClientRect();
+      const nextX = cr.left - vr.left + 5;
+      const nextY = cr.top - vr.top + Math.min(17, cr.height / 2);
+      cursor.getAnimations().forEach((animation) => animation.cancel());
+      animate(
+        cursor,
+        [
+          { opacity: 1, transform: `translate(${x}px,${y}px) scale(1)` },
+          { opacity: 1, transform: `translate(${nextX}px,${nextY}px) scale(1)` },
+        ],
+        285,
+        { fill: "forwards" },
+      );
+      x = nextX;
+      y = nextY;
+      choice.classList.add("demo-hover");
+    }, moveAt);
+
+    setTimeout(() => {
+      if (cancelled || !visual.isConnected) return;
+      animate(
+        cursor,
+        [
+          { transform: `translate(${x}px,${y}px) scale(1)` },
+          { transform: `translate(${x}px,${y}px) scale(.76)`, offset: 0.45 },
+          { transform: `translate(${x}px,${y}px) scale(1)` },
+        ],
+        145,
+        { fill: "forwards" },
+      );
+      const input = choice.querySelector("input");
+      if (input) {
+        input.checked = true;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      setTimeout(() => choice.classList.remove("demo-hover"), 165);
+    }, moveAt + 300);
+  });
+
+  setTimeout(() => {
+    if (!cancelled) animate(cursor, [{ opacity: 1 }, { opacity: 0 }], 170, { fill: "forwards" });
+  }, 500 + choices.length * 540 + 60);
+}
+
+function playActionCard(card) {
+  const visual = card.querySelector(".action-visual");
+  motionEnter(visual, 150, 12, 420, 0.99);
+  motionEnter(card.querySelector(".action-card-heading"), 225, 5, 250, 1);
+  motionEnter(card.querySelector(".action-visual h4"), 280, 8, 310, 0.996);
+  motionEnter(card.querySelector(".action-visual > p"), 335, 5, 250, 1);
+  motionEnterMany(card.querySelectorAll(".action-checks .choice"), 395, 62, {
+    distance: 5,
+    duration: 260,
+    scale: 0.997,
+  });
+  motionEnter(card.querySelector(".brief-progress"), 575, 5, 270, 1);
+  setTimeout(() => runActionChecklistDemo(visual), 120);
+}
+
+function playCompetitiveCard(card) {
+  const visual = card.querySelector(".shortlist-visual");
+  const question = card.querySelector("[data-shortlist-question]");
+  const thinking = card.querySelector("[data-shortlist-thinking]");
+  const brandGroup = card.querySelector(".shortlist-brands");
+  const brands = [...card.querySelectorAll(".shortlist-brands > span")];
+  const caption = card.querySelector(".your-brand-caption");
+  const fullQuestion = "What should our team use?";
+
+  motionEnter(visual, 150, 12, 420, 0.99);
+  if (!visual || !question || reduced.matches || paused) return;
+
+  visual.classList.add("is-sequencing", "is-typing");
+  visual.classList.remove("is-acme-highlighted");
+  question.textContent = "“";
+  if (thinking) thinking.hidden = true;
+
+  let character = 0;
+  setTimeout(() => {
+    const typing = setInterval(() => {
+      if (!question.isConnected) {
+        clearInterval(typing);
+        return;
+      }
+      character += 1;
+      question.textContent = `“${fullQuestion.slice(0, character)}${character >= fullQuestion.length ? "”" : ""}`;
+      if (character < fullQuestion.length) return;
+      clearInterval(typing);
+      visual.classList.remove("is-typing");
+
+      setTimeout(() => {
+        if (!thinking) return;
+        thinking.hidden = false;
+        motionEnter(thinking, 0, 5, 240, 0.99);
+      }, 100);
+
+      setTimeout(() => {
+        if (thinking) {
+          animate(
+            thinking,
+            [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
+            170,
+            { fill: "forwards" },
+          );
+          setTimeout(() => (thinking.hidden = true), 180);
+        }
+
+        if (brandGroup) {
+          animate(brandGroup, [{ opacity: 0.75 }, { opacity: 1 }], 240, { fill: "backwards" });
+        }
+
+        const order = [brands[0], brands[1], brands[3], brands[2]].filter(Boolean);
+        order.forEach((brand, index) => {
+          const self = brand.classList.contains("your-brand");
+          animate(
+            brand,
+            [
+              { opacity: 0, transform: "translateY(8px) scale(.8)" },
+              {
+                opacity: 1,
+                transform: self ? "translateY(0) scale(1)" : "translateY(0) scale(1.04)",
+                offset: 0.76,
+              },
+              { opacity: 1, transform: "translateY(0) scale(1)" },
+            ],
+            340,
+            { delay: index * 115, fill: "forwards" },
+          );
+        });
+
+        const acmeDelay = Math.max(0, (order.length - 1) * 115 + 310);
+        setTimeout(() => {
+          const acme = brands.find((brand) => brand.classList.contains("your-brand"));
+          visual.classList.add("is-acme-highlighted");
+          visual.classList.remove("is-sequencing");
+          if (acme) {
+            animate(
+              acme,
+              [
+                { transform: "translateY(0) scale(.96)" },
+                { transform: "translateY(-7px) scale(1.08)", offset: 0.72 },
+                { transform: "translateY(-7px) scale(1)" },
+              ],
+              340,
+              { fill: "forwards" },
+            );
+          }
+          motionEnter(caption, 80, 4, 250, 1);
+        }, acmeDelay);
+      }, 650);
+    }, 32);
+  }, 285);
+}
+
+function playInsightCardMotion(card) {
+  if (!card || insightMotionPlayed.has(card)) return;
+  insightMotionPlayed.add(card);
+  if (reduced.matches || paused || !window.OrbitMotion) return;
+
+  motionEnter(card.querySelector(".feature-label"), 15, 4, 220, 1);
+  motionEnter(card.querySelector(".feature-copy h3"), 55, 8, 310, 0.997);
+  motionEnter(card.querySelector(".feature-copy > p"), 110, 5, 260, 1);
+
+  if (card.classList.contains("source-card")) playSourceCard(card);
+  else if (card.classList.contains("traffic-card")) playTrafficCard(card);
+  else if (card.classList.contains("action-card")) playActionCard(card);
+  else if (card.classList.contains("audience-card")) playCompetitiveCard(card);
+}
+
+function playApproachCardMotion(step) {
+  if (!step || approachMotionPlayed.has(step)) return;
+  approachMotionPlayed.add(step);
   if (reduced.matches || paused || !window.OrbitMotion) {
+    const statusLabel = step.querySelector("[data-company-status] span");
     if (statusLabel) statusLabel.textContent = "Ready";
     return;
   }
 
-  const enter = (el, delay = 0, distance = 8, duration = 360, scale = 0.992) => {
-    if (!el) return;
-    microReveal(el, delay, duration, scale, 0.5);
-  };
-  const enterMany = (elements, delay = 0, step = 70, options = {}) => {
-    [...elements].forEach((el, index) =>
-      enter(
-        el,
-        delay + index * step,
-        options.distance ?? 8,
-        options.duration ?? 360,
-        options.scale ?? 0.992,
+  motionEnter(step.querySelector(".step-visual"), 20, 10, 390, 0.992);
+  motionEnter(step.querySelector(".step-number"), 85, 4, 220, 1);
+  motionEnter(step.querySelector("h3"), 125, 6, 285, 0.997);
+  motionEnter(step.querySelector(":scope > p"), 170, 4, 245, 1);
+
+  if (step.classList.contains("clearer-step-company")) {
+    motionEnter(step.querySelector(".mini-product-heading"), 145, 4, 235, 1);
+    const progress = step.querySelector(".company-progress > span");
+    progress &&
+      animate(progress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 650, {
+        delay: 205,
+        fill: "backwards",
+      });
+    motionEnterMany(step.querySelectorAll(".company-intel-row"), 285, 78, {
+      distance: 6,
+      duration: 275,
+      scale: 0.994,
+    });
+    motionEnter(step.querySelector(".company-ready"), 650, 4, 245, 1);
+    setTimeout(() => {
+      const label = step.querySelector("[data-company-status] span");
+      if (label) window.OrbitMotion.feedback(label, "Ready");
+    }, 760);
+  } else if (step.classList.contains("clearer-step-questions")) {
+    motionEnter(step.querySelector(".question-generator-head"), 145, 4, 235, 1);
+    motionEnter(step.querySelector(".generated-questions"), 205, 7, 320, 0.996);
+    const rows = [...step.querySelectorAll(".generated-question")];
+    motionEnterMany(rows, 280, 82, { distance: 5, duration: 260, scale: 0.997 });
+    [...step.querySelectorAll(".question-check")].forEach((check, index) =>
+      animate(
+        check,
+        [
+          { opacity: 0.18, transform: "scale(.82)" },
+          { opacity: 1, transform: "scale(1.08)", offset: 0.7 },
+          { opacity: 1, transform: "scale(1)" },
+        ],
+        300,
+        { delay: 520 + index * 320, fill: "both" },
       ),
     );
-  };
-
-  // Build the section copy first, then let each miniature assemble itself.
-  enter(section.querySelector(".section-heading .eyebrow"), 0, 6, 280, 1);
-  enter(section.querySelector(".section-heading h2"), 55, 12, 460, 0.995);
-  enter(section.querySelector(".section-heading > p"), 125, 8, 360, 1);
-
-  const steps = [...section.querySelectorAll(".clearer-step")];
-  steps.forEach((step, index) => {
-    const baseDelay = 230 + index * 135;
-    enter(step.querySelector(".step-visual"), baseDelay, 16, 540, 0.988);
-    enter(step.querySelector(".step-number"), baseDelay + 95, 6, 260, 1);
-    enter(step.querySelector("h3"), baseDelay + 145, 9, 360, 0.995);
-    enter(step.querySelector(":scope > p"), baseDelay + 205, 7, 340, 1);
-  });
-
-  // 01 — company intelligence assembles from status → scan → discovered profile.
-  const companyDelay = 390;
-  enter(section.querySelector(".mini-product-heading"), companyDelay, 6, 300, 1);
-  const companyProgress = section.querySelector(".company-progress > span");
-  companyProgress &&
-    animate(companyProgress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 820, {
-      delay: companyDelay + 80,
-      fill: "backwards",
+    const selection = step.querySelector(".question-selection");
+    if (selection && rows.length === 3) {
+      const y2 = rows[1].offsetTop - rows[0].offsetTop;
+      const y3 = rows[2].offsetTop - rows[0].offsetTop;
+      animate(
+        selection,
+        [
+          { transform: "translateY(0) scale(1)", offset: 0 },
+          { transform: `translateY(${y2}px) scale(.995)`, offset: 0.45 },
+          { transform: `translateY(${y3}px) scale(1)`, offset: 1 },
+        ],
+        1350,
+        { delay: 570, fill: "both" },
+      );
+    }
+    motionEnterMany(step.querySelectorAll(".question-footer > span"), 800, 45, {
+      distance: 3,
+      duration: 210,
+      scale: 0.98,
     });
-  const statusDot = section.querySelector(".mini-product-status i");
-  statusDot &&
-    animate(
-      statusDot,
-      [
-        { transform: "scale(.78)", boxShadow: "0 0 0 0 var(--accent-soft)" },
-        { transform: "scale(1.16)", boxShadow: "0 0 0 6px transparent", offset: 0.58 },
-        { transform: "scale(1)", boxShadow: "0 0 0 0 transparent" },
-      ],
-      820,
-      { delay: companyDelay + 105, fill: "backwards" },
+  } else if (step.classList.contains("clearer-step-action")) {
+    motionEnter(step.querySelector(".gap-header"), 145, 4, 235, 1);
+    motionEnterMany(step.querySelectorAll(".mini-rank-row"), 230, 82, {
+      distance: 5,
+      duration: 270,
+      scale: 0.996,
+    });
+    [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
+      animate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 570, {
+        delay: 300 + index * 95,
+        fill: "backwards",
+      }),
     );
-  enterMany(section.querySelectorAll(".company-intel-row"), companyDelay + 210, 92, {
-    distance: 8,
-    duration: 340,
-    scale: 0.988,
-  });
-  enter(section.querySelector(".company-ready"), companyDelay + 650, 5, 300, 1);
-
-  // 02 — question generation: header appears, rows resolve, checks confirm, then intent totals land.
-  const questionsDelay = 535;
-  enter(section.querySelector(".question-generator-head"), questionsDelay, 6, 300, 1);
-  enter(section.querySelector(".generated-questions"), questionsDelay + 70, 10, 420, 0.994);
-  const questionRows = [...section.querySelectorAll(".generated-question")];
-  enterMany(questionRows, questionsDelay + 165, 105, {
-    distance: 7,
-    duration: 320,
-    scale: 0.994,
-  });
-  const questionChecks = [...section.querySelectorAll(".question-check")];
-  questionChecks.forEach((check, index) =>
-    animate(
-      check,
-      [
-        { opacity: 0.16, transform: "scale(.78)" },
-        { opacity: 1, transform: "scale(1.1)", offset: 0.7 },
-        { opacity: 1, transform: "scale(1)" },
-      ],
-      360,
-      { delay: questionsDelay + 390 + index * 175, fill: "both" },
-    ),
-  );
-  const questionSelection = section.querySelector(".question-selection");
-  if (questionSelection && questionRows.length === 3) {
-    const y2 = questionRows[1].offsetTop - questionRows[0].offsetTop;
-    const y3 = questionRows[2].offsetTop - questionRows[0].offsetTop;
-    animate(
-      questionSelection,
-      [
-        { transform: "translateY(0) scale(1)", offset: 0 },
-        { transform: "translateY(0) scale(1)", offset: 0.18 },
-        { transform: `translateY(${y2}px) scale(.994)`, offset: 0.36 },
-        { transform: `translateY(${y2}px) scale(1)`, offset: 0.5 },
-        { transform: `translateY(${y3}px) scale(.994)`, offset: 0.72 },
-        { transform: `translateY(${y3}px) scale(1)`, offset: 1 },
-      ],
-      2200,
-      { delay: questionsDelay + 470, fill: "both" },
-    );
+    motionEnter(step.querySelector(".brief-build"), 510, 9, 380, 0.992);
+    motionEnter(step.querySelector(".brief-kicker"), 595, 3, 210, 1);
+    motionEnter(step.querySelector(".brief-build > strong"), 645, 5, 260, 0.998);
+    motionEnter(step.querySelector(".brief-build > p"), 695, 4, 230, 1);
+    motionEnter(step.querySelector(".brief-ready"), 745, 3, 220, 1);
   }
-  enterMany(section.querySelectorAll(".question-footer > span"), questionsDelay + 730, 55, {
-    distance: 4,
-    duration: 260,
-    scale: 0.97,
-  });
-
-  // 03 — comparison gap resolves into a concrete next move.
-  const actionDelay = 680;
-  enter(section.querySelector(".gap-header"), actionDelay, 6, 300, 1);
-  const rankRows = [...section.querySelectorAll(".mini-rank-row")];
-  enterMany(rankRows, actionDelay + 130, 105, {
-    distance: 7,
-    duration: 330,
-    scale: 0.993,
-  });
-  [...section.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
-    animate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 700, {
-      delay: actionDelay + 220 + index * 120,
-      fill: "backwards",
-    }),
-  );
-  const brief = section.querySelector(".brief-build");
-  enter(brief, actionDelay + 500, 13, 500, 0.986);
-  enter(section.querySelector(".brief-kicker"), actionDelay + 610, 5, 260, 1);
-  enter(section.querySelector(".brief-build > strong"), actionDelay + 675, 7, 320, 0.995);
-  enter(section.querySelector(".brief-build > p"), actionDelay + 740, 6, 300, 1);
-  enter(section.querySelector(".brief-ready"), actionDelay + 820, 5, 300, 1);
-
-  setTimeout(() => {
-    if (statusLabel) window.OrbitMotion.feedback(statusLabel, "Ready");
-    section.dataset.motionState = "complete";
-  }, 2920);
 }
 
 // Product structures stay rendered at all times. Viewport observers below only animate their internal content.\n\ntry {
