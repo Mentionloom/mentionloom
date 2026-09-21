@@ -574,11 +574,50 @@ document.querySelector("[data-menu-toggle]")?.addEventListener("click", (event) 
   });
 });
 
-$(".action-checks").addEventListener("change", () => {
-  const n = $(".action-checks").querySelectorAll("input:checked").length;
-  $("#brief-count").textContent = `${n} of 3 brief items ready`;
-  $("#brief-bar").style.width = `${(n / 3) * 100}%`;
-});
+function syncActionChecklist({ animateResolution = true } = {}) {
+  const checks = $(".action-checks");
+  const visual = $(".action-visual");
+  if (!checks || !visual) return;
+  const inputs = [...checks.querySelectorAll("input")];
+  const n = inputs.filter((input) => input.checked).length;
+  inputs.forEach((input) =>
+    input.closest(".choice")?.classList.toggle("is-complete", input.checked),
+  );
+  $("#brief-count").textContent = `${n} of ${inputs.length} brief items ready`;
+  $("#brief-bar").style.width = `${inputs.length ? (n / inputs.length) * 100 : 0}%`;
+
+  const wasResolved = visual.classList.contains("gap-resolved");
+  const resolved = n === inputs.length && inputs.length > 0;
+  visual.classList.toggle("gap-resolved", resolved);
+  if (resolved && !wasResolved && animateResolution && !paused && !reduced.matches) {
+    const resolution = visual.querySelector(".gap-resolution");
+    if (resolution) {
+      animate(
+        resolution,
+        [
+          { opacity: 0, transform: "translateX(-6px) scale(.96)" },
+          { opacity: 1, transform: "translateX(0) scale(1)" },
+        ],
+        300,
+        { fill: "backwards" },
+      );
+      [...resolution.querySelectorAll(".gap-brand")].forEach((brand, index) =>
+        animate(
+          brand,
+          [
+            { opacity: 0, transform: `translateX(${index ? -7 : 7}px) scale(.78)` },
+            { opacity: 1, transform: "translateX(0) scale(1.04)", offset: 0.72 },
+            { opacity: 1, transform: "translateX(0) scale(1)" },
+          ],
+          320,
+          { delay: 55 + index * 70, fill: "backwards" },
+        ),
+      );
+    }
+  }
+}
+$(".action-checks").addEventListener("change", () => syncActionChecklist());
+syncActionChecklist({ animateResolution: false });
 // These supporting examples always describe the complete, explicitly labeled sample period.
 $("#source-rows").innerHTML = base.pages
   .slice(0, 4)
