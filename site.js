@@ -354,9 +354,9 @@ document.addEventListener('visibilitychange', scheduleScene);
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
 const workflow = {
- domain:['Website ready','Acme and its competitors are ready to compare.','Open the sample workspace','/app/overview/'],
- prompt:['Questions selected','Compare discovery, alternatives and pricing questions.','Explore buyer questions','/app/questions/'],
- insight:['Opportunity found','Review a comparison gap and the steps to improve it.','Review opportunities','/app/opportunities/']
+ domain:['Website ready','Acme and its competitors are ready to compare.','Join early access','#early-access'],
+ prompt:['Questions selected','Compare discovery, alternatives and pricing questions.','Join early access','#early-access'],
+ insight:['Opportunity found','Review a comparison gap and the steps to improve it.','Join early access','#early-access']
 };
 document.querySelectorAll('[data-workflow]').forEach(b=>b.addEventListener('click',()=>{
  const [title,copy,cta,url]=workflow[b.dataset.workflow];
