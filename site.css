@@ -2902,3 +2902,119 @@
 
 /* Globe marker hardening: never render nested labels/assets inside map pins. */
 .marketing-app .globe-pin > * { display:none !important; }
+
+
+/* Warm canvas + viewport-only component motion */
+:root { --marketing-beige:#f6f2ea; }
+
+.marketing-app,
+.marketing-app.info-page,
+.marketing-app main,
+.marketing-app .marketing-header,
+.marketing-app .provider-strip,
+.marketing-app .product-section,
+.marketing-app .feature-section,
+.marketing-app .approach-section,
+.marketing-app .faq-section {
+  background:var(--marketing-beige);
+}
+
+.marketing-app .discovery-scene {
+  background:radial-gradient(
+    ellipse at 50% 70%,
+    var(--sky-1) 0%,
+    #f4f1ec 40%,
+    var(--marketing-beige) 76%
+  );
+}
+
+.marketing-app .early-access-section,
+.marketing-app .early-access-card {
+  background:var(--marketing-beige);
+}
+
+.marketing-app.motion-ready [data-reveal] {
+  opacity:0;
+  transform:translateY(18px);
+  transition:none;
+}
+
+.marketing-app.motion-ready [data-reveal].is-visible {
+  animation:viewport-build 680ms var(--ease-out) forwards;
+}
+
+.marketing-app.motion-ready .value-trio > [data-reveal]:nth-child(2).is-visible,
+.marketing-app.motion-ready .feature-grid > [data-reveal]:nth-child(2).is-visible,
+.marketing-app.motion-ready .steps-grid > [data-reveal]:nth-child(2).is-visible {
+  animation-delay:90ms;
+}
+
+.marketing-app.motion-ready .value-trio > [data-reveal]:nth-child(3).is-visible,
+.marketing-app.motion-ready .feature-grid > [data-reveal]:nth-child(3).is-visible,
+.marketing-app.motion-ready .steps-grid > [data-reveal]:nth-child(3).is-visible {
+  animation-delay:180ms;
+}
+
+.marketing-app.motion-ready .feature-grid > [data-reveal]:nth-child(4).is-visible {
+  animation-delay:270ms;
+}
+
+@keyframes viewport-build {
+  from { opacity:0; transform:translateY(18px) scale(.992); }
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* Component internals assemble only after their card enters the viewport. */
+.marketing-app.motion-ready .feature-card .source-row,
+.marketing-app.motion-ready .feature-card .funnel-bar,
+.marketing-app.motion-ready .feature-card .shortlist-brands > span,
+.marketing-app.motion-ready .feature-card .action-checks .choice,
+.marketing-app.motion-ready .product-stage .competitor-row {
+  opacity:0;
+  transform:translateY(8px);
+}
+
+.marketing-app.motion-ready .feature-card.is-visible .source-row,
+.marketing-app.motion-ready .feature-card.is-visible .funnel-bar,
+.marketing-app.motion-ready .feature-card.is-visible .shortlist-brands > span,
+.marketing-app.motion-ready .feature-card.is-visible .action-checks .choice,
+.marketing-app.motion-ready .product-stage.is-visible .competitor-row {
+  animation:component-build 460ms var(--ease-out) forwards;
+}
+
+.marketing-app.motion-ready .feature-card.is-visible :is(.source-row,.funnel-bar,.shortlist-brands > span,.action-checks .choice):nth-child(2),
+.marketing-app.motion-ready .product-stage.is-visible .competitor-row:nth-child(2) { animation-delay:70ms; }
+.marketing-app.motion-ready .feature-card.is-visible :is(.source-row,.funnel-bar,.shortlist-brands > span,.action-checks .choice):nth-child(3),
+.marketing-app.motion-ready .product-stage.is-visible .competitor-row:nth-child(3) { animation-delay:140ms; }
+.marketing-app.motion-ready .feature-card.is-visible :is(.source-row,.funnel-bar,.shortlist-brands > span,.action-checks .choice):nth-child(4),
+.marketing-app.motion-ready .product-stage.is-visible .competitor-row:nth-child(4) { animation-delay:210ms; }
+
+@keyframes component-build {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Animated internals are paused off-screen and resume only while their section is visible. */
+.marketing-app #approach .domain-visual > span,
+.marketing-app #approach .prompt-visual > span,
+.marketing-app #approach .insight-visual > span {
+  animation-play-state:paused;
+}
+.marketing-app #approach[data-in-view="true"] .domain-visual > span,
+.marketing-app #approach[data-in-view="true"] .prompt-visual > span,
+.marketing-app #approach[data-in-view="true"] .insight-visual > span {
+  animation-play-state:running;
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .marketing-app.motion-ready [data-reveal],
+  .marketing-app.motion-ready .feature-card .source-row,
+  .marketing-app.motion-ready .feature-card .funnel-bar,
+  .marketing-app.motion-ready .feature-card .shortlist-brands > span,
+  .marketing-app.motion-ready .feature-card .action-checks .choice,
+  .marketing-app.motion-ready .product-stage .competitor-row {
+    opacity:1 !important;
+    transform:none !important;
+    animation:none !important;
+  }
+}
