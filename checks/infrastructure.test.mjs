@@ -24,14 +24,15 @@ test('foundation migration contains tenant, measurement, queue and cost entities
   }
   assert.match(sql, /for update skip locked/i);
   assert.match(sql, /enable row level security/i);
+  assert.match(sql, /revoke all on function public\.handle_new_auth_user\(\)/i);
 });
 
-test('provider credentials are documented as server environment variables', async () => {
+test('server credential contract includes Supabase and AI providers', async () => {
   const env = await read('.env.example');
   for (const name of [
     'SUPABASE_URL',
-    'SUPABASE_ANON_KEY',
-    'SUPABASE_SERVICE_ROLE_KEY',
+    'SUPABASE_PUBLISHABLE_KEY',
+    'SUPABASE_SECRET_KEY',
     'CRON_SECRET',
     'OPENAI_API_KEY',
     'ANTHROPIC_API_KEY',
@@ -42,9 +43,17 @@ test('provider credentials are documented as server environment variables', asyn
   }
 });
 
-test('worker is protected and scheduled', async () => {
-  const worker = await read('api/worker.js');
-  const config = JSON.parse(await read('vercel.json'));
+test('Cloudflare Worker owns API routing and scheduled queue execution', async () => {
+  const worker = await read('src/worker.js');
+  const config = await read('wrangler.toml');
+
   assert.match(worker, /CRON_SECRET/);
-  assert.ok(config.crons?.some((cron) => cron.path === '/api/worker'));
+  assert.match(worker, /async scheduled\(/);
+  assert.match(worker, /\/api\/auth\/sign-up/);
+  assert.match(worker, /\/api\/workspaces/);
+  assert.match(worker, /\/api\/costs/);
+  assert.match(config, /main\s*=\s*"\.\/src\/worker\.js"/);
+  assert.match(config, /binding\s*=\s*"ASSETS"/);
+  assert.match(config, /run_worker_first\s*=\s*\["\/api\/\*"\]/);
+  assert.match(config, /crons\s*=\s*\["\*\/5 \* \* \* \*"\]/);
 });
