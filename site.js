@@ -759,7 +759,7 @@ function motionEnterMany(elements, delay = 0, step = 65, options = {}) {
 
 function rollInitial(el, delay = 0) {
   if (!el || !window.OrbitNumbers) return;
-  const value = Number(el.textContent.replace(/[^\\d.-]/g, ""));
+  const value = Number(el.textContent.replace(/[^\d.-]/g, ""));
   if (!Number.isFinite(value)) return;
   setTimeout(() => {
     if (el.isConnected) window.OrbitNumbers.set(el, value, { initial: true });
@@ -1206,7 +1206,7 @@ function playApproachCardMotion(step) {
           playInsightCardMotion(entry.target);
         }
       },
-      { threshold: 0.42, rootMargin: "0px 0px -7% 0px" },
+      { threshold: 0.22, rootMargin: "0px 0px -6% 0px" },
     );
     document.querySelectorAll("#insights .feature-card").forEach((card) => {
       card.classList.add("motion-card-armed");
@@ -1222,7 +1222,7 @@ function playApproachCardMotion(step) {
           playApproachCardMotion(entry.target);
         }
       },
-      { threshold: 0.4, rootMargin: "0px 0px -7% 0px" },
+      { threshold: 0.24, rootMargin: "0px 0px -6% 0px" },
     );
     document.querySelectorAll("#approach .clearer-step").forEach((card) => {
       card.classList.add("motion-card-armed");
@@ -1320,7 +1320,7 @@ function playApproachCardMotion(step) {
     { threshold: 0.05 },
   );
   document
-    .querySelectorAll("#product,.provider-strip,.discovery-scene,.early-access-section")
+    .querySelectorAll("#product,.product-stage,.provider-strip,.discovery-scene,.early-access-section,#insights .feature-card,#approach .clearer-step,.brand-footer")
     .forEach((el) => inView.observe(el));
 } catch (error) {
   console.warn(
