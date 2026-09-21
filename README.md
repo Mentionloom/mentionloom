@@ -108,23 +108,15 @@ Mentionloom-specific adaptations live outside the vendored source:
 
 ## Brand assets
 
-The active Mentionloom logo used by the marketing site, app chrome, waitlist surfaces, and favicon is:
+The active Mentionloom wordmark is `assets/dark-ml.svg`. The favicon uses `assets/favicon.svg`, based on the blue/light rounded-square icon.
 
-```
-assets/dark-ml.svg
-```
+The September 2026 brand refresh is fully mirrored in `assets/` with both canonical project names and compatibility aliases:
 
-Additional supplied variants remain in `assets/`:
-
-- `blue-ml.svg`
-- `dark-ml.svg`
-- `ml-blue.svg`
-- `ml-dark.svg`
-- `ml-gradient.svg`
-- `ml-light.svg`
-- `square-ml-blue.svg`
-- `square-ml-dark.svg`
-- `square-ml-light.svg`
+- Full wordmarks: `dark-ml.svg`, `blue-ml.svg`, `light-ml.svg`
+- Symbol marks: `ml-dark.svg`, `ml-blue.svg`, `ml-light.svg`
+- Rounded-square icons: `square-ml-dark.svg`, `square-ml-blue.svg`, `square-ml-light.svg`
+- Source-package aliases: `dark.svg`, `blue.svg`, `light.svg`, `l-dark.svg`, `l-blue.svg`, `l-light.svg`, `icon-dark-light.svg`, `icon-blue-light.svg`, `icon-light-blue.svg`
+- Legacy compatibility aliases: `logo.svg`, `mark.svg`, and `ml-gradient.svg` now resolve to the refreshed geometry rather than the previous identity.
 
 Provider/competitor SVGs are kept local under `assets/brands/`. `scripts/marketing-assets.mjs` regenerates the supported Simple Icons marks, the Lucide sprite, the Grok mark, and the bundled globe asset used by the marketing experience.
 
