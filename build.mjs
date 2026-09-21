@@ -68,6 +68,9 @@ const files = [
   "assets/icon-light-blue.svg",
   "assets/og.png",
   "assets/brands/acme.svg",
+  "assets/flags/us.svg",
+  "assets/flags/gb.svg",
+  "assets/flags/sg.svg",
   "assets/woven-light.png",
   "assets/OpenRunde-Regular.woff2",
   "assets/OpenRunde-Medium.woff2",
@@ -80,6 +83,7 @@ const files = [
 
 await rm(output, { recursive: true, force: true });
 await mkdir(new URL("assets/brands/", output), { recursive: true });
+await mkdir(new URL("assets/flags/", output), { recursive: true });
 await mkdir(new URL("app/lib/", output), { recursive: true });
 await Promise.all(
   files.map((file) =>
