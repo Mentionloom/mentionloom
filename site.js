@@ -656,7 +656,7 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
 
 const LANDING_EASE = "cubic-bezier(.16, 1, .3, 1)";
 function motionAnimate(el, frames, duration = 320, extra = {}) {
-  return animate(el, frames, Math.round(duration * 1.18), {
+  return animate(el, frames, Math.round(duration * 1.25), {
     easing: LANDING_EASE,
     ...extra,
   });
@@ -698,43 +698,43 @@ function playProductMotion() {
 
   // Keep the shell completely stable. Animate the information inside it.
   const company = stage.querySelector(".sample-company");
-  microReveal(company?.querySelector(".acme-mark"), 0, 240, 0.9, 0.6);
-  microReveal(company?.querySelector("strong"), 35, 220, 1, 0.5);
-  microReveal(company?.querySelector("span:not(.acme-mark)"), 70, 220, 1, 0.5);
+  microReveal(company?.querySelector(".acme-mark"), 0, 320, 0.96, 0.48);
+  microReveal(company?.querySelector("strong"), 55, 300, 1, 0.42);
+  microReveal(company?.querySelector("span:not(.acme-mark)"), 105, 300, 1, 0.42);
 
-  microRevealMany(stage.querySelectorAll(".engine-controls [data-engine]"), 80, 34, {
-    duration: 230,
-    scale: 0.94,
-    opacity: 0.5,
+  microRevealMany(stage.querySelectorAll(".engine-controls [data-engine]"), 130, 55, {
+    duration: 320,
+    scale: 0.975,
+    opacity: 0.42,
   });
 
   const metric = stage.querySelector(".visibility-metric");
-  microReveal(metric?.querySelector(":scope > span"), 145, 220, 1, 0.48);
-  microReveal(metric?.querySelector(":scope > div > strong"), 175, 280, 0.965, 0.5);
-  microReveal(metric?.querySelector(":scope > div > .delta"), 215, 220, 0.9, 0.45);
-  microReveal(metric?.querySelector(":scope > p"), 245, 220, 1, 0.5);
+  microReveal(metric?.querySelector(":scope > span"), 220, 300, 1, 0.42);
+  microReveal(metric?.querySelector(":scope > div > strong"), 265, 420, 0.985, 0.38);
+  microReveal(metric?.querySelector(":scope > div > .delta"), 330, 320, 0.96, 0.38);
+  microReveal(metric?.querySelector(":scope > p"), 385, 300, 1, 0.42);
 
   const panel = stage.querySelector(".competitor-panel");
-  microReveal(panel?.querySelector(".panel-title h3"), 190, 230, 1, 0.48);
-  microReveal(panel?.querySelector(".panel-title > .icon"), 220, 230, 0.88, 0.45);
-  microReveal(panel?.querySelector(":scope > p"), 250, 220, 1, 0.5);
+  microReveal(panel?.querySelector(".panel-title h3"), 280, 320, 1, 0.42);
+  microReveal(panel?.querySelector(".panel-title > .icon"), 330, 320, 0.96, 0.38);
+  microReveal(panel?.querySelector(":scope > p"), 380, 300, 1, 0.42);
 
-  microRevealMany(stage.querySelectorAll(".chart-legend > span"), 430, 45, {
-    duration: 220,
-    scale: 0.98,
-    opacity: 0.5,
+  microRevealMany(stage.querySelectorAll(".chart-legend > span"), 620, 70, {
+    duration: 320,
+    scale: 0.99,
+    opacity: 0.42,
   });
-  microReveal(stage.querySelector(".stage-bottom .text-link"), 500, 240, 0.98, 0.5);
+  microReveal(stage.querySelector(".stage-bottom .text-link"), 740, 340, 0.99, 0.42);
 
   // Build the data itself: roll the metric, draw the chart, grow ranked bars.
   setTimeout(() => {
     if (!stage.isConnected) return;
     render(report, true);
-  }, 95);
+  }, 170);
 
   setTimeout(() => {
     stage.dataset.motionState = "complete";
-  }, 980);
+  }, 1550);
 }
 
 const insightMotionPlayed = new WeakSet();
@@ -843,7 +843,7 @@ function playSourceCard(card) {
     }
 
     metrics.forEach(({ row, height }, index) => {
-      const delay = 90 + index * 140;
+      const delay = 120 + index * 180;
       row.classList.add("is-loading");
       motionAnimate(
         row,
@@ -865,45 +865,45 @@ function playSourceCard(card) {
             transform: "translateY(0)",
           },
         ],
-        300,
+        380,
         { delay, fill: "forwards" },
       );
       setTimeout(() => {
         row.classList.remove("is-loading");
         [...row.children].forEach((child) =>
-          motionAnimate(child, [{ opacity: 0 }, { opacity: 1 }], 165, { fill: "backwards" }),
+          motionAnimate(child, [{ opacity: 0 }, { opacity: 1 }], 240, { fill: "backwards" }),
         );
         rollInitial(row.querySelector("b"), 15);
-      }, delay + 180);
+      }, delay + 245);
       setTimeout(() => {
         ["opacity", "height", "padding-top", "padding-bottom", "overflow", "border-color", "transform"].forEach(
           (property) => row.style.removeProperty(property),
         );
-      }, delay + 335);
+      }, delay + 455);
     });
-  }, 580);
+  }, 760);
 }
 
 function playTrafficCard(card) {
   motionEnter(card.querySelector(".funnel-visual"), 150, 12, 420, 0.99);
-  motionEnterMany(card.querySelectorAll(".funnel-stats > div"), 235, 85, {
+  motionEnterMany(card.querySelectorAll(".funnel-stats > div"), 280, 115, {
     distance: 6,
-    duration: 290,
+    duration: 380,
     scale: 0.996,
   });
-  rollInitial(card.querySelector("#referral-number"), 275);
-  rollInitial(card.querySelector("#lead-number"), 365);
+  rollInitial(card.querySelector("#referral-number"), 340);
+  rollInitial(card.querySelector("#lead-number"), 470);
 
   const steps = [...card.querySelectorAll(".marketing-funnel-step")];
-  motionEnterMany(steps, 430, 95, { distance: 6, duration: 285, scale: 0.997 });
+  motionEnterMany(steps, 560, 125, { distance: 6, duration: 380, scale: 0.997 });
   steps.forEach((step, index) => {
     const bar = step.querySelector(".marketing-funnel-track > span");
     if (!bar) return;
     motionAnimate(
       bar,
       [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-      620,
-      { delay: 485 + index * 105, fill: "backwards" },
+      820,
+      { delay: 640 + index * 140, fill: "backwards" },
     );
   });
 }
@@ -934,7 +934,7 @@ function runActionChecklistDemo(visual) {
   visual.addEventListener("pointerdown", cancel, { once: true });
 
   choices.forEach((choice, index) => {
-    const moveAt = 500 + index * 540;
+    const moveAt = 620 + index * 680;
     setTimeout(() => {
       if (cancelled || !visual.isConnected) return;
       const vr = visual.getBoundingClientRect();
@@ -948,7 +948,7 @@ function runActionChecklistDemo(visual) {
           { opacity: 1, transform: `translate(${x}px,${y}px) scale(1)` },
           { opacity: 1, transform: `translate(${nextX}px,${nextY}px) scale(1)` },
         ],
-        285,
+        420,
         { fill: "forwards" },
       );
       x = nextX;
@@ -965,7 +965,7 @@ function runActionChecklistDemo(visual) {
           { transform: `translate(${x}px,${y}px) scale(.76)`, offset: 0.45 },
           { transform: `translate(${x}px,${y}px) scale(1)` },
         ],
-        145,
+        190,
         { fill: "forwards" },
       );
       const input = choice.querySelector("input");
@@ -973,28 +973,28 @@ function runActionChecklistDemo(visual) {
         input.checked = true;
         input.dispatchEvent(new Event("change", { bubbles: true }));
       }
-      setTimeout(() => choice.classList.remove("demo-hover"), 165);
-    }, moveAt + 300);
+      setTimeout(() => choice.classList.remove("demo-hover"), 240);
+    }, moveAt + 440);
   });
 
   setTimeout(() => {
     if (!cancelled) motionAnimate(cursor, [{ opacity: 1 }, { opacity: 0 }], 170, { fill: "forwards" });
-  }, 500 + choices.length * 540 + 60);
+  }, 620 + choices.length * 680 + 100);
 }
 
 function playActionCard(card) {
   const visual = card.querySelector(".action-visual");
   motionEnter(visual, 150, 12, 420, 0.99);
-  motionEnter(card.querySelector(".action-card-heading"), 225, 5, 250, 1);
-  motionEnter(card.querySelector(".action-visual h4"), 280, 8, 310, 0.996);
-  motionEnter(card.querySelector(".action-visual > p"), 335, 5, 250, 1);
-  motionEnterMany(card.querySelectorAll(".action-checks .choice"), 395, 62, {
+  motionEnter(card.querySelector(".action-card-heading"), 250, 5, 360, 1);
+  motionEnter(card.querySelector(".action-visual h4"), 330, 8, 440, 0.997);
+  motionEnter(card.querySelector(".action-visual > p"), 410, 5, 360, 1);
+  motionEnterMany(card.querySelectorAll(".action-checks .choice"), 500, 90, {
     distance: 5,
-    duration: 260,
+    duration: 360,
     scale: 0.997,
   });
-  motionEnter(card.querySelector(".brief-progress"), 575, 5, 270, 1);
-  setTimeout(() => runActionChecklistDemo(visual), 120);
+  motionEnter(card.querySelector(".brief-progress"), 760, 5, 360, 1);
+  setTimeout(() => runActionChecklistDemo(visual), 240);
 }
 
 function playCompetitiveCard(card) {
@@ -1062,12 +1062,12 @@ function playCompetitiveCard(card) {
               },
               { opacity: 1, transform: "translateY(0) scale(1)" },
             ],
-            340,
-            { delay: index * 115, fill: "forwards" },
+            460,
+            { delay: index * 160, fill: "forwards" },
           );
         });
 
-        const acmeDelay = Math.max(0, (order.length - 1) * 115 + 310);
+        const acmeDelay = Math.max(0, (order.length - 1) * 160 + 420);
         setTimeout(() => {
           const acme = brands.find((brand) => brand.classList.contains("your-brand"));
           visual.classList.add("is-acme-highlighted");
@@ -1080,15 +1080,15 @@ function playCompetitiveCard(card) {
                 { transform: "translateY(-7px) scale(1.08)", offset: 0.72 },
                 { transform: "translateY(-7px) scale(1)" },
               ],
-              340,
+              480,
               { fill: "forwards" },
             );
           }
-          motionEnter(caption, 80, 4, 250, 1);
+          motionEnter(caption, 120, 4, 360, 1);
         }, acmeDelay);
-      }, 650);
-    }, 32);
-  }, 285);
+      }, 900);
+    }, 45);
+  }, 380);
 }
 
 function playInsightCardMotion(card) {
@@ -1096,9 +1096,9 @@ function playInsightCardMotion(card) {
   insightMotionPlayed.add(card);
   if (reduced.matches || paused || !window.OrbitMotion) return;
 
-  motionEnter(card.querySelector(".feature-label"), 15, 4, 220, 1);
-  motionEnter(card.querySelector(".feature-copy h3"), 55, 8, 310, 0.997);
-  motionEnter(card.querySelector(".feature-copy > p"), 110, 5, 260, 1);
+  motionEnter(card.querySelector(".feature-label"), 25, 4, 300, 1);
+  motionEnter(card.querySelector(".feature-copy h3"), 90, 8, 430, 0.998);
+  motionEnter(card.querySelector(".feature-copy > p"), 170, 5, 360, 1);
 
   if (card.classList.contains("source-card")) playSourceCard(card);
   else if (card.classList.contains("traffic-card")) playTrafficCard(card);
