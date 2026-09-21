@@ -26,16 +26,15 @@ The production Supabase project is:
 
 The project URL and publishable key are intentionally non-secret Cloudflare `vars` in `wrangler.toml`.
 
-Two values must be Cloudflare Worker **secrets**, never source-controlled:
+One Cloudflare Worker **secret** is required and must never be source-controlled:
 
 ```sh
 npx wrangler secret put SUPABASE_SECRET_KEY
-npx wrangler secret put CRON_SECRET
 ```
 
-Use the current Supabase `sb_secret_...` backend key for `SUPABASE_SECRET_KEY`. The runtime also supports the legacy `SUPABASE_SERVICE_ROLE_KEY` during migration, but new deployments should use the modern secret key.
+Use the current Supabase `sb_secret_...` backend key. The runtime also supports the legacy `SUPABASE_SERVICE_ROLE_KEY` during migration, but new deployments should use the modern secret key.
 
-`CRON_SECRET` protects the manual `/api/worker` endpoint. Cloudflare's native `scheduled()` invocation does not depend on this HTTP secret.
+Cloudflare's native `scheduled()` invocation needs no HTTP cron secret. `CRON_SECRET` is optional and only protects the manual `POST /api/worker` endpoint when you choose to enable it.
 
 For local Worker development, copy `.dev.vars.example` to `.dev.vars`. Never commit `.dev.vars`.
 
@@ -51,7 +50,7 @@ The Cloudflare Worker owns:
 - `GET /api/workspaces`
 - `POST /api/workspaces`
 - `GET /api/costs?workspaceId=<uuid>&month=YYYY-MM`
-- `GET|POST /api/worker` — protected manual queue drain
+- `GET|POST /api/worker` — optional protected manual queue drain
 
 The auth endpoints store Supabase access/refresh tokens in HTTP-only, SameSite=Lax cookies. Workspace reads and writes are authorized server-side before the service-role/secret-key database request is made.
 
