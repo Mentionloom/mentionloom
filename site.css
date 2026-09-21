@@ -2782,3 +2782,73 @@
   .marketing-app .info-hero > p { font-size: 16px; }
   .marketing-app .info-contact-card { align-items: flex-start; flex-direction: column; }
 }
+
+
+/* Six-provider segmented control */
+.marketing-app .engine-controls { justify-content:flex-start; }
+.marketing-app .engine-controls .segmented {
+  display:flex;
+  flex-wrap:nowrap;
+  width:100%;
+  max-width:none;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.marketing-app .engine-controls .segmented::-webkit-scrollbar { display:none; }
+.marketing-app .engine-controls .segmented > button { flex:0 0 auto; }
+
+/* Country flags on the discovery globe */
+.marketing-app .globe-pin > span {
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.marketing-app .globe-pin > span img {
+  width:15px;
+  height:10px;
+  object-fit:cover;
+  border-radius:1px;
+  box-shadow:0 0 0 1px #00000012;
+}
+.marketing-app .question-float .card-label img {
+  width:22px;
+  height:15px;
+  object-fit:cover;
+  border-radius:2px;
+  box-shadow:0 0 0 1px #00000012;
+}
+
+/* Footer becomes edge-to-edge only at the absolute page bottom */
+.marketing-app .brand-footer {
+  transition:margin 520ms var(--ease-out);
+}
+.marketing-app .brand-footer-shell {
+  border:0;
+  transition:border-radius 520ms var(--ease-out);
+}
+.marketing-app .brand-footer.is-flush { margin:0; }
+.marketing-app .brand-footer.is-flush .brand-footer-shell { border-radius:0; }
+
+@media (max-width:760px) {
+  .marketing-app .engine-controls .segmented {
+    gap:2px;
+    overflow:hidden;
+  }
+  .marketing-app .engine-controls .segmented > button:first-child {
+    flex:0 0 70px;
+    min-width:70px;
+    padding-inline:8px;
+    font-size:11px;
+  }
+  .marketing-app .engine-controls .segmented > button:not(:first-child) {
+    flex:1 1 0;
+    min-width:38px;
+    padding:7px 6px;
+    justify-content:center;
+  }
+  .marketing-app .engine-controls .segmented img {
+    width:18px;
+    height:18px;
+  }
+  .marketing-app .brand-footer.is-flush { margin:0; }
+}
