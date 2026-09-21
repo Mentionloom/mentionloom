@@ -76,7 +76,7 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000);
     try {
-      const response = await fetch("/api/waitlist", {
+      const response = await fetch("https://osksnjqaxbqjcoqytflp.supabase.co/functions/v1/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, ...payload }),
