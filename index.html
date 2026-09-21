@@ -449,6 +449,10 @@
               </p>
             </div>
             <div class="source-visual">
+              <div class="source-loading" data-source-loading hidden>
+                <span class="source-loading-spinner" aria-hidden="true"></span>
+                <span>Loading pages…</span>
+              </div>
               <div class="visual-table-head">
                 <span>Your pages</span><span>Citations</span>
               </div>
@@ -499,8 +503,15 @@
             </div>
             <div class="action-visual">
               <div class="action-card-heading">
-                <span class="badge purple">Comparison gap</span
-                ><span
+                <span class="gap-status">
+                  <span class="badge purple" data-gap-badge>Comparison gap</span>
+                  <span class="gap-resolution" aria-hidden="true">
+                    <span class="gap-brand gap-brand-asana"><img src="/assets/brands/asana.svg" width="22" height="22" alt="" /></span>
+                    <span class="gap-brand gap-brand-acme"><img src="/assets/brands/acme.svg" width="22" height="22" alt="" /></span>
+                    <strong>Gap closed</strong>
+                  </span>
+                </span>
+                <span
                   ><svg class="icon" aria-hidden="true">
                     <use href="/assets/icons/lucide.svg#i-clock" />
                   </svg>
@@ -511,7 +522,7 @@
               <p>“What is a simpler alternative to Asana?”</p>
               <div class="action-checks">
                 <label class="choice"
-                  ><input type="checkbox" checked /> Compare setup and
+                  ><input type="checkbox" /> Compare setup and
                   collaboration</label
                 ><label class="choice"
                   ><input type="checkbox" /> Answer who your product is
@@ -521,9 +532,12 @@
                   pages</label
                 >
               </div>
+              <span class="demo-cursor" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 3.5 18.5 13l-5.6 1.15-2.55 5.1L5 3.5Z" fill="white" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>
+              </span>
               <div class="brief-progress">
-                <span id="brief-count">1 of 3 brief items ready</span>
-                <div><span id="brief-bar" style="width: 33.33%"></span></div>
+                <span id="brief-count">0 of 3 brief items ready</span>
+                <div><span id="brief-bar" style="width: 0%"></span></div>
               </div>
             </div>
           </article>
@@ -542,11 +556,19 @@
               </p>
             </div>
             <div class="shortlist-visual">
-              <div class="shortlist-question">
+              <div class="shortlist-question" aria-label="What should our team use?">
                 <svg class="icon" aria-hidden="true">
                   <use href="/assets/icons/lucide.svg#i-chat" />
                 </svg>
-                “What should our team use?”
+                <span data-shortlist-question>“What should our team use?”</span>
+                <i class="typing-caret" aria-hidden="true"></i>
+              </div>
+              <div class="shortlist-ai-thinking" data-shortlist-thinking hidden>
+                <svg class="icon" aria-hidden="true">
+                  <use href="/assets/icons/lucide.svg#i-spark" />
+                </svg>
+                <span>Thinking</span>
+                <span class="thinking-dots" aria-hidden="true"><i></i><i></i><i></i></span>
               </div>
               <div class="shortlist-brands">
                 <span
