@@ -916,29 +916,13 @@
         </form>
       </div>
       <div data-waitlist-stage="success" hidden>
-        <div class="waitlist-next">
-          <div>
-            <span>01</span>
-            <p>
-              <strong>We’re building with intention.</strong> Your input helps
-              us focus on the useful things.
-            </p>
-          </div>
-          <div>
-            <span>02</span>
-            <p>
-              <strong>Your invitation comes next.</strong> We’ll email as access
-              opens. There’s nothing else you need to do.
-            </p>
-          </div>
-        </div>
-        <div class="waitlist-share">
-          <img class="waitlist-brand-mark" src="/assets/dark-ml.svg" alt="Mentionloom" />
-          <div>
-            <strong>Know someone who’d get it?</strong>
-            <p>Give them a first look, too.</p>
-          </div>
-          <button class="button" id="share-waitlist">Copy invite link</button>
+        <div class="waitlist-saved">
+          <span class="check-circle">
+            <svg class="icon" aria-hidden="true">
+              <use href="/assets/icons/lucide.svg#i-check" />
+            </svg>
+          </span>
+          <span><strong>You’re in.</strong><br />Your email is saved for early access.</span>
         </div>
         <div class="waitlist-management" hidden>
           <button class="text-link" id="save-signup-link">
@@ -959,20 +943,13 @@
         <input id="copy-fallback" readonly aria-label="Link to copy" hidden />
         <p class="waitlist-error" id="manage-error" role="alert" hidden></p>
         <div id="remove-confirm" hidden>
-          <p>Remove your email and preferences from the waitlist?</p>
+          <p>Remove your email from the waitlist?</p>
           <div>
-            <button class="button" id="keep-signup">Keep my place</button
-            ><button class="button" id="confirm-remove">
-              Yes, remove my signup
-            </button>
+            <button class="button" id="keep-signup">Keep my place</button>
+            <button class="button" id="confirm-remove">Yes, remove my signup</button>
           </div>
         </div>
-        <button class="button primary large" id="back-to-product">
-          Explore the full dashboard
-          <svg class="icon" aria-hidden="true">
-            <use href="/assets/icons/lucide.svg#i-arrow" />
-          </svg>
-        </button>
+        <button class="button primary large" id="close-success">Done</button>
       </div>
       <div data-waitlist-stage="removed" hidden>
         <div class="waitlist-saved">
@@ -985,7 +962,9 @@
           Back to Mentionloom
         </button>
       </div>
-      <div class="waitlist-privacy"><p>By joining, you accept our <a href="/privacy.html">privacy policy</a> and <a href="/terms.html">terms</a>.</p></div>
+      <div class="waitlist-privacy">
+        <p>By joining, you accept our <a href="/privacy.html">privacy policy</a> and <a href="/terms.html">terms</a>.</p>
+      </div>
     </dialog>
   </body>
 </html>
