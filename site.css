@@ -2275,9 +2275,6 @@
 .marketing-app .scene-cards button { pointer-events:auto; color:var(--text); text-align:left; font-family:inherit; }
 .marketing-app .globe-explore { position:absolute; inset:12%; border:0; border-radius:50%; background:transparent; cursor:pointer; }
 .marketing-app .globe-pin {
-  --pin-x:50%;
-  --pin-y:50%;
-  --pin-scale:1;
   position:absolute;
   left:0;
   top:0;
@@ -2293,13 +2290,11 @@
   box-shadow:0 0 0 1px var(--border);
   z-index:4;
   opacity:1;
-  transform:translate(var(--pin-x),var(--pin-y)) translate(-50%,-50%) scale(var(--pin-scale));
-  transition:background-color 160ms ease,box-shadow 160ms ease,opacity 120ms ease,transform 160ms ease;
+  transition:background-color 160ms ease,box-shadow 160ms ease,opacity 120ms ease;
 }
 .marketing-app .globe-pin::before { content:''; position:absolute; inset:-10px; }
-.marketing-app .globe-pin span { display:none; }
+.marketing-app .globe-pin > * { display:none !important; }
 .marketing-app .globe-pin[aria-pressed="true"] {
-  --pin-scale:1.08;
   background:#1aa66a;
   box-shadow:0 0 0 5px #dff6ea,0 0 0 6px #9bd8b7;
 }
