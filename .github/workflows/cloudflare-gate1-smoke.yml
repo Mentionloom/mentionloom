@@ -1,0 +1,84 @@
+name: Cloudflare Gate 1 smoke
+
+on:
+  push:
+    branches:
+      - ops/cloudflare-gate1-smoke
+
+permissions:
+  contents: read
+
+jobs:
+  gate1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify health, auth session and workspace persistence
+        shell: bash
+        env:
+          BASE_URL: https://mentionloom.giovanittier.workers.dev
+        run: |
+          set -euo pipefail
+
+          EMAIL="mentionloom-gate1-${GITHUB_RUN_ID}@example.com"
+          PASSWORD="Gate1-${GITHUB_RUN_ID}-Qz7!"
+          WORKSPACE_SLUG="gate1-${GITHUB_RUN_ID}"
+          COOKIE_JAR="${RUNNER_TEMP}/mentionloom-cookies.txt"
+
+          echo "Checking health..."
+          HEALTH="$(curl --fail-with-body -sS "${BASE_URL}/api/health")"
+          echo "${HEALTH}" | jq .
+          echo "${HEALTH}" | jq -e '.ok == true and .databaseConfigured == true and .workerConfigured == true' >/dev/null
+
+          echo "Signing up disposable smoke-test user..."
+          SIGNUP="$(curl --fail-with-body -sS \
+            -c "${COOKIE_JAR}" -b "${COOKIE_JAR}" \
+            -H "Origin: ${BASE_URL}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -nc --arg email "${EMAIL}" --arg password "${PASSWORD}" '{email:$email,password:$password}')" \
+            "${BASE_URL}/api/auth/sign-up")"
+          echo "${SIGNUP}" | jq .
+          echo "${SIGNUP}" | jq -e '.ok == true' >/dev/null
+
+          echo "Signing out to force the explicit sign-in path..."
+          curl --fail-with-body -sS \
+            -c "${COOKIE_JAR}" -b "${COOKIE_JAR}" \
+            -H "Origin: ${BASE_URL}" \
+            -X POST "${BASE_URL}/api/auth/sign-out" | jq .
+
+          echo "Signing in..."
+          SIGNIN="$(curl --fail-with-body -sS \
+            -c "${COOKIE_JAR}" -b "${COOKIE_JAR}" \
+            -H "Origin: ${BASE_URL}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -nc --arg email "${EMAIL}" --arg password "${PASSWORD}" '{email:$email,password:$password}')" \
+            "${BASE_URL}/api/auth/sign-in")"
+          echo "${SIGNIN}" | jq .
+          echo "${SIGNIN}" | jq -e '.ok == true and .user.id != null' >/dev/null
+
+          echo "Creating workspace..."
+          CREATE="$(curl --fail-with-body -sS \
+            -c "${COOKIE_JAR}" -b "${COOKIE_JAR}" \
+            -H "Origin: ${BASE_URL}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -nc --arg name "Gate 1 Smoke" --arg slug "${WORKSPACE_SLUG}" '{name:$name,slug:$slug}')" \
+            "${BASE_URL}/api/workspaces")"
+          echo "${CREATE}" | jq .
+          echo "${CREATE}" | jq -e --arg slug "${WORKSPACE_SLUG}" '.ok == true and .workspace.slug == $slug' >/dev/null
+
+          echo "Reloading session using only persisted cookies..."
+          SESSION="$(curl --fail-with-body -sS \
+            -c "${COOKIE_JAR}" -b "${COOKIE_JAR}" \
+            "${BASE_URL}/api/auth/session")"
+          echo "${SESSION}" | jq .
+          echo "${SESSION}" | jq -e '.ok == true and .authenticated == true and .user.id != null' >/dev/null
+
+          echo "Reading workspaces after reload..."
+          WORKSPACES="$(curl --fail-with-body -sS \
+            -c "${COOKIE_JAR}" -b "${COOKIE_JAR}" \
+            "${BASE_URL}/api/workspaces")"
+          echo "${WORKSPACES}" | jq .
+          echo "${WORKSPACES}" | jq -e --arg slug "${WORKSPACE_SLUG}" \
+            '.ok == true and any(.workspaces[]; .slug == $slug and .role == "owner")' >/dev/null
+
+          echo "Gate 1 passed."
