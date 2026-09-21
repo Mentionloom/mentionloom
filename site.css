@@ -4117,12 +4117,16 @@
    Structural cards stay fixed; only their contents/data animate. */
 .marketing-app #insights .feature-card.motion-card-armed,
 .marketing-app #insights .feature-card.motion-card-armed:not(.card-visible),
-.marketing-app #insights .feature-card.motion-card-armed.card-visible {
+.marketing-app #insights .feature-card.motion-card-armed.card-visible,
+.marketing-app #approach .clearer-step.motion-card-armed,
+.marketing-app #approach .clearer-step.motion-card-armed:not(.card-visible),
+.marketing-app #approach .clearer-step.motion-card-armed.card-visible {
   opacity:1;
   transform:none;
   animation:none;
 }
-.marketing-app #insights .feature-card {
+.marketing-app #insights .feature-card,
+.marketing-app #approach .clearer-step {
   contain:layout paint;
 }
 .marketing-app #insights .source-visual,
