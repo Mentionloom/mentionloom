@@ -295,24 +295,28 @@ try {
   await enhance($(".faq-list"));
   await enhance($("#opportunity-rows"));
   window.OrbitMotion.prepare($(".story-nav"));
-  // Animate on entry once; content stays visible without JS or motion support.
+  // Build and animate components only as they enter the viewport.
+  const revealTargets = [
+    ...document.querySelectorAll(
+      "#product .section-heading,.story-nav,.product-stage,.value-trio>div,#insights .section-heading,.feature-card,#approach .section-heading,.steps-grid article,#faq>div,.faq-list details,.early-access-card",
+    ),
+  ];
+  revealTargets.forEach((el) => el.setAttribute("data-reveal", ""));
   document.body.classList.add("motion-ready");
+
   const reveal = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
         if (!isIntersecting) continue;
         reveal.unobserve(target);
-        target.classList.add("step-revealed");
+        target.classList.add("is-visible", "step-revealed");
         if (!paused && !reduced.matches) window.OrbitMotion.enter(target);
       }
     },
-    { threshold: 0.12 },
+    { threshold: 0.14, rootMargin: "0px 0px -8% 0px" },
   );
-  document
-    .querySelectorAll(
-      ".feature-card,.steps-grid article,.early-access-card,#insights .section-heading,#approach .section-heading",
-    )
-    .forEach((el) => reveal.observe(el));
+  revealTargets.forEach((el) => reveal.observe(el));
+
   // Looping motion only runs while its section is on screen.
   const inView = new IntersectionObserver(
     (entries) => {
@@ -320,11 +324,11 @@ try {
         target.dataset.inView = String(isIntersecting);
       }
     },
-    { threshold: 0 },
+    { threshold: 0.08 },
   );
   document
     .querySelectorAll(
-      "#approach,#insights,.provider-strip,.closing-footer,.discovery-scene",
+      "#product,#approach,#insights,.provider-strip,.discovery-scene,.early-access-section",
     )
     .forEach((el) => inView.observe(el));
 } catch (error) {
