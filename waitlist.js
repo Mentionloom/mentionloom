@@ -14,9 +14,9 @@
   } catch {}
   const copy = {
     signup: [
-      "GET EARLY ACCESS",
-      "Your next move<br>starts here.",
-      "Join the waitlist to understand where your brand appears in AI answers. We’ll email you when access opens.",
+      "EARLY ACCESS",
+      "Join Mentionloom<br>early access.",
+      "See where your brand appears in AI answers—and what to improve when it doesn’t. We’ll email you when access opens.",
     ],
     profile: [
       "Your place is saved",
@@ -24,9 +24,9 @@
       "What brings you here? Help us make Mentionloom useful for the way you work.",
     ],
     success: [
-      "YOUR PLACE IS SAVED",
+      "YOU’RE IN",
       "You’re on<br>the waitlist.",
-      "We’ll email your invitation as access opens. In the meantime, explore what we’re building.",
+      "Your email is saved. We’ll email you when access opens—nothing else to fill out.",
     ],
     removed: [
       "All taken care of",
@@ -205,7 +205,7 @@
           attribution: attribution(),
         });
         remember(data.token || "");
-        show(token ? "profile" : "success");
+        show("success");
       },
     );
   });
@@ -244,7 +244,7 @@
       $("#copy-status").textContent = "Copy the selected link below.";
     }
   }
-  $("#share-waitlist").addEventListener("click", () =>
+  $("#share-waitlist")?.addEventListener("click", () =>
     copyLink(
       `${location.origin}/?ref=waitlist`,
       "Invite link copied. Share it with someone who’d find this useful.",
@@ -276,10 +276,11 @@
       show("removed");
     }),
   );
-  $("#back-to-product").addEventListener("click", () => {
+  $("#back-to-product")?.addEventListener("click", () => {
     dialog.close();
     location.assign("/app/");
   });
+  $("#close-success")?.addEventListener("click", () => dialog.close());
   $("#close-removed").addEventListener("click", () => dialog.close());
   if (location.hash.startsWith("#signup=")) {
     const candidate = location.hash.slice(8);
