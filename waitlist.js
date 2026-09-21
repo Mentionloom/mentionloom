@@ -159,6 +159,11 @@
   document.querySelectorAll("[data-join]").forEach((button) =>
     button.addEventListener("click", (event) => {
       event.preventDefault();
+      try {
+        window.kobbe?.track?.("waitlist_click", {
+          source: String(button.dataset.join || "direct").slice(0, 120),
+        });
+      } catch {}
       open(button.dataset.join);
     }),
   );
