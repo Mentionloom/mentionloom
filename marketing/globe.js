@@ -33,7 +33,6 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
 
   const resize = new ResizeObserver(() => {
     size = Math.max(240, wrap.clientWidth);
-    globe?.update({ width: size, height: size });
     if (fallback) {
       fallback.width = size * dpr;
       fallback.height = size * dpr;
@@ -85,7 +84,6 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   }
 
   function renderOrientation() {
-    globe?.update({ phi, theta });
     drawFallback();
     positionPins();
   }
@@ -146,13 +144,13 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         void startFallback();
         return;
       }
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
 
       const markerSizes = [.035, .03, .026, .028, .03, .028, .026, .028];
       globe = createGlobe(canvas, {
-        context,
         devicePixelRatio: dpr,
-        width: measure(),
-        height: measure(),
+        width: measure,
+        height: measure,
         phi,
         theta,
         dark: 0,
@@ -177,6 +175,12 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         arcWidth: 0.5,
         arcHeight: 0.22,
         opacity: 1,
+        onRender: (state) => {
+          state.phi = phi;
+          state.theta = theta;
+          state.width = measure();
+          state.height = measure();
+        },
       });
       wrap.classList.add("globe-ready");
       renderOrientation();
