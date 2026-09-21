@@ -405,11 +405,3 @@ $('#scene-detail').addEventListener('close', scheduleScene);
 document.addEventListener('visibilitychange', scheduleScene);
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
-
-
-  });
-}
-window.addEventListener("scroll", requestFooterSync, { passive: true });
-window.addEventListener("resize", requestFooterSync);
-window.addEventListener("pageshow", requestFooterSync);
-syncFooterFlush();
