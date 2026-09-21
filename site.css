@@ -3457,6 +3457,10 @@
   width:100%;
   height:100%;
 }
+.marketing-app .action-fluid-orb.fluid-orb-fallback {
+  background:radial-gradient(circle at 34% 27%,#fff 0 24%,#f2f6ff 46%,#dbe7fb 70%,#b9cdf3 100%);
+  box-shadow:inset 18px 14px 34px rgba(255,255,255,.85),0 18px 34px rgba(77,119,194,.10);
+}
 .marketing-app #approach[data-motion-state="running"] .action-fluid-orb,
 .marketing-app #approach[data-motion-state="complete"] .action-fluid-orb {
   opacity:.92;
