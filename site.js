@@ -355,8 +355,8 @@ function chart(animateChart = false) {
       animate(
         outgoingGroup,
         [
-          { opacity: 0.48, transform: "translateY(0)" },
-          { opacity: 0, transform: "translateY(5px)" },
+          { opacity: 0.48 },
+          { opacity: 0 },
         ],
         300,
         { fill: "both" },
@@ -390,16 +390,11 @@ function chart(animateChart = false) {
         650,
         { delay: 140, fill: "backwards" },
       );
+    [...svg.querySelectorAll(".plot-grid,.plot-axis")].forEach((el, index) =>
+      microReveal(el, 25 + index * 18, 220, 1, 0.38),
+    );
     [$("#chart-cursor"), $("#chart-dot")].forEach((el, index) =>
-      animate(
-        el,
-        [
-          { opacity: 0, transform: "translateY(4px) scale(.92)" },
-          { opacity: 1, transform: "translateY(0) scale(1)" },
-        ],
-        240,
-        { delay: 760 + index * 35, fill: "backwards" },
-      ),
+      microReveal(el, 760 + index * 35, 220, index ? 0.82 : 1, 0.45),
     );
   }
 
@@ -475,16 +470,15 @@ function render(initialReport, animateChart = false) {
     requestAnimationFrame(() =>
       requestAnimationFrame(() =>
         rows.forEach((row, index) => {
+          const delay = 95 + index * 62;
           row.style.setProperty("--share", row.dataset.share);
-          animate(
-            row,
-            [
-              { opacity: 0, transform: "translateY(6px)" },
-              { opacity: 1, transform: "translateY(0)" },
-            ],
-            300,
-            { delay: 90 + index * 55, fill: "backwards" },
-          );
+          microReveal(row.querySelector(":scope > span"), delay, 250, 0.975, 0.5);
+          microReveal(row.querySelector(":scope > b"), delay + 32, 220, 0.96, 0.45);
+          microReveal(row.querySelector("img,.acme-mark"), delay + 12, 230, 0.88, 0.5);
+          setTimeout(() => {
+            const value = row.querySelector(":scope > b");
+            if (value && ready && !paused) number(value, row.dataset.share);
+          }, delay);
         }),
       ),
     );
@@ -621,6 +615,31 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
+function microReveal(el, delay = 0, duration = 260, scale = 0.985, fromOpacity = 0.55) {
+  if (!el) return;
+  animate(
+    el,
+    [
+      { opacity: fromOpacity, transform: `scale(${scale})` },
+      { opacity: 1, transform: "scale(1)" },
+    ],
+    duration,
+    { delay, fill: "backwards" },
+  );
+}
+
+function microRevealMany(elements, delay = 0, step = 45, options = {}) {
+  [...elements].forEach((el, index) =>
+    microReveal(
+      el,
+      delay + index * step,
+      options.duration ?? 260,
+      options.scale ?? 0.985,
+      options.opacity ?? 0.55,
+    ),
+  );
+}
+
 let productMotionPlayed = false;
 function playProductMotion() {
   const stage = $(".product-stage");
@@ -630,44 +649,45 @@ function playProductMotion() {
 
   if (reduced.matches || paused || !window.OrbitMotion) return;
 
-  const enter = (el, delay = 0, distance = 7, duration = 300, scale = 0.995) => {
-    if (!el) return;
-    animate(
-      el,
-      [
-        { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
-        { opacity: 1, transform: "translateY(0) scale(1)" },
-      ],
-      duration,
-      { delay, fill: "backwards" },
-    );
-  };
+  // Keep the shell completely stable. Animate the information inside it.
+  const company = stage.querySelector(".sample-company");
+  microReveal(company?.querySelector(".acme-mark"), 0, 240, 0.9, 0.6);
+  microReveal(company?.querySelector("strong"), 35, 220, 1, 0.5);
+  microReveal(company?.querySelector("span:not(.acme-mark)"), 70, 220, 1, 0.5);
 
-  // The shell appears immediately, then the actual data resolves inside it.
-  enter(stage, 0, 10, 340, 0.996);
-  enter(stage.querySelector(".stage-toolbar"), 35, 6, 260, 0.998);
-  enter(stage.querySelector(".engine-controls"), 85, 6, 260, 0.998);
+  microRevealMany(stage.querySelectorAll(".engine-controls [data-engine]"), 80, 34, {
+    duration: 230,
+    scale: 0.94,
+    opacity: 0.5,
+  });
 
   const metric = stage.querySelector(".visibility-metric");
-  enter(metric?.querySelector(":scope > span"), 130, 5, 240, 1);
-  enter(metric?.querySelector(":scope > div"), 175, 7, 280, 0.997);
-  enter(metric?.querySelector(":scope > p"), 220, 5, 240, 1);
+  microReveal(metric?.querySelector(":scope > span"), 145, 220, 1, 0.48);
+  microReveal(metric?.querySelector(":scope > div > strong"), 175, 280, 0.965, 0.5);
+  microReveal(metric?.querySelector(":scope > div > .delta"), 215, 220, 0.9, 0.45);
+  microReveal(metric?.querySelector(":scope > p"), 245, 220, 1, 0.5);
 
-  enter(stage.querySelector(".competitor-panel .panel-title"), 190, 5, 250, 1);
-  enter(stage.querySelector(".competitor-panel > p"), 235, 5, 240, 1);
-  enter(stage.querySelector(".chart-legend"), 390, 5, 250, 1);
-  enter(stage.querySelector(".stage-bottom"), 455, 5, 260, 1);
+  const panel = stage.querySelector(".competitor-panel");
+  microReveal(panel?.querySelector(".panel-title h3"), 190, 230, 1, 0.48);
+  microReveal(panel?.querySelector(".panel-title > .icon"), 220, 230, 0.88, 0.45);
+  microReveal(panel?.querySelector(":scope > p"), 250, 220, 1, 0.5);
 
-  // Re-render once on first viewport entry so the number, chart and ranked bars
-  // visibly build instead of already being in their final state.
+  microRevealMany(stage.querySelectorAll(".chart-legend > span"), 430, 45, {
+    duration: 220,
+    scale: 0.98,
+    opacity: 0.5,
+  });
+  microReveal(stage.querySelector(".stage-bottom .text-link"), 500, 240, 0.98, 0.5);
+
+  // Build the data itself: roll the metric, draw the chart, grow ranked bars.
   setTimeout(() => {
     if (!stage.isConnected) return;
     render(report, true);
-  }, 115);
+  }, 95);
 
   setTimeout(() => {
     stage.dataset.motionState = "complete";
-  }, 1050);
+  }, 980);
 }
 
 let insightsMotionPlayed = false;
@@ -680,15 +700,7 @@ function playInsightsMotion() {
 
   const enter = (el, delay = 0, distance = 8, duration = 360, scale = 0.992) => {
     if (!el) return;
-    animate(
-      el,
-      [
-        { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
-        { opacity: 1, transform: "translateY(0) scale(1)" },
-      ],
-      duration,
-      { delay, fill: "backwards" },
-    );
+    microReveal(el, delay, duration, scale, 0.5);
   };
   const enterMany = (elements, delay = 0, step = 70, options = {}) => {
     [...elements].forEach((el, index) =>
@@ -856,15 +868,7 @@ function playApproachMotion() {
 
   const enter = (el, delay = 0, distance = 8, duration = 360, scale = 0.992) => {
     if (!el) return;
-    animate(
-      el,
-      [
-        { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
-        { opacity: 1, transform: "translateY(0) scale(1)" },
-      ],
-      duration,
-      { delay, fill: "backwards" },
-    );
+    microReveal(el, delay, duration, scale, 0.5);
   };
   const enterMany = (elements, delay = 0, step = 70, options = {}) => {
     [...elements].forEach((el, index) =>
@@ -995,28 +999,7 @@ function playApproachMotion() {
   }, 2920);
 }
 
-// Viewport motion is independent from Orbit so product content can never disappear
-// just because an enhancement module fails.
-if ("IntersectionObserver" in window) {
-  const buildSections = [$("#insights"), $("#approach")].filter(Boolean);
-  const sectionBuild = new IntersectionObserver(
-    (entries) => {
-      for (const { target, isIntersecting } of entries) {
-        target.dataset.inView = String(isIntersecting);
-        if (!isIntersecting || target.classList.contains("has-built")) continue;
-        target.classList.add("has-built");
-        requestAnimationFrame(() => target.classList.add("build-visible"));
-      }
-    },
-    { threshold: 0.16, rootMargin: "0px 0px -6% 0px" },
-  );
-  buildSections.forEach((section) => {
-    section.classList.add("motion-armed");
-    sectionBuild.observe(section);
-  });
-}
-
-try {
+// Product structures stay rendered at all times. Viewport observers below only animate their internal content.\n\ntry {
   await initializeOrbit();
   ready = true;
   await enhance($(".engine-controls"));
@@ -1063,51 +1046,67 @@ try {
     productObserver.observe(productStage);
   }
 
-  // Fast, consistent viewport motion for the rest of the marketing page.
-  // Complex product/insight/workflow sections keep their bespoke build animations;
-  // everything else gets the same restrained 280ms Syntari entrance.
-  const simpleReveal = new IntersectionObserver(
+  // Animate the content inside each visible structure rather than moving the
+  // structure itself. Content is always rendered; motion is a fast emphasis pass.
+  const revealPlans = new Map();
+  const registerReveal = (rootSelector, itemSelector, options = {}) => {
+    document.querySelectorAll(rootSelector).forEach((root) => {
+      revealPlans.set(root, { itemSelector, ...options });
+    });
+  };
+
+  registerReveal(
+    ".hero",
+    ".announcement,h1,.hero-copy,.hero-detail,.hero-actions .button,.hero-note",
+    { step: 45 },
+  );
+  registerReveal(
+    ".discovery-scene",
+    ".globe-pin,.question-float .card-label,.question-float>p,.question-tags>span,.answer-float .card-label,.answer-float>p,.answer-float .citation-pill,.signal-float>.icon,.signal-float strong,.signal-float span,.provider-node",
+    { step: 32, scale: 0.97 },
+  );
+  registerReveal(".provider-strip", ".provider-group>span", {
+    step: 28,
+    scale: 0.96,
+  });
+  registerReveal("#product .section-heading", ".eyebrow,h2,p", { step: 45 });
+  registerReveal("#product .story-nav", "button", { step: 38, scale: 0.96 });
+  registerReveal("#product .value-trio", ":scope>div>.icon,:scope>div>p", {
+    step: 42,
+    scale: 0.97,
+  });
+  registerReveal("#faq", ":scope>div:first-child .eyebrow,:scope>div:first-child h2,:scope>div:first-child p,.faq-list details", {
+    step: 38,
+    scale: 0.985,
+  });
+  registerReveal(
+    ".early-access-card",
+    ":scope>.eyebrow,:scope>h2,:scope>p,.hero-actions .button,.offer-notes>span",
+    { step: 42, scale: 0.975 },
+  );
+  registerReveal(
+    ".brand-footer",
+    ".brand-footer-label,.brand-footer-col a,.brand-footer-note,.brand-footer-meta>*,.brand-footer-logo",
+    { step: 30, scale: 0.98 },
+  );
+
+  const structureReveal = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
         if (!isIntersecting) continue;
-        simpleReveal.unobserve(target);
-        target.classList.add("is-visible");
-        if (!paused && !reduced.matches) window.OrbitMotion.enter(target);
+        structureReveal.unobserve(target);
+        const plan = revealPlans.get(target);
+        if (!plan || paused || reduced.matches) continue;
+        microRevealMany(target.querySelectorAll(plan.itemSelector), 0, plan.step ?? 40, {
+          duration: plan.duration ?? 250,
+          scale: plan.scale ?? 0.985,
+          opacity: plan.opacity ?? 0.55,
+        });
       }
     },
     { threshold: 0.1, rootMargin: "0px 0px -4% 0px" },
   );
-
-  const revealSelectors = [
-    ".hero > .announcement",
-    ".hero > h1",
-    ".hero > .hero-copy",
-    ".hero > .hero-detail",
-    ".hero > .hero-actions",
-    ".hero > .hero-note",
-    ".discovery-scene .globe-wrap",
-    ".discovery-scene .question-float",
-    ".discovery-scene .answer-float",
-    ".discovery-scene .signal-float",
-    ".discovery-scene .provider-node",
-    ".provider-strip .provider-marquee",
-    "#product .section-heading",
-    "#product .story-nav",
-    "#product .value-trio > div",
-    "#faq > div:first-child",
-    "#faq .faq-list details",
-    ".early-access-card > .eyebrow",
-    ".early-access-card > h2",
-    ".early-access-card > p",
-    ".early-access-card > .hero-actions",
-    ".early-access-card > .offer-notes",
-    ".brand-footer-col",
-    ".brand-footer-note",
-    ".brand-footer-meta",
-    ".brand-footer-logo",
-  ].join(",");
-
-  document.querySelectorAll(revealSelectors).forEach((el) => simpleReveal.observe(el));
+  revealPlans.forEach((_, root) => structureReveal.observe(root));
 
   const inView = new IntersectionObserver(
     (entries) => {
