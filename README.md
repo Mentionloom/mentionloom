@@ -226,7 +226,7 @@ Production project:
 
 The repository moved from the personal `giovanitier/mentionloom` repository into the `Mentionloom` organization, and older deployments include historical personal-repository / CLI deployment metadata.
 
-As checked on **September 21, 2026**, the latest production deployment metadata now reports `githubOrg: Mentionloom`, `githubRepo: mentionloom`, branch `main`, and commit `847379da3da82a19bc7897434584b70b53b4ba9f`, which matched the repository's `main` head at the time of verification.
+As checked on **September 21, 2026**, the production deployment for this infrastructure foundation reached `READY` with `githubOrg: Mentionloom`, `githubRepo: mentionloom`, branch `main`, and commit `909f228dc1e6aa2269acfd030eb625fffc6db61a`. This confirms the current Git integration is deploying from the organization repository.
 
 The operational rule remains: **never assume a GitHub push is live**. For every production release, verify the Vercel deployment is `READY`, its Git organization/repository are `Mentionloom/mentionloom`, and its deployed commit SHA matches the intended `main` commit. CLI deployments and historical metadata make the commit check authoritative.
 
