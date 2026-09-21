@@ -56,6 +56,16 @@ import {
 } from "./lib/navigation.js";
 
 const $ = (s) => document.querySelector(s);
+const onboardingPrototype = load("onboarding-prototype-v2", null);
+let firstReportMode = Boolean(
+  onboardingPrototype?.company &&
+  onboardingPrototype?.run?.status === "complete" &&
+  !load("first-report-dismissed", false),
+);
+const workspaceBrand =
+  firstReportMode && onboardingPrototype?.company?.brand
+    ? onboardingPrototype.company.brand
+    : "Acme";
 const state = { ...parseState(location.search), ...parseTrafficState(location.search) };
 let currentView = resolveView(location);
 state.metric = metricForView(currentView, state.metric);
@@ -128,8 +138,10 @@ function showPage({ focus = false } = {}) {
   filters?.close();
   $('#traffic-milestones').hidden = currentView !== 'traffic';
   const product = currentView === "addons" ? addonFromPath(location.pathname) : null;
-  document.title = `${product?.name || VIEWS[currentView]} · Acme · Mentionloom`;
+  document.title = `${product?.name || VIEWS[currentView]} · ${workspaceBrand} · Mentionloom`;
   $("#page-title").textContent = product?.name || VIEWS[currentView];
+  $("#first-report").hidden = !(firstReportMode && currentView === "overview");
+  document.body.classList.toggle("first-report-mode", firstReportMode && currentView === "overview");
   $("#next-move").hidden = currentView !== "overview";
   $("#recommendation-summary").hidden = !["overview", "questions"].includes(currentView);
   $("#overview-next").hidden = currentView !== "overview";
@@ -212,10 +224,99 @@ function update(patch) {
     currentView === "traffic" ? `Showing ${trafficData.current.referrals} visits, ${sourceLabel(state.source)}, ${countryLabel(state.country)}, ${state.device || "all devices"}.` :
     `Showing ${state.days} days, ${state.engine ? engine(state.engine).name : "all engines"}, ${state.topic || "all topics"}. ${fmt(data.current.samples)} answers.`;
 }
+function renderFirstReport(intelligence) {
+  const root = $("#first-report");
+  if (!root) return;
+  if (!(firstReportMode && currentView === "overview" && onboardingPrototype?.company)) {
+    root.hidden = true;
+    return;
+  }
+  root.hidden = false;
+  const company = onboardingPrototype.company;
+  const selectedQuestions = (onboardingPrototype.questions || []).filter((q) => q.selected);
+  const selectedCompetitors = (onboardingPrototype.competitors || []).filter((c) => c.selected);
+  const question =
+    selectedQuestions.find((q) => q.intent === "Discovery" && /best|which|tools|compare/i.test(q.text)) ||
+    selectedQuestions[0];
+  const competitor = selectedCompetitors[0];
+  const lostShare = intelligence.samples
+    ? intelligence.lostAnswers / intelligence.samples * 100
+    : 0;
+  const totalAnswers =
+    selectedQuestions.length && onboardingPrototype.run?.providerCounts
+      ? onboardingPrototype.run.providerCounts.reduce((sum, value) => sum + value, 0)
+      : intelligence.samples;
+
+  root.innerHTML = `
+    <div class="first-report-hero">
+      <div>
+        <div class="first-report-badges">
+          <span class="badge green">Baseline complete</span>
+          <span class="badge neutral">First report</span>
+          <span class="badge neutral">Prototype data</span>
+        </div>
+        <h2>Here is where ${esc(company.brand)} is winning — and where it is losing.</h2>
+        <p>Your baseline is now part of Mentionloom. Start with the biggest recommendation gap, inspect the evidence behind it, then turn it into an improvement you can re-measure.</p>
+      </div>
+      <button class="button ghost" type="button" data-action="first-report-dismiss">Continue to full overview${icon("right")}</button>
+    </div>
+
+    <div class="first-report-metrics">
+      <button class="first-report-metric" type="button" data-action="recommendation-details">
+        <span>AI Recommendation Share</span>
+        <strong>${pct(intelligence.share)}</strong>
+        <small>${fmt(intelligence.recommendations)} of ${fmt(intelligence.samples)} sampled answers shortlisted or recommended you.</small>
+        ${icon("right")}
+      </button>
+      <button class="first-report-metric loss" type="button" data-action="lost-questions">
+        <span>Lost Recommendation Share</span>
+        <strong>${pct(lostShare)}</strong>
+        <small>${fmt(intelligence.lostAnswers)} answers recommended or shortlisted competitors while you were absent.</small>
+        ${icon("right")}
+      </button>
+    </div>
+
+    <div class="first-report-start">
+      <div class="first-report-start-copy">
+        <span class="first-report-label">Start here</span>
+        <h3>${esc(question?.text || "Open your highest-impact losing question")}</h3>
+        <p>${competitor ? `${esc(competitor.name)} appears in the competitive set for this baseline. ` : ""}Open the losing questions to see the answer evidence and recurring citation patterns before deciding what to change.</p>
+        <div class="first-report-actions">
+          <button class="button primary" type="button" data-action="lost-questions">Open losing questions${icon("right")}</button>
+          <button class="button" type="button" data-action="growth-improve">View opportunities</button>
+        </div>
+      </div>
+      <div class="first-report-scope">
+        <span>Baseline scope</span>
+        <strong>${selectedQuestions.length || intelligence.questions} questions</strong>
+        <small>${selectedCompetitors.length} competitors · 4 providers · ${fmt(totalAnswers)} answers</small>
+      </div>
+    </div>
+
+    <div class="first-report-discovery" aria-label="How to use Mentionloom after your baseline">
+      <div class="first-report-step current"><span>1</span><div><strong>Overview</strong><small>What changed and where to start</small></div></div>
+      <span class="first-report-arrow">${icon("right")}</span>
+      <button class="first-report-step" type="button" data-route="questions"><span>2</span><div><strong>Questions</strong><small>Where you win and lose</small></div></button>
+      <span class="first-report-arrow">${icon("right")}</span>
+      <button class="first-report-step" type="button" data-action="lost-questions"><span>3</span><div><strong>Evidence</strong><small>Answers and citations</small></div></button>
+      <span class="first-report-arrow">${icon("right")}</span>
+      <button class="first-report-step" type="button" data-route="opportunities"><span>4</span><div><strong>Opportunities</strong><small>What to improve next</small></div></button>
+      <span class="first-report-arrow">${icon("right")}</span>
+      <div class="first-report-step"><span>5</span><div><strong>Re-measure</strong><small>See whether it moved</small></div></div>
+    </div>
+  `;
+
+  document.querySelectorAll(".page-navigation .nav-update").forEach((dot) => {
+    const link = dot.closest("[data-route]");
+    dot.hidden = !["questions", "opportunities"].includes(link?.dataset.route || "");
+  });
+}
+
 function render() {
   data = select(state);
   trafficData = selectTraffic(trafficScope());
   const intelligence = recommendationEvidence(data.a);
+  renderFirstReport(intelligence);
   $("#recommendation-summary").innerHTML = `<div class="mini-stats recommendation-stats">
     <button class="stat" data-action="recommendation-details"><span>Recommendation share${icon("right")}</span><strong>${pct(intelligence.share)}</strong></button>
     <button class="stat" data-action="lost-questions"><span>Lost questions${icon("right")}</span><strong>${intelligence.lostQuestions}<small> / ${intelligence.questions}</small></strong></button>
@@ -1087,6 +1188,17 @@ function exportTraffic() {
 }
 
 const actions = {
+  "first-report-dismiss": () => {
+    firstReportMode = false;
+    store("first-report-dismissed", true);
+    $("#first-report").hidden = true;
+    document.body.classList.remove("first-report-mode");
+    document.querySelectorAll(".page-navigation .nav-update").forEach((dot) => (dot.hidden = true));
+    $(".tour-launch")?.removeAttribute("hidden");
+    $("[data-action=\"setup\"]")?.removeAttribute("hidden");
+    toast("Your baseline is saved in Overview.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
   "recommendation-details": recommendationDetails,
   "lost-questions": lostQuestions,
   "tour-start": () => showTour(0),
@@ -1617,6 +1729,20 @@ try {
 }
 hydrate();
 installMenus();
+if (firstReportMode && onboardingPrototype?.company?.brand) {
+  const workspaceTrigger = document.querySelector('[data-menu="workspace-menu"]');
+  const workspaceLabel = workspaceTrigger?.querySelector("[data-select-label]");
+  if (workspaceLabel) workspaceLabel.textContent = onboardingPrototype.company.brand;
+  const mark = workspaceTrigger?.querySelector(".acme-mark");
+  if (mark) {
+    mark.classList.add("text-mark");
+    mark.innerHTML = `<span>${esc(onboardingPrototype.company.brand.slice(0, 1).toUpperCase())}</span>`;
+  }
+  const demoBadge = document.querySelector(".demo-badge");
+  if (demoBadge) demoBadge.textContent = "Prototype";
+  $(".tour-launch")?.setAttribute("hidden", "");
+  $("[data-action=\"setup\"]")?.setAttribute("hidden", "");
+}
 filters = createFilters({
   getState: () => state,
   onChange: update,
