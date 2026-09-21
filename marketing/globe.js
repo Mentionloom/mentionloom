@@ -108,6 +108,20 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       ctx.arc(p.x * size, p.y * size, r, 0, Math.PI * 2);
     }
     ctx.fill();
+
+    // Draw the country markers in the software fallback too.
+    const selected = pins.findIndex((pin) => pin.getAttribute("aria-pressed") === "true");
+    vectors.forEach((vector, index) => {
+      const p = projectVector(vector, phi, theta);
+      if (!p.visible) return;
+      ctx.beginPath();
+      ctx.fillStyle = index === selected ? "#1aa66a" : "#2f62d6";
+      ctx.arc(p.x * size, p.y * size, index === selected ? 5.5 : 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+    });
   }
 
   function renderOrientation() {
