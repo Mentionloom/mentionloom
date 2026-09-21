@@ -2560,3 +2560,225 @@
 .marketing-app :is(#approach,#insights,.closing-footer,.discovery-scene)[data-in-view="false"],
 .marketing-app :is(#approach,#insights,.closing-footer,.discovery-scene)[data-in-view="false"]::before,
 .marketing-app :is(#approach,#insights,.closing-footer,.discovery-scene)[data-in-view="false"]::after { animation-play-state:paused !important; }
+
+
+/* Mentionloom brand footer */
+.marketing-app .brand-footer {
+  margin: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f5fbff;
+}
+.marketing-app .brand-footer-shell {
+  position: relative;
+  overflow: hidden;
+  min-height: 610px;
+  padding: 70px clamp(28px, 6vw, 92px) 0;
+  border: 1px solid #0000d8;
+  border-radius: 26px;
+  background: #000036;
+}
+.marketing-app .brand-footer-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr .8fr 1.25fr;
+  gap: clamp(34px, 5vw, 80px);
+  align-items: start;
+}
+.marketing-app .brand-footer-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+}
+.marketing-app .brand-footer-label {
+  margin-bottom: 8px;
+  color: #7f92ff;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.marketing-app .brand-footer a {
+  color: #f5fbff;
+  text-decoration: none;
+}
+.marketing-app .brand-footer-col a {
+  font-size: 16px;
+  line-height: 1.35;
+  opacity: .82;
+  transition: opacity 150ms ease;
+}
+.marketing-app .brand-footer-col a:hover,
+.marketing-app .brand-footer-meta a:hover {
+  opacity: 1;
+}
+.marketing-app .brand-footer-note {
+  justify-self: end;
+  margin: 43px 0 0;
+  max-width: 260px;
+  color: #aeb9ff;
+  font-family: "Space Grotesk", var(--font-sans);
+  font-size: clamp(19px, 2vw, 27px);
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+.marketing-app .brand-footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 72px;
+  padding-top: 22px;
+  border-top: 1px solid #263078;
+  color: #7f8abf;
+  font-size: 11px;
+}
+.marketing-app .brand-footer-meta a {
+  color: inherit;
+  opacity: .82;
+}
+.marketing-app .brand-footer-logo {
+  display: block;
+  width: 100%;
+  margin-top: 62px;
+  transform: translateY(18px);
+}
+.marketing-app .brand-footer-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.marketing-app .early-access-section {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 48px;
+}
+.marketing-app .early-access-section + .brand-footer {
+  margin-top: 0;
+}
+
+/* Simple company / legal pages */
+.marketing-app.info-page {
+  min-height: 100vh;
+  background: #fff;
+}
+.marketing-app .info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 78px;
+}
+.marketing-app .info-header nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.marketing-app .info-header nav a {
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+.marketing-app .info-header nav a:hover {
+  color: var(--text);
+}
+.marketing-app .info-main {
+  width: min(820px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 92px 0 120px;
+}
+.marketing-app .info-hero {
+  padding-bottom: 58px;
+  border-bottom: 1px solid var(--border);
+}
+.marketing-app .info-hero h1 {
+  max-width: 760px;
+  margin: 18px 0 20px;
+  font-family: "Space Grotesk", var(--font-sans);
+  font-size: clamp(44px, 7vw, 76px);
+  line-height: .98;
+  letter-spacing: -.06em;
+}
+.marketing-app .info-hero > p {
+  max-width: 690px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.7;
+}
+.marketing-app .info-section {
+  padding: 42px 0 0;
+}
+.marketing-app .info-section h2 {
+  margin: 0 0 12px;
+  font-family: "Space Grotesk", var(--font-sans);
+  font-size: 25px;
+  letter-spacing: -.035em;
+}
+.marketing-app .info-section p,
+.marketing-app .info-section li {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.marketing-app .info-section p + p {
+  margin-top: 14px;
+}
+.marketing-app .info-list {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.marketing-app .info-list li {
+  padding: 15px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+}
+.marketing-app .info-contact-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 34px;
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--subtle);
+}
+.marketing-app .info-contact-card p {
+  margin: 0;
+}
+.marketing-app .info-date {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .marketing-app .brand-footer { margin: 8px; }
+  .marketing-app .brand-footer-shell {
+    min-height: 0;
+    padding: 44px 24px 0;
+    border-radius: 20px;
+  }
+  .marketing-app .brand-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px 24px;
+  }
+  .marketing-app .brand-footer-note {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 0;
+  }
+  .marketing-app .brand-footer-col a { font-size: 14px; }
+  .marketing-app .brand-footer-meta { margin-top: 48px; }
+  .marketing-app .brand-footer-logo { margin-top: 38px; transform: translateY(8px); }
+  .marketing-app .info-header nav { gap: 14px; }
+  .marketing-app .info-header nav a:nth-child(2) { display: none; }
+  .marketing-app .info-main { width: calc(100% - 40px); padding: 62px 0 84px; }
+  .marketing-app .info-hero { padding-bottom: 40px; }
+  .marketing-app .info-hero > p { font-size: 16px; }
+  .marketing-app .info-contact-card { align-items: flex-start; flex-direction: column; }
+}
