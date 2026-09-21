@@ -1,8 +1,18 @@
 name = "mentionloom"
+main = "./src/worker.js"
 compatibility_date = "2026-09-21"
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[vars]
+SUPABASE_URL = "https://osksnjqaxbqjcoqytflp.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_FaErssdYBg3diOnLO-RSYQ_NpLY5SFM"
+
+[triggers]
+crons = ["*/5 * * * *"]
 
 [observability]
 enabled = false

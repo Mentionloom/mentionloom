@@ -4,7 +4,7 @@ Mentionloom is an **AI Recommendation Intelligence** product concept for underst
 
 This repository contains the public marketing site, an interactive sample product workspace, the methodology page, a working early-access waitlist, and an experimental add-on marketplace.
 
-> **Data boundary:** the product workspace still uses illustrative sample data. The waitlist is real. An authenticated Postgres/workspace/queue foundation now exists in the repository, but it only becomes operational after the database migration and Vercel secrets are configured; it does not make the sample dashboard live.
+> **Data boundary:** the product workspace still uses illustrative sample data. The waitlist and Supabase database foundation are real. Cloudflare is the primary runtime; authenticated product APIs become operational once the required Worker secrets are configured. This does not make the sample dashboard live.
 
 ## Product surfaces
 
@@ -73,7 +73,7 @@ The live funnel has three stages:
 2. **Optional qualification** — website, role, goal, current tracking approach, and urgency.
 3. **Confirm and share** — public invite link plus a private signup-management link.
 
-Signups are stored in the private `mentionloom-waitlist` Vercel Blob store. The API includes bounded inputs, same-origin checks, a honeypot, persistent rate limiting, deduplication, ownership signatures, and safe retries.
+Signups are stored through the Supabase `waitlist` Edge Function in Postgres. The public form posts directly to that function; product authentication and workspace data remain separate.
 
 There is currently **no automated email campaign** and stored email addresses are **unverified**.
 
@@ -148,15 +148,12 @@ No runtime CDN request is required for those assets.
 
 ### Server
 
-- `api/waitlist.js` — Vercel waitlist endpoint.
-- `api/auth/*` — Supabase-backed sign-up, sign-in, sign-out, and session endpoints using HTTP-only cookies.
-- `api/workspaces.js` — authenticated workspace creation/listing.
-- `api/costs.js` — owner/admin monthly cost reporting from `cost_ledger`.
-- `api/worker.js` — protected background worker called by Vercel Cron.
-- `lib/auth.js`, `lib/workspaces.js`, `lib/queue.js`, `lib/cost-ledger.js` — product infrastructure primitives.
+- `src/worker.js` — Cloudflare Worker API router, auth/session endpoints, workspace APIs, cost reporting, queue endpoint, and scheduled queue processor.
+- `lib/supabase.js` — Supabase HTTP transport with modern publishable/secret key support and legacy-key fallback.
+- `lib/workspaces.js`, `lib/queue.js`, `lib/cost-ledger.js` — product infrastructure primitives.
 - `lib/provider-secrets.js` — server-only provider credential access.
-- `lib/waitlist.js` — validation, ownership, qualification, rate limiting, and request handling.
-- `lib/blob-store.js` — private Vercel Blob persistence.
+- `api/*` — retained Vercel fallback handlers; do not add new production runtime dependencies there.
+- `lib/waitlist.js` and `lib/blob-store.js` — legacy Vercel waitlist implementation retained for fallback/history.
 
 ### Product infrastructure foundation
 
@@ -166,11 +163,11 @@ It introduces:
 
 - Supabase Auth and Postgres-backed `users`, `workspaces`, and `workspace_members`;
 - real measurement entities for companies, competitors, question versions, runs, probes, raw answers, citations, classifications, snapshots, opportunities, and interventions;
-- a Postgres-backed `jobs` queue with atomic claiming, retries, stale-lease recovery, and a Vercel Cron worker;
+- a Postgres-backed `jobs` queue with atomic claiming, retries, stale-lease recovery, and a Cloudflare Cron worker;
 - a `cost_ledger` that attributes provider/runtime cost to workspace, run, and probe in micro-USD;
 - server-only environment variables for OpenAI, Claude, Gemini, and Perplexity.
 
-Browser clients do not receive the Supabase service-role key or provider credentials. Future workspace APIs must verify membership server-side before returning customer data.
+Browser clients do not receive the Supabase secret/service-role key or provider credentials. Workspace APIs verify membership server-side before returning customer data.
 
 This is intentionally a foundation, not a fake cutover: `app/lib/data.js` remains the sample source until live probe execution and authenticated product reads are wired in.
 
@@ -210,25 +207,26 @@ npm run build
 
 `build.mjs` creates `dist/`, copies the marketing and app source required at runtime, copies the complete installed Orbit component source, regenerates marketing assets, copies licenses, and creates static entry points for every app view and add-on detail route.
 
-Vercel is configured by `vercel.json` to run `npm run build` and publish `dist/`.
+Cloudflare Workers Static Assets publishes `dist/`, while `src/worker.js` handles `/api/*` and scheduled background work. `vercel.json` remains only for fallback deployment compatibility.
 
 ## Deployment
 
-Production project:
+Primary production deployment:
 
-- **Vercel project:** `mentionloom`
-- **Workspace:** `tier`
-- **Public URL:** https://mentionloom.vercel.app/
+- **Runtime:** Cloudflare Workers + Static Assets
+- **Worker:** `mentionloom`
 - **Repository:** https://github.com/Mentionloom/mentionloom
-- **Intended production branch:** `main`
+- **Production branch:** `main`
+- **Build:** `npm run build`
+- **Deploy:** `npx wrangler deploy`
+
+`wrangler.toml` binds `dist/` as static assets, routes `/api/*` through `src/worker.js`, and schedules the Postgres-backed queue every five minutes.
 
 ### Deployment caveat
 
-The repository moved from the personal `giovanitier/mentionloom` repository into the `Mentionloom` organization, and older deployments include historical personal-repository / CLI deployment metadata.
+Vercel remains connected as temporary fallback infrastructure, but it is no longer the authoritative runtime. Do not infer Cloudflare production state from a Vercel deployment.
 
-As checked on **September 21, 2026**, the production deployment for this infrastructure foundation reached `READY` with `githubOrg: Mentionloom`, `githubRepo: mentionloom`, branch `main`, and commit `909f228dc1e6aa2269acfd030eb625fffc6db61a`. This confirms the current Git integration is deploying from the organization repository.
-
-The operational rule remains: **never assume a GitHub push is live**. For every production release, verify the Vercel deployment is `READY`, its Git organization/repository are `Mentionloom/mentionloom`, and its deployed commit SHA matches the intended `main` commit. CLI deployments and historical metadata make the commit check authoritative.
+For every production release, verify the Cloudflare build/deploy completed from `Mentionloom/mentionloom` at the intended `main` commit. New backend/runtime work belongs in the Cloudflare Worker, not in Vercel Functions.
 
 ## Tests
 
@@ -249,7 +247,7 @@ The current test command covers:
 - local provider SVG coverage;
 - traffic metrics and filtering;
 - globe behavior;
-- infrastructure migration, server-secret contract, and protected cron-worker configuration.
+- infrastructure migration, Cloudflare Worker routing, server-secret contract, and scheduled queue configuration.
 
 The Orbit build test also verifies direct static entries for Overview, Visibility, Traffic, Questions, Opportunities, Add-ons, and the legacy Sources path.
 
