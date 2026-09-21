@@ -442,11 +442,11 @@
         <div class="section-heading">
           <span class="eyebrow">A CLEARER START</span>
           <h2>A clear path from question to action.</h2>
-          <p>From website to next move.</p>
+          
         </div>
         <div class="steps-grid">
           <article>
-            <button class="step-visual domain-visual" data-workflow="domain" aria-label="Preview website setup"><span class="workflow-window"><span class="workflow-address">acme.work <b>✓</b></span><span class="workflow-lines"><i></i><i></i><i></i></span><span class="workflow-result">Website mapped <b>12 pages</b></span></span></button>
+            <div class="step-visual domain-visual" aria-hidden="true"><span class="workflow-window"><span class="workflow-address">acme.work <b>✓</b></span><span class="workflow-lines"><i></i><i></i><i></i></span><span class="workflow-result">Website mapped <b>12 pages</b></span></span></div>
             <span class="step-number">01</span>
             <h3>Start with your company.</h3>
             <p>
@@ -454,7 +454,7 @@
             </p>
           </article>
           <article>
-            <button class="step-visual prompt-visual" data-workflow="prompt" aria-label="Preview question tracking"><span class="workflow-questions"><span>Best tools for a small team?<b>ChatGPT</b></span><span>Alternatives to Monday?<b>Claude</b></span><span>Which tool fits our budget?<b>Gemini</b></span></span></button>
+            <div class="step-visual prompt-visual" aria-hidden="true"><span class="workflow-questions"><span>Best tools for a small team?<b>ChatGPT</b></span><span>Alternatives to Monday?<b>Claude</b></span><span>Which tool fits our budget?<b>Gemini</b></span></span></div>
             <span class="step-number">02</span>
             <h3>Choose your questions.</h3>
             <p>
@@ -463,7 +463,7 @@
             </p>
           </article>
           <article>
-            <button class="step-visual insight-visual" data-workflow="insight" aria-label="Preview an opportunity"><span class="workflow-opportunity"><span class="workflow-result">Comparison gap <b>Found</b></span><strong>Make the shortlist.</strong><span class="workflow-lines"><i></i><i></i></span><span class="workflow-result">Create a comparison brief <b>↗</b></span></span></button>
+            <div class="step-visual insight-visual" aria-hidden="true"><span class="workflow-opportunity"><span class="workflow-result">Comparison gap <b>Found</b></span><strong>Make the shortlist.</strong><span class="workflow-lines"><i></i><i></i></span><span class="workflow-result">Create a comparison brief <b>↗</b></span></span></div>
             <span class="step-number">03</span>
             <h3>Turn the gap into a brief.</h3>
             <p>
@@ -473,7 +473,6 @@
           </article>
           <article><a class="step-visual measure-visual" href="/app/visibility/" aria-label="Explore follow-up measurement"><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-wave" /></svg><strong>Recheck the same questions</strong><small>Compare answers over time</small></span></a><span class="step-number">04</span><h3>Measure what changed.</h3><p>Review new samples after publishing. Track progress without assuming that your edit caused it.</p></article>
         </div>
-        <div id="workflow-preview" class="workflow-preview" hidden></div>
       </section>
 
       <section class="wrap evidence-workbench"><details><summary>Explore the evidence and working brief <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-plus" /></svg></summary><div class="feature-grid"><article class="feature-card source-card">
@@ -920,20 +919,7 @@
           Back to Mentionloom
         </button>
       </div>
-      <details class="waitlist-privacy">
-        <summary>
-          How we use your details<svg class="icon" aria-hidden="true">
-            <use href="/assets/icons/lucide.svg#i-down" />
-          </svg>
-        </summary>
-        <p>
-          We use your email for Mentionloom invitations and launch updates.
-          Optional website, role, and goal details help us plan the product. We
-          record the signup button and campaign source, and store your details
-          privately on Vercel. We don’t sell them. Save your private signup link
-          from the confirmation to remove your details whenever you like.
-        </p>
-      </details>
+      <div class="waitlist-privacy"><p>By joining, you accept our <a href="/privacy.html">privacy policy</a> and <a href="/terms.html">terms</a>.</p></div>
     </dialog>
   </body>
 </html>
