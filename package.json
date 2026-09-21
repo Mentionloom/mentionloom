@@ -10,7 +10,7 @@
     "waitlist:export": "node --env-file=.env.local scripts/export-waitlist.mjs",
     "dev": "node scripts/marketing-assets.mjs && node scripts/dev-server.mjs",
     "build:cloudflare": "npm run build",
-    "deploy:cloudflare": "npx wrangler@4.136.0 pages deploy dist --project-name=mentionloom"
+    "deploy:cloudflare": "npx wrangler@4.136.0 deploy"
   },
   "engines": {
     "node": "22.x"
