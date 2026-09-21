@@ -75,8 +75,9 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         return;
       }
       const point = projectVector(vector, phi, theta);
-      pin.style.setProperty("--pin-x", `${point.x * size}px`);
-      pin.style.setProperty("--pin-y", `${point.y * size}px`);
+      pin.style.left = "0px";
+      pin.style.top = "0px";
+      pin.style.transform = `translate(${point.x * size}px, ${point.y * size}px) translate(-50%, -50%)`;
       pin.style.opacity = point.visible ? "1" : "0";
       pin.style.pointerEvents = point.visible ? "auto" : "none";
       pin.style.visibility = point.visible ? "visible" : "hidden";
