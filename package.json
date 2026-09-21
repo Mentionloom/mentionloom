@@ -9,7 +9,8 @@
     "test": "node --test checks/waitlist.test.mjs checks/waitlist-api.test.mjs checks/dashboard.test.mjs checks/orbit.test.mjs checks/navigation.test.mjs checks/growth.test.mjs checks/addons.test.mjs checks/brands.test.mjs checks/traffic.test.mjs checks/globe.test.mjs checks/infrastructure.test.mjs",
     "waitlist:export": "node --env-file=.env.local scripts/export-waitlist.mjs",
     "dev": "node scripts/marketing-assets.mjs && node scripts/dev-server.mjs",
-    "build:cloudflare": "npm run build"
+    "build:cloudflare": "npm run build",
+    "deploy:cloudflare": "npx wrangler@4.136.0 pages deploy dist --project-name=mentionloom"
   },
   "engines": {
     "node": "22.x"
