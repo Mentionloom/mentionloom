@@ -1,6 +1,6 @@
 import { select } from "./app/lib/model.js";
 import { ACTIONS, ENGINES, QUESTIONS } from "./app/lib/data.js";
-import { initializeOrbit, enhance, number } from "./app/lib/ui.js";
+import { initializeOrbit, enhance, number, animate, openDialog, closeDialog } from "./app/lib/ui.js";
 import { mountGlobe } from "./assets/globe.js?v=20260921-3";
 
 const $ = (s) => document.querySelector(s);
@@ -40,40 +40,75 @@ function roll(id, value) {
 function motion(el) {
   if (ready && !paused) window.OrbitMotion.panel(el);
 }
-function chart(animate = false) {
-  const width = Math.max(270, $("#visibility-chart").clientWidth || 530),
+function chart(animateChart = false) {
+  const host = $("#visibility-chart");
+  const oldSvg = host.querySelector("svg");
+  const oldCurrent = oldSvg?.querySelector(".plot-current")?.getAttribute("d") || "";
+  const oldPrevious = oldSvg?.querySelector(".plot-previous")?.getAttribute("d") || "";
+  const oldFill = oldSvg?.querySelector(".plot-fill")?.getAttribute("d") || "";
+  const width = Math.max(270, host.clientWidth || 530),
     height = 140,
     pad = 32,
     right = width - 10,
     top = 10,
     bottom = 115;
-  const shouldAnimate = animate && ready && !paused && !reduced.matches;
+  const shouldAnimate = animateChart && ready && !paused && !reduced.matches;
   const point = (value, index) => [
     pad + (index / (report.series.length - 1)) * (right - pad),
     bottom - (value / 100) * (bottom - top),
   ];
+  const curve = (points) => {
+    if (points.length < 2) return "";
+    const slopes = points
+      .slice(1)
+      .map((p, i) => (p[1] - points[i][1]) / (p[0] - points[i][0]));
+    const tangents = points.map((_, i) =>
+      i === 0
+        ? slopes[0]
+        : i === points.length - 1
+          ? slopes.at(-1)
+          : slopes[i - 1] * slopes[i] <= 0
+            ? 0
+            : 2 / (1 / slopes[i - 1] + 1 / slopes[i]),
+    );
+    let d = `M${points[0][0].toFixed(1)},${points[0][1].toFixed(1)}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const [x, y] = points[i],
+        [nx, ny] = points[i + 1],
+        dx = (nx - x) / 3;
+      d += `C${(x + dx).toFixed(1)},${(y + tangents[i] * dx).toFixed(1)} ${(nx - dx).toFixed(1)},${(ny - tangents[i + 1] * dx).toFixed(1)} ${nx.toFixed(1)},${ny.toFixed(1)}`;
+    }
+    return d;
+  };
   const path = (key) =>
-    report.series
-      .map((r, i) => {
-        const [x, y] = point(
-          key === "previous" ? r.previous.visibility : r.visibility,
-          i,
-        );
-        return `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(" ");
+    curve(
+      report.series.map((r, i) =>
+        point(key === "previous" ? r.previous.visibility : r.visibility, i),
+      ),
+    );
   const main = path("visibility");
-  $("#visibility-chart").innerHTML =
-    `<svg class="${shouldAnimate ? "chart-building" : ""}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Acme's daily share of monitored answers, on a zero to 100 percent scale. Move the pointer across the chart to read a date."><defs><linearGradient id="landing-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="var(--accent)" stop-opacity=".18"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${[
+  const previous = path("previous");
+  const outgoing =
+    shouldAnimate && oldCurrent
+      ? `<g class="plot-outgoing" aria-hidden="true">${oldFill ? `<path class="plot-fill" d="${oldFill}" fill="url(#landing-chart-fill)"/>` : ""}${oldPrevious ? `<path class="plot-previous" d="${oldPrevious}"/>` : ""}<path class="plot-current" d="${oldCurrent}"/></g>`
+      : "";
+
+  host.innerHTML =
+    `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Acme's daily share of monitored answers, on a zero to 100 percent scale. Move the pointer across the chart to read a date."><defs><linearGradient id="landing-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="var(--accent)" stop-opacity=".18"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${[
       0, 50, 100,
     ]
       .map((v) => {
         const y = point(v, 0)[1];
         return `<line class="plot-grid" x1="${pad}" y1="${y}" x2="${right}" y2="${y}"/><text class="plot-axis" x="0" y="${y + 4}">${v}%</text>`;
       })
-      .join(
-        "",
-      )}<path class="plot-fill" d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" pathLength="1" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg>`;
+      .join("")}${outgoing}<path class="plot-fill plot-incoming" d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous plot-incoming" d="${previous}"/><path class="plot-current plot-incoming" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg>`;
+
+  const svg = host.querySelector("svg");
+  const currentPath = svg.querySelector(".plot-current.plot-incoming");
+  const previousPath = svg.querySelector(".plot-previous.plot-incoming");
+  const fillPath = svg.querySelector(".plot-fill.plot-incoming");
+  const outgoingGroup = svg.querySelector(".plot-outgoing");
+
   function inspect(index) {
     const r = report.series[index];
     const [x, y] = point(r.visibility, index);
@@ -86,13 +121,67 @@ function chart(animate = false) {
       day: "numeric",
       timeZone: "UTC",
     });
-    $("#visibility-chart svg").setAttribute(
+    svg.setAttribute(
       "aria-label",
       `${label}: Acme ${r.visibility.toFixed(1)} percent, previous period ${r.previous.visibility.toFixed(1)} percent.`,
     );
   }
+
+  if (shouldAnimate) {
+    outgoingGroup &&
+      animate(
+        outgoingGroup,
+        [
+          { opacity: 0.48, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(5px)" },
+        ],
+        300,
+        { fill: "both" },
+      );
+    if (currentPath) {
+      const length = currentPath.getTotalLength();
+      animate(
+        currentPath,
+        [
+          { strokeDasharray: `${length} ${length}`, strokeDashoffset: length, opacity: 0.58 },
+          { strokeDasharray: `${length} ${length}`, strokeDashoffset: 0, opacity: 1 },
+        ],
+        820,
+        { delay: 80, fill: "backwards" },
+      );
+    }
+    previousPath &&
+      animate(
+        previousPath,
+        [{ opacity: 0 }, { opacity: 1 }],
+        460,
+        { delay: 150, fill: "backwards" },
+      );
+    fillPath &&
+      animate(
+        fillPath,
+        [
+          { opacity: 0, transform: "scaleX(.04)" },
+          { opacity: 1, transform: "scaleX(1)" },
+        ],
+        650,
+        { delay: 140, fill: "backwards" },
+      );
+    [$("#chart-cursor"), $("#chart-dot")].forEach((el, index) =>
+      animate(
+        el,
+        [
+          { opacity: 0, transform: "translateY(4px) scale(.92)" },
+          { opacity: 1, transform: "translateY(0) scale(1)" },
+        ],
+        240,
+        { delay: 760 + index * 35, fill: "backwards" },
+      ),
+    );
+  }
+
   let chartInteractionTracked = false;
-  $("#visibility-chart svg").addEventListener("pointermove", (e) => {
+  svg.addEventListener("pointermove", (e) => {
     if (e.pointerType === "touch") return;
     if (!chartInteractionTracked) {
       chartInteractionTracked = true;
@@ -107,11 +196,12 @@ function chart(animate = false) {
           (((e.clientX - rect.left) / rect.width) * width - pad) /
             (right - pad),
         ),
-      ) * 29,
+      ) *
+        (report.series.length - 1),
     );
     inspect(index);
   });
-  inspect(29);
+  inspect(report.series.length - 1);
 }
 function renderQuestions() {
   const ids = ["q2", "q1", "q6", "q8"];
@@ -154,9 +244,28 @@ function render(initialReport, animateChart = false) {
     .filter((c) => c.name !== "Monday")
     .map(
       (c) =>
-        `<div class="competitor-row ${c.self ? "self" : ""}" style="--share:${c.share.toFixed(1)}%"><span>${c.self ? '<span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>' : logo(c.name.toLowerCase())}${c.name}${c.self ? " <small>you</small>" : ""}</span><b>${c.share.toFixed(1)}%</b></div>`,
+        `<div class="competitor-row ${c.self ? "self" : ""}" data-share="${c.share.toFixed(1)}%" style="--share:${animateChart ? "0%" : c.share.toFixed(1) + "%"}"><span>${c.self ? '<span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>' : logo(c.name.toLowerCase())}${c.name}${c.self ? " <small>you</small>" : ""}</span><b>${c.share.toFixed(1)}%</b></div>`,
     )
     .join("");
+  if (animateChart && ready && !paused && !reduced.matches) {
+    const rows = [...$("#competitor-rows").querySelectorAll(".competitor-row")];
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        rows.forEach((row, index) => {
+          row.style.setProperty("--share", row.dataset.share);
+          animate(
+            row,
+            [
+              { opacity: 0, transform: "translateY(6px)" },
+              { opacity: 1, transform: "translateY(0)" },
+            ],
+            300,
+            { delay: 90 + index * 55, fill: "backwards" },
+          );
+        }),
+      ),
+    );
+  }
   renderQuestions();
   $("#opportunity-rows").innerHTML = ACTIONS.map((a) => {
     const q = report.questions.find((q) => q.id === a.question);
@@ -289,6 +398,135 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
+let approachMotionPlayed = false;
+function playApproachMotion() {
+  const section = $("#approach");
+  if (!section || approachMotionPlayed) return;
+  approachMotionPlayed = true;
+  section.dataset.motionState = reduced.matches || paused ? "complete" : "running";
+  const statusLabel = section.querySelector("[data-company-status] span");
+
+  if (reduced.matches || paused || !window.OrbitMotion) {
+    if (statusLabel) statusLabel.textContent = "Ready";
+    return;
+  }
+
+  const companyProgress = section.querySelector(".company-progress > span");
+  const companyRows = [...section.querySelectorAll(".company-intel-row")];
+  const companyReady = section.querySelector(".company-ready");
+  const statusDot = section.querySelector(".mini-product-status i");
+  animate(companyProgress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 900, {
+    delay: 90,
+    fill: "backwards",
+  });
+  statusDot &&
+    animate(
+      statusDot,
+      [
+        { transform: "scale(.8)", boxShadow: "0 0 0 0 var(--accent-soft)" },
+        { transform: "scale(1.18)", boxShadow: "0 0 0 6px transparent", offset: 0.55 },
+        { transform: "scale(1)", boxShadow: "0 0 0 0 transparent" },
+      ],
+      900,
+      { delay: 120, fill: "backwards" },
+    );
+  companyRows.forEach((row, index) =>
+    animate(
+      row,
+      [
+        { opacity: 0, transform: "translateY(8px) scale(.985)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      360,
+      { delay: 260 + index * 105, fill: "backwards" },
+    ),
+  );
+  companyReady &&
+    animate(
+      companyReady,
+      [{ opacity: 0, transform: "translateY(5px)" }, { opacity: 1, transform: "translateY(0)" }],
+      320,
+      { delay: 770, fill: "backwards" },
+    );
+
+  const questionRows = [...section.querySelectorAll(".generated-question")];
+  const questionChecks = [...section.querySelectorAll(".question-check")];
+  const questionSelection = section.querySelector(".question-selection");
+  questionRows.forEach((row, index) =>
+    animate(
+      row,
+      [{ opacity: 0, transform: "translateY(7px)" }, { opacity: 1, transform: "translateY(0)" }],
+      320,
+      { delay: 650 + index * 90, fill: "backwards" },
+    ),
+  );
+  if (questionSelection && questionRows.length === 3) {
+    const y2 = questionRows[1].offsetTop - questionRows[0].offsetTop;
+    const y3 = questionRows[2].offsetTop - questionRows[0].offsetTop;
+    animate(
+      questionSelection,
+      [
+        { transform: "translateY(0) scale(1)", offset: 0 },
+        { transform: "translateY(0) scale(1)", offset: 0.22 },
+        { transform: `translateY(${y2}px) scale(.995)`, offset: 0.34 },
+        { transform: `translateY(${y2}px) scale(1)`, offset: 0.55 },
+        { transform: `translateY(${y3}px) scale(.995)`, offset: 0.68 },
+        { transform: `translateY(${y3}px) scale(1)`, offset: 1 },
+      ],
+      3600,
+      { delay: 980, fill: "both" },
+    );
+  }
+  questionChecks.forEach((check, index) =>
+    animate(
+      check,
+      [
+        { opacity: 0.18, transform: "scale(.82)" },
+        { opacity: 1, transform: "scale(1.08)", offset: 0.68 },
+        { opacity: 1, transform: "scale(1)" },
+      ],
+      380,
+      { delay: 1350 + index * 950, fill: "both" },
+    ),
+  );
+
+  const rankRows = [...section.querySelectorAll(".mini-rank-row")];
+  const rankFills = [...section.querySelectorAll(".mini-rank-fill")];
+  rankRows.forEach((row, index) =>
+    animate(
+      row,
+      [{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "translateY(0)" }],
+      340,
+      { delay: 1180 + index * 120, fill: "backwards" },
+    ),
+  );
+  rankFills.forEach((fill, index) =>
+    animate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 720, {
+      delay: 1320 + index * 130,
+      fill: "backwards",
+    }),
+  );
+  const brief = section.querySelector(".brief-build");
+  brief &&
+    animate(
+      brief,
+      [
+        { opacity: 0, transform: "translateY(12px) scale(.985)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      520,
+      { delay: 1780, fill: "backwards" },
+    );
+
+  setTimeout(() => {
+    if (statusLabel) {
+      statusLabel.textContent = "Ready";
+      window.OrbitMotion.feedback(statusLabel, "Ready");
+    }
+    section.dataset.motionState = "complete";
+  }, 2350);
+}
+
 // Viewport motion is independent from Orbit so product content can never disappear
 // just because an enhancement module fails.
 if ("IntersectionObserver" in window) {
@@ -317,6 +555,19 @@ try {
   await enhance($(".faq-list"));
   await enhance($("#opportunity-rows"));
   window.OrbitMotion.prepare($(".story-nav"));
+
+  const approach = $("#approach");
+  if (approach) {
+    const approachObserver = new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        playApproachMotion();
+      },
+      { threshold: 0.32, rootMargin: "0px 0px -4% 0px" },
+    );
+    approachObserver.observe(approach);
+  }
 
   const simpleReveal = new IntersectionObserver(
     (entries) => {
@@ -429,7 +680,19 @@ function openScene() {
        </article>
      </div>
    </section>`;
- $('#scene-detail').showModal();
+ const dialog = $('#scene-detail');
+ if (ready && window.OrbitMotion) openDialog(dialog);
+ else dialog.showModal();
+ if (ready && !paused && !reduced.matches) {
+   const questionMessage = dialog.querySelector('.scene-question-message');
+   const answerMessage = dialog.querySelector('.scene-answer-message');
+   const takeawayHeading = dialog.querySelector('.scene-takeaway-heading');
+   const takeawayItems = [...dialog.querySelectorAll('.scene-takeaway-item')];
+   animate(questionMessage, [{opacity:0,transform:'translate(8px, 5px) scale(.985)'},{opacity:1,transform:'translate(0,0) scale(1)'}], 320, {delay:70,fill:'backwards'});
+   animate(answerMessage, [{opacity:0,transform:'translate(-8px, 5px) scale(.985)'},{opacity:1,transform:'translate(0,0) scale(1)'}], 360, {delay:160,fill:'backwards'});
+   animate(takeawayHeading, [{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}], 260, {delay:310,fill:'backwards'});
+   takeawayItems.forEach((item,index)=>animate(item,[{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],320,{delay:380+index*80,fill:'backwards'}));
+ }
 }
 let sceneManualUntil = 0;
 document.querySelectorAll('[data-globe-question]').forEach((b) => b.addEventListener('click', () => {
@@ -443,7 +706,11 @@ $('.globe-explore').addEventListener('click',()=> {
   selectScene((sceneIndex+1)%sceneQuestions.length);
 });
 document.querySelectorAll('[data-scene-detail]').forEach(b=>b.addEventListener('click',openScene));
-$('[data-scene-close]').addEventListener('click',()=>$('#scene-detail').close());
+$('[data-scene-close]').addEventListener('click',()=>{
+  const dialog = $('#scene-detail');
+  if (ready && window.OrbitMotion) closeDialog(dialog);
+  else dialog.close();
+});
 selectScene(0,false);
 const discoveryScene = $('.discovery-scene');
 let sceneVisible = false, sceneTimer;
