@@ -40,13 +40,14 @@ function roll(id, value) {
 function motion(el) {
   if (ready && !paused) window.OrbitMotion.panel(el);
 }
-function chart() {
+function chart(animate = false) {
   const width = Math.max(270, $("#visibility-chart").clientWidth || 530),
     height = 140,
     pad = 32,
     right = width - 10,
     top = 10,
     bottom = 115;
+  const shouldAnimate = animate && ready && !paused && !reduced.matches;
   const point = (value, index) => [
     pad + (index / (report.series.length - 1)) * (right - pad),
     bottom - (value / 100) * (bottom - top),
@@ -72,7 +73,7 @@ function chart() {
       })
       .join(
         "",
-      )}<path d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg>`;
+      )}<path class="plot-fill" d="${main} L${right},${bottom} L${pad},${bottom} Z" fill="url(#landing-chart-fill)"/><path class="plot-previous" d="${path("previous")}"/><path class="plot-current" pathLength="1" d="${main}"/><line id="chart-cursor" x1="${right}" x2="${right}" y1="${top}" y2="${bottom}" stroke="var(--sky-3)" stroke-dasharray="3 3"/><circle id="chart-dot" r="4" fill="var(--accent-text)" stroke="white" stroke-width="2"/><text class="plot-axis" x="${pad}" y="138">Aug 11</text><text class="plot-axis" text-anchor="end" x="${right}" y="138">Sep 9</text></svg>`;
   function inspect(index) {
     const r = report.series[index];
     const [x, y] = point(r.visibility, index);
@@ -137,7 +138,7 @@ function renderQuestions() {
       }),
     );
 }
-function render(initialReport) {
+function render(initialReport, animateChart = false) {
   report = initialReport || select({ days: 30, engine, topic: "" });
   const delta = report.current.visibility - report.previous.visibility;
   roll("#visibility-number", `${report.current.visibility.toFixed(1)}%`);
@@ -148,7 +149,7 @@ function render(initialReport) {
     `${delta.toFixed(1)} percentage points versus the previous 30 days`,
   );
   $("#visibility-delta").classList.toggle("negative", delta < 0);
-  chart();
+  chart(animateChart);
   $("#competitor-rows").innerHTML = report.competitors
     .filter((c) => c.name !== "Monday")
     .map(
@@ -238,7 +239,7 @@ document.querySelectorAll("[data-engine]").forEach((b) => {
     const moreLabel = $('#more-engine-label');
     if (moreLabel) moreLabel.textContent = extra ? b.getAttribute('aria-label') : '+6 engines';
     if (extra) { extra.hidden = true; extra.previousElementSibling.setAttribute('aria-expanded', 'false'); extra.previousElementSibling.focus(); }
-    render();
+    render(undefined, true);
   });
 });
 document.querySelector("[data-menu-toggle]")?.addEventListener("click", (event) => {
@@ -397,8 +398,37 @@ function selectScene(index, animate = true) {
  }
 }
 function openScene() {
- const item=sceneQuestions[sceneIndex];
- $('#scene-detail-content').innerHTML=`<div class="scene-detail-location"><img src="/assets/flags/${item.flag}.svg" alt=""><span>${item.country} · ${item.city}</span></div><h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.engine}</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
+ const item = sceneQuestions[sceneIndex];
+ const provider = ENGINES.find((entry) => entry.id === item.engine)?.name || item.engine;
+ $('#scene-detail-content').innerHTML=`
+   <div class="scene-chat" aria-label="Monitored buyer question and AI answer">
+     <div class="message sent scene-question-message">
+       <div class="scene-message-label">${icon('chat')}<span>Buyer question</span></div>
+       <p id="scene-detail-title">${item.question}</p>
+     </div>
+     <div class="message scene-answer-message">
+       <div class="scene-message-label scene-answer-meta">
+         <img src="/assets/brands/${item.engine}.svg" width="20" height="20" alt="">
+         <span>${provider}</span>
+         <span class="scene-message-location"><img src="/assets/flags/${item.flag}.svg" width="18" height="12" alt="">${item.city}</span>
+       </div>
+       <p>${item.answer}</p>
+       <div class="scene-answer-source">${icon('link')}<span>${item.source}</span></div>
+     </div>
+   </div>
+   <section class="scene-takeaway" aria-label="Mentionloom takeaway">
+     <div class="scene-takeaway-heading">${icon('spark')}<span>Mentionloom takeaway</span></div>
+     <div class="scene-takeaway-grid">
+       <article class="scene-takeaway-item">
+         <span class="scene-takeaway-icon">${icon('target')}</span>
+         <div><h3>Why it matters</h3><p>${item.evidence}</p></div>
+       </article>
+       <article class="scene-takeaway-item">
+         <span class="scene-takeaway-icon">${icon('arrow')}</span>
+         <div><h3>Next action</h3><p>${item.action}</p></div>
+       </article>
+     </div>
+   </section>`;
  $('#scene-detail').showModal();
 }
 let sceneManualUntil = 0;
