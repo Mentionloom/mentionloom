@@ -1196,30 +1196,38 @@ function playApproachCardMotion(step) {
   await enhance($("#opportunity-rows"));
   window.OrbitMotion.prepare($(".story-nav"));
 
-  const insights = $("#insights");
-  if (insights) {
-    const insightsObserver = new IntersectionObserver(
-      ([entry], observer) => {
-        if (!entry.isIntersecting) return;
-        observer.unobserve(entry.target);
-        playInsightsMotion();
+  if (!paused && !reduced.matches) {
+    const insightObserver = new IntersectionObserver(
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          observer.unobserve(entry.target);
+          entry.target.classList.add("card-visible");
+          playInsightCardMotion(entry.target);
+        }
       },
-      { threshold: 0.16, rootMargin: "0px 0px -6% 0px" },
+      { threshold: 0.42, rootMargin: "0px 0px -7% 0px" },
     );
-    insightsObserver.observe(insights);
-  }
+    document.querySelectorAll("#insights .feature-card").forEach((card) => {
+      card.classList.add("motion-card-armed");
+      insightObserver.observe(card);
+    });
 
-  const approach = $("#approach");
-  if (approach) {
     const approachObserver = new IntersectionObserver(
-      ([entry], observer) => {
-        if (!entry.isIntersecting) return;
-        observer.unobserve(entry.target);
-        playApproachMotion();
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          observer.unobserve(entry.target);
+          entry.target.classList.add("card-visible");
+          playApproachCardMotion(entry.target);
+        }
       },
-      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+      { threshold: 0.4, rootMargin: "0px 0px -7% 0px" },
     );
-    approachObserver.observe(approach);
+    document.querySelectorAll("#approach .clearer-step").forEach((card) => {
+      card.classList.add("motion-card-armed");
+      approachObserver.observe(card);
+    });
   }
 
   const productStage = $(".product-stage");
@@ -1230,7 +1238,7 @@ function playApproachCardMotion(step) {
         observer.unobserve(entry.target);
         playProductMotion();
       },
-      { threshold: 0.14, rootMargin: "0px 0px -5% 0px" },
+      { threshold: 0.22, rootMargin: "0px 0px -6% 0px" },
     );
     productObserver.observe(productStage);
   }
@@ -1260,13 +1268,19 @@ function playApproachCardMotion(step) {
   });
   registerReveal("#product .section-heading", ".eyebrow,h2,p", { step: 45 });
   registerReveal("#product .story-nav", "button", { step: 38, scale: 0.96 });
-  registerReveal("#product .value-trio", ":scope>div>.icon,:scope>div>p", {
-    step: 42,
+  registerReveal("#insights .section-heading", ".eyebrow,h2,p", { step: 42 });
+  registerReveal("#approach .section-heading", ".eyebrow,h2,p", { step: 42 });
+  registerReveal("#product .value-trio > div", ":scope>.icon,:scope>p", {
+    step: 35,
     scale: 0.97,
   });
-  registerReveal("#faq", ":scope>div:first-child .eyebrow,:scope>div:first-child h2,:scope>div:first-child p,.faq-list details", {
+  registerReveal("#faq > div:first-child", ".eyebrow,h2,p", {
     step: 38,
     scale: 0.985,
+  });
+  registerReveal("#faq .faq-list details", ":scope>summary", {
+    step: 0,
+    scale: 0.99,
   });
   registerReveal(
     ".early-access-card",
