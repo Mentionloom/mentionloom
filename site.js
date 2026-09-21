@@ -1,7 +1,7 @@
 import { select } from "./app/lib/model.js";
 import { ACTIONS, ENGINES, QUESTIONS } from "./app/lib/data.js";
 import { initializeOrbit, enhance, number } from "./app/lib/ui.js";
-import { mountGlobe } from "./assets/globe.js";
+import { mountGlobe } from "./assets/globe.js?v=20260921-2";
 
 const $ = (s) => document.querySelector(s);
 const icon = (name) =>
