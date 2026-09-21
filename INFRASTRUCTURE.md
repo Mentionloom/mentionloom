@@ -25,10 +25,15 @@ The security-definer auth trigger is not callable by public, anonymous or normal
 
 The project URL and publishable key are non-secret values in `wrangler.toml`.
 
-Required Worker secrets:
+Required Worker secret:
 
 ```text
 SUPABASE_SECRET_KEY
+```
+
+Optional manual queue endpoint secret:
+
+```text
 CRON_SECRET
 ```
 
@@ -64,7 +69,7 @@ Every future workspace-scoped API must verify membership before reading or writi
 
 ## Queue
 
-The Cloudflare Worker exposes a protected manual `/api/worker` endpoint and a native `scheduled()` handler.
+The Cloudflare Worker has a native `scheduled()` handler. `/api/worker` is an optional manual drain endpoint and is disabled unless `CRON_SECRET` is configured.
 
 The queue:
 - claims a bounded batch;
