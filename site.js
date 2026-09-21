@@ -339,17 +339,18 @@ window.addEventListener("pagehide", (event) => {
 
 // The scene is a browsable set of buyer questions, not live geolocation.
 const sceneQuestions = [
- { city:'San Francisco', country:'United States', engine:'chatgpt', question:'What’s the best project tool for a small team?', answer:'Asana makes the shortlist. Acme is missing from this answer.', source:'G2 comparison', action:'Explain which team sizes Acme supports.', evidence:'The answer discusses team size and setup effort, but does not mention Acme.' },
- { city:'London', country:'United Kingdom', engine:'claude', question:'Which Notion alternative is best for project tracking?', answer:'ClickUp is recommended for task dependencies. Acme is not mentioned.', source:'Product comparison', action:'Show how dependencies work in Acme.', evidence:'The answer focuses on dependency tracking and project views. A clear comparison page would help explain Acme’s fit.' },
- { city:'Singapore', country:'Singapore', engine:'perplexity', question:'What is an affordable tool for a growing remote team?', answer:'Notion appears for its entry price. Acme is missing from the comparison.', source:'Pricing guide', action:'Make the per-seat cost easy to compare.', evidence:'The answer compares entry plans. Explain included features and the cost as a team grows.' }
+ { city:'San Francisco', country:'United States', flag:'us', engine:'chatgpt', question:'What’s the best project tool for a small team?', answer:'Asana makes the shortlist. Acme is missing from this answer.', source:'G2 comparison', action:'Explain which team sizes Acme supports.', evidence:'The answer discusses team size and setup effort, but does not mention Acme.' },
+ { city:'London', country:'United Kingdom', flag:'gb', engine:'claude', question:'Which Notion alternative is best for project tracking?', answer:'ClickUp is recommended for task dependencies. Acme is not mentioned.', source:'Product comparison', action:'Show how dependencies work in Acme.', evidence:'The answer focuses on dependency tracking and project views. A clear comparison page would help explain Acme’s fit.' },
+ { city:'Singapore', country:'Singapore', flag:'sg', engine:'perplexity', question:'What is an affordable tool for a growing remote team?', answer:'Notion appears for its entry price. Acme is missing from the comparison.', source:'Pricing guide', action:'Make the per-seat cost easy to compare.', evidence:'The answer compares entry plans. Explain included features and the cost as a team grows.' }
 ];
 let sceneIndex = 0;
 function selectScene(index, animate = true) {
  sceneIndex = index;
  const item = sceneQuestions[index];
  $('.discovery-scene').dataset.location = String(index);
- $('.question-float .card-label img').src = `/assets/brands/${item.engine}.svg`;
- $('.question-float .card-label > span').textContent = item.city === item.country ? item.city : `${item.city} · ${item.country}`;
+ $('.question-float .card-label img').src = `/assets/flags/${item.flag}.svg`;
+ $('.question-float .card-label img').alt = '';
+ $('.question-float .card-label > span').textContent = item.country;
  $('.question-float p').textContent = item.question;
  $('.answer-float .card-label img').src = `/assets/brands/${item.engine}.svg`;
  $('.answer-float .card-label > span').textContent = 'Answer';
@@ -399,3 +400,23 @@ document.addEventListener('visibilitychange', scheduleScene);
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
 
+
+
+const brandFooter = document.querySelector(".brand-footer");
+let footerFrame = 0;
+function syncFooterFlush() {
+  if (!brandFooter) return;
+  const remaining = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+  brandFooter.classList.toggle("is-flush", remaining <= 4);
+}
+function requestFooterSync() {
+  if (footerFrame) return;
+  footerFrame = requestAnimationFrame(() => {
+    footerFrame = 0;
+    syncFooterFlush();
+  });
+}
+window.addEventListener("scroll", requestFooterSync, { passive: true });
+window.addEventListener("resize", requestFooterSync);
+window.addEventListener("pageshow", requestFooterSync);
+syncFooterFlush();
