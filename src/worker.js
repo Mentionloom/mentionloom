@@ -325,7 +325,7 @@ async function handleApi(request, env) {
       if (request.method !== 'GET') return methodNotAllowed('GET');
       return json({
         ok: true,
-        databaseConfigured: Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
+        databaseConfigured: Boolean(env.SUPABASE_URL && (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)),
         workerConfigured: Boolean(env.CRON_SECRET),
       });
     }
@@ -351,7 +351,7 @@ export default {
   },
 
   async scheduled(_controller, env, ctx) {
-    if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return;
+    if (!env.SUPABASE_URL || !(env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)) return;
     ctx.waitUntil(
       processQueue().catch((error) => {
         console.error('Mentionloom scheduled worker failed:', error?.name || 'Error');
