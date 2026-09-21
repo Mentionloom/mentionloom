@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="robots" content="noindex" />
+    <title>Onboarding prototype · Mentionloom</title>
+    <meta
+      name="description"
+      content="Interactive Mentionloom onboarding prototype from company domain to first recommendation intelligence baseline."
+    />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/app/components/orbit/runtime/assets/OpenRunde-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/tokens.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/styles.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/motion.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/numbers.css" />
+    <link rel="stylesheet" href="/app/components/orbit/runtime/controls.css" />
+    <link rel="stylesheet" href="/app/tokens.css" />
+    <link rel="stylesheet" href="/app/app.css" />
+    <link rel="stylesheet" href="/app/foundation.css" />
+    <link rel="stylesheet" href="/app/density.css" />
+    <link rel="stylesheet" href="/app/onboarding/onboarding.css" />
+    <script type="module" src="/app/onboarding/onboarding.js"></script>
+  </head>
+  <body class="discovery-app onboarding-app">
+    <a class="skip-link" href="#main">Skip to onboarding</a>
+    <header class="app-header onboarding-header">
+      <div class="header-inner">
+        <a class="brand onboarding-brand" href="/" aria-label="Mentionloom home">
+          <img src="/assets/dark-ml.svg" alt="Mentionloom" />
+        </a>
+        <span class="badge neutral prototype-badge">Interactive prototype</span>
+        <div class="header-spacer"></div>
+        <span class="prototype-note">Company analysis and provider calls are simulated on this route.</span>
+        <button class="button ghost small" type="button" data-action="reset">Reset</button>
+      </div>
+    </header>
+
+    <nav class="onboarding-progress-nav" aria-label="Onboarding progress">
+      <div class="onboarding-progress-inner" id="progress-nav"></div>
+    </nav>
+
+    <main id="main" tabindex="-1">
+      <div id="onboarding-stage" aria-live="polite"></div>
+    </main>
+
+    <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
