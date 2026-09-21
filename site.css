@@ -3987,3 +3987,127 @@
     border-top:1px solid var(--border);
   }
 }
+
+
+/* Answer evidence modal: keep product typeface and balance the takeaway pair. */
+.marketing-app .scene-detail {
+  width:min(700px,calc(100% - 32px));
+  max-height:88vh;
+  padding:0;
+  overflow:hidden;
+  border-radius:20px;
+  font-family:var(--font-sans);
+}
+.marketing-app .scene-detail,
+.marketing-app .scene-detail :is(button,span,p,h2,h3,div,article,section) {
+  font-family:var(--font-sans);
+}
+.marketing-app .scene-detail-heading {
+  min-height:58px;
+  padding:0 18px 0 22px;
+  border-bottom:1px solid var(--border);
+  font-family:var(--font-sans);
+}
+.marketing-app .scene-detail-heading > span {
+  font-family:var(--font-sans);
+  font-size:11px;
+  font-weight:600;
+  line-height:1;
+  letter-spacing:.065em;
+}
+.marketing-app #scene-detail-content {
+  padding:24px;
+}
+.marketing-app .scene-chat {
+  gap:10px;
+}
+.marketing-app .scene-chat .message {
+  max-width:min(82%,520px);
+  padding:14px 16px;
+  border-radius:14px;
+  font-family:var(--font-sans);
+}
+.marketing-app .scene-chat .message p {
+  margin-top:7px;
+  margin-bottom:0;
+  font-family:var(--font-sans);
+  font-size:13px;
+  line-height:1.55;
+}
+.marketing-app .scene-message-label,
+.marketing-app .scene-message-location,
+.marketing-app .scene-answer-source {
+  font-family:var(--font-sans);
+}
+.marketing-app .scene-takeaway {
+  margin-top:22px;
+  padding-top:18px;
+}
+.marketing-app .scene-takeaway-heading {
+  margin-bottom:11px;
+  font-family:var(--font-sans);
+  font-size:11px;
+  line-height:1.2;
+}
+.marketing-app .scene-takeaway-grid {
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  align-items:stretch;
+  border-radius:14px;
+}
+.marketing-app .scene-takeaway-item {
+  grid-template-columns:36px minmax(0,1fr);
+  align-items:start;
+  gap:12px;
+  min-height:116px;
+  padding:16px;
+}
+.marketing-app .scene-takeaway-item > div {
+  min-width:0;
+}
+.marketing-app .scene-takeaway-icon {
+  width:36px;
+  height:36px;
+}
+.marketing-app .scene-takeaway-item h3 {
+  margin:2px 0 6px;
+  font-family:var(--font-sans);
+  font-size:12px;
+  font-weight:600;
+  line-height:1.35;
+  letter-spacing:0;
+}
+.marketing-app .scene-takeaway-item p {
+  margin:0;
+  max-width:31ch;
+  font-family:var(--font-sans);
+  font-size:12px;
+  line-height:1.55;
+}
+
+@media (max-width:620px) {
+  .marketing-app .scene-detail {
+    width:calc(100% - 20px);
+    max-height:92vh;
+    border-radius:18px;
+  }
+  .marketing-app #scene-detail-content {
+    padding:18px;
+  }
+  .marketing-app .scene-chat .message {
+    max-width:94%;
+  }
+  .marketing-app .scene-takeaway-grid {
+    grid-template-columns:1fr;
+  }
+  .marketing-app .scene-takeaway-item {
+    min-height:auto;
+    padding:15px;
+  }
+  .marketing-app .scene-takeaway-item + .scene-takeaway-item {
+    border-left:0;
+    border-top:1px solid var(--border);
+  }
+  .marketing-app .scene-takeaway-item p {
+    max-width:none;
+  }
+}
