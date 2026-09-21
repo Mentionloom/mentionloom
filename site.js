@@ -589,7 +589,7 @@ try {
         observer.unobserve(entry.target);
         playApproachMotion();
       },
-      { threshold: 0.32, rootMargin: "0px 0px -4% 0px" },
+      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
     );
     approachObserver.observe(approach);
   }
