@@ -25,3 +25,7 @@ exports/
 .local-data/
 
 checks/a11y-*.json
+
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
