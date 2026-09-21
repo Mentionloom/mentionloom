@@ -1,35 +1,27 @@
-# Cloudflare Pages
+# Cloudflare deployment
 
-Mentionloom's public frontend is ready to deploy from this repository with Cloudflare Pages.
+Mentionloom is deployed from `Mentionloom/mentionloom` using Cloudflare Workers Static Assets.
 
-## Git deployment
+The current Cloudflare Git build settings can remain:
 
-Create a Pages project connected to `Mentionloom/mentionloom` with:
-
-- Project name: `mentionloom`
 - Production branch: `main`
-- Build command: `npm run build:cloudflare`
-- Deploy command: `npm run deploy:cloudflare`
-- Build output directory: `dist`
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+- Root directory: `/`
 - Node.js: `22`
 
-No runtime secret is required for the public waitlist. The form posts to the `waitlist` Supabase Edge Function, which persists signups in Postgres.
+`wrangler.toml` points Cloudflare at `./dist`:
 
-Keep the project name `mentionloom` so production uses `https://mentionloom.pages.dev`; that origin is already allowed by the waitlist function.
+```toml
+name = "mentionloom"
+compatibility_date = "2026-09-21"
 
-Vercel can remain connected temporarily as a fallback while Cloudflare Pages is verified.
-
-
-## Current Cloudflare build settings
-
-Do **not** use `npx wrangler deploy` for this project. Mentionloom is a Pages project, so the deploy command must be:
-
-```
-npm run deploy:cloudflare
+[assets]
+directory = "./dist"
 ```
 
-That runs:
+No Worker entry point is needed because Mentionloom's public site is deployed as static assets.
 
-```
-npx wrangler@4.136.0 pages deploy dist --project-name=mentionloom
-```
+The public waitlist posts directly to the Supabase `waitlist` Edge Function and persists new signups in Postgres, so this frontend deployment does not need Vercel runtime APIs or Cloudflare runtime secrets.
+
+Vercel may remain connected temporarily as a fallback while the Cloudflare deployment is verified.
