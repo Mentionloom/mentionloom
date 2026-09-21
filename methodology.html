@@ -203,14 +203,14 @@
       <section class="m-section">
         <h2>The metric</h2>
         <p>
-          AI Recommendation Share is the proportion of sampled answers in which
+          AI Recommendation Share is the proportion of observed answers in which
           a brand is shortlisted or recommended, across its question set and
           engine set, over a fixed window.
         </p>
         <div class="m-formula">
           <strong>AI Recommendation Share</strong>
           = answers where you are shortlisted or recommended
-          ÷ total sampled answers
+          ÷ total observed answers
         </div>
         <p>
           Every answer resolves to exactly one state per brand, and only the
@@ -252,7 +252,7 @@
           <li><p><strong>Hold back a control set.</strong> Roughly 20% of questions receive no intervention, so movement in the treated set is compared against the control.</p></li>
           <li><p><strong>Segment by intent stage.</strong> Discovery, comparison and decision move at different speeds, and decision questions are worth more.</p></li>
           <li><p><strong>Declare the surface.</strong> Every report states whether it measured an API surface or a consumer surface, and which model, region and date.</p></li>
-          <li><p><strong>Check the consumer surface monthly.</strong> Re-run a sample of prompts directly in the consumer products and record the divergence.</p></li>
+          <li><p><strong>Check the consumer surface monthly.</strong> Re-run a subset of prompts directly in the consumer products and record the divergence.</p></li>
           <li><p><strong>Keep the raw answer.</strong> Engine, model, timestamp, question, raw text and cited URLs are retained so any number can be traced to the answer behind it.</p></li>
           <li><p><strong>Never imply causation from one cycle.</strong> Movement is reported with the control comparison, the window, and the other changes in that window.</p></li>
         </ol>
@@ -269,7 +269,7 @@
             <tr><th>Signal</th><th>What it is</th><th>Its job</th><th>In the metric</th></tr>
           </thead>
           <tbody>
-            <tr><td>A — Answers</td><td>Sampled recommendations across engines and questions</td><td>The metric</td><td>Yes</td></tr>
+            <tr><td>A — Answers</td><td>Observed recommendations across engines and questions</td><td>The metric</td><td>Yes</td></tr>
             <tr><td>B — Referrals</td><td>Attributed sessions from AI sources</td><td>The outcome</td><td>No</td></tr>
             <tr><td>C — Crawlers</td><td>Bot requests in server or CDN logs</td><td>Diagnostics: has the content been fetched at all</td><td>No</td></tr>
           </tbody>
@@ -284,7 +284,7 @@
       <section class="m-section">
         <h2>What this is today</h2>
         <div class="m-note">
-          The product preview uses an illustrative Acme workspace. Questions,
+          The product preview uses an Acme workspace. Questions,
           answers and sources are written examples that show the shape of a
           real result — they are not live probes of your site, and no number
           describes your brand. A real workspace runs your own questions,
