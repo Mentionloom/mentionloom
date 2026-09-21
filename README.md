@@ -4,7 +4,7 @@ Mentionloom is an **AI Recommendation Intelligence** product concept for underst
 
 This repository contains the public marketing site, an interactive sample product workspace, the methodology page, a working early-access waitlist, and an experimental add-on marketplace.
 
-> **Data boundary:** the product workspace uses illustrative sample data. The waitlist is real and writes signups to private Vercel Blob storage.
+> **Data boundary:** the product workspace still uses illustrative sample data. The waitlist is real. An authenticated Postgres/workspace/queue foundation now exists in the repository, but it only becomes operational after the database migration and Vercel secrets are configured; it does not make the sample dashboard live.
 
 ## Product surfaces
 
@@ -149,8 +149,30 @@ No runtime CDN request is required for those assets.
 ### Server
 
 - `api/waitlist.js` — Vercel waitlist endpoint.
+- `api/auth/*` — Supabase-backed sign-up, sign-in, sign-out, and session endpoints using HTTP-only cookies.
+- `api/workspaces.js` — authenticated workspace creation/listing.
+- `api/costs.js` — owner/admin monthly cost reporting from `cost_ledger`.
+- `api/worker.js` — protected background worker called by Vercel Cron.
+- `lib/auth.js`, `lib/workspaces.js`, `lib/queue.js`, `lib/cost-ledger.js` — product infrastructure primitives.
+- `lib/provider-secrets.js` — server-only provider credential access.
 - `lib/waitlist.js` — validation, ownership, qualification, rate limiting, and request handling.
 - `lib/blob-store.js` — private Vercel Blob persistence.
+
+### Product infrastructure foundation
+
+The first real multi-tenant foundation lives in `db/migrations/001_foundation.sql` and `INFRASTRUCTURE.md`.
+
+It introduces:
+
+- Supabase Auth and Postgres-backed `users`, `workspaces`, and `workspace_members`;
+- real measurement entities for companies, competitors, question versions, runs, probes, raw answers, citations, classifications, snapshots, opportunities, and interventions;
+- a Postgres-backed `jobs` queue with atomic claiming, retries, stale-lease recovery, and a Vercel Cron worker;
+- a `cost_ledger` that attributes provider/runtime cost to workspace, run, and probe in micro-USD;
+- server-only environment variables for OpenAI, Claude, Gemini, and Perplexity.
+
+Browser clients do not receive the Supabase service-role key or provider credentials. Future workspace APIs must verify membership server-side before returning customer data.
+
+This is intentionally a foundation, not a fake cutover: `app/lib/data.js` remains the sample source until live probe execution and authenticated product reads are wired in.
 
 ## Local development
 
@@ -200,13 +222,13 @@ Production project:
 - **Repository:** https://github.com/Mentionloom/mentionloom
 - **Intended production branch:** `main`
 
-### Current deployment caveat
+### Deployment caveat
 
-The repository was moved from the personal `giovanitier/mentionloom` repository into the `Mentionloom` organization.
+The repository moved from the personal `giovanitier/mentionloom` repository into the `Mentionloom` organization, and older deployments include historical personal-repository / CLI deployment metadata.
 
-As of **September 21, 2026**, the Vercel project is still showing historical deployment metadata for `githubOrg: giovanitier`, and the latest production artifact was created through the Vercel CLI rather than from the current organization repository. Do **not** assume a push to `main` has reached production until the Vercel project Git source is explicitly reconnected to `Mentionloom/mentionloom` and the resulting deployment references the current commit.
+As checked on **September 21, 2026**, the latest production deployment metadata now reports `githubOrg: Mentionloom`, `githubRepo: mentionloom`, branch `main`, and commit `847379da3da82a19bc7897434584b70b53b4ba9f`, which matched the repository's `main` head at the time of verification.
 
-This is an infrastructure binding issue, not a build configuration issue in `vercel.json`.
+The operational rule remains: **never assume a GitHub push is live**. For every production release, verify the Vercel deployment is `READY`, its Git organization/repository are `Mentionloom/mentionloom`, and its deployed commit SHA matches the intended `main` commit. CLI deployments and historical metadata make the commit check authoritative.
 
 ## Tests
 
@@ -226,7 +248,8 @@ The current test command covers:
 - add-on contracts and disabled sample checkout;
 - local provider SVG coverage;
 - traffic metrics and filtering;
-- globe behavior.
+- globe behavior;
+- infrastructure migration, server-secret contract, and protected cron-worker configuration.
 
 The Orbit build test also verifies direct static entries for Overview, Visibility, Traffic, Questions, Opportunities, Add-ons, and the legacy Sources path.
 
@@ -238,6 +261,7 @@ The Orbit build test also verifies direct static entries for Overview, Visibilit
 - `DESIGN-v5.md` — original landing composition direction.
 - `LANDING-GTM.md` — landing-page commercial and product-story decisions.
 - `POSITIONING-NEXT.md` — question-led positioning direction.
+- `INFRASTRUCTURE.md` — auth, Postgres, workspace ownership, queue, provider-secret, and cost-ledger setup.
 - `strategy/` — ICP, metrics, design-partner, and launch-planning notes.
 
 ## Licensing and external assets
