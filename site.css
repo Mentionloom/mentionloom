@@ -3072,49 +3072,26 @@
 .marketing-app #insights.motion-armed.build-visible .feature-card:nth-child(3) { animation-delay:180ms; }
 .marketing-app #insights.motion-armed.build-visible .feature-card:nth-child(4) { animation-delay:270ms; }
 
-.marketing-app #insights.motion-armed:not(.build-visible) :is(
-  .source-row,
-  .funnel-stats > div,
-  .marketing-funnel-step,
-  .action-card-heading,
-  .action-card h4,
-  .action-checks .choice,
-  .brief-progress,
-  .shortlist-question,
-  .shortlist-brands > span,
-  .your-brand-caption
+/* Inner feature choreography is handled by Syntari/OrbitMotion in site.js.
+   Card shells still reveal in CSS so content remains resilient if JS enhancement fails. */
+.marketing-app #insights[data-motion-state="running"] :is(
+  .source-visual,
+  .funnel-visual,
+  .action-visual,
+  .shortlist-visual
 ) {
-  animation:none !important;
-  opacity:0 !important;
-  transform:translateY(8px) !important;
+  will-change:transform,opacity;
 }
-.marketing-app #insights.motion-armed.build-visible .source-row,
-.marketing-app #insights.motion-armed.build-visible .funnel-stats > div,
-.marketing-app #insights.motion-armed.build-visible .marketing-funnel-step,
-.marketing-app #insights.motion-armed.build-visible .action-card-heading,
-.marketing-app #insights.motion-armed.build-visible .action-card h4,
-.marketing-app #insights.motion-armed.build-visible .action-checks .choice,
-.marketing-app #insights.motion-armed.build-visible .brief-progress,
-.marketing-app #insights.motion-armed.build-visible .shortlist-question,
-.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span,
-.marketing-app #insights.motion-armed.build-visible .your-brand-caption {
-  animation:ml-content-build 480ms var(--ease-out) both !important;
+.marketing-app #insights .marketing-funnel-track > span,
+.marketing-app #insights .brief-progress > div > span {
+  transform-origin:left center;
+  will-change:transform;
 }
-.marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(2),
-.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(2) { animation-delay:160ms; }
-.marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(3),
-.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(3) { animation-delay:240ms; }
-.marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(4),
-.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(4) { animation-delay:320ms; }
-
-.marketing-app #insights.motion-armed:not(.build-visible) .marketing-funnel-track > span,
-.marketing-app #insights.motion-armed:not(.build-visible) .brief-progress > div > span {
-  transform:scaleX(0);
-}
-.marketing-app #insights.motion-armed.build-visible .marketing-funnel-track > span,
-.marketing-app #insights.motion-armed.build-visible .brief-progress > div > span {
-  transform-origin:left;
-  animation:ml-bar-grow 760ms var(--ease-out) 260ms both;
+.marketing-app #insights .shortlist-brands > span,
+.marketing-app #insights .source-row,
+.marketing-app #insights .marketing-funnel-step,
+.marketing-app #insights .action-checks .choice {
+  will-change:transform,opacity;
 }
 
 @keyframes ml-section-rise {
