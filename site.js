@@ -9,6 +9,16 @@ const icon = (name) =>
 const logo = (name) =>
   `<img src="/assets/brands/${name}.svg" width="24" height="24" alt="">`;
 const format = (n) => n.toLocaleString("en-US");
+function trackKobbe(name, props = {}) {
+  const clean = Object.fromEntries(
+    Object.entries(props)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .map(([key, value]) => [key, String(value).slice(0, 120)]),
+  );
+  try {
+    window.kobbe?.track?.(name, clean);
+  } catch {}
+}
 let engine = "",
   story = "visibility",
   question = "q2",
@@ -77,8 +87,13 @@ function chart() {
       `${label}: Acme ${r.visibility.toFixed(1)} percent, previous period ${r.previous.visibility.toFixed(1)} percent.`,
     );
   }
+  let chartInteractionTracked = false;
   $("#visibility-chart svg").addEventListener("pointermove", (e) => {
     if (e.pointerType === "touch") return;
+    if (!chartInteractionTracked) {
+      chartInteractionTracked = true;
+      trackKobbe("product_chart_interact", { view: story, engine: engine || "all" });
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const index = Math.round(
       Math.max(
@@ -106,12 +121,13 @@ function renderQuestions() {
     record = q.rows.filter((r) => r.engine === (engine || "chatgpt")).at(-1),
     e = ENGINES.find((e) => e.id === record.engine);
   $("#sample-answer").innerHTML =
-    `<div class="card-label">${logo(e.id)}<span>${e.name} · Sample answer</span></div><p>${record.mention ? "<mark>Acme</mark> " + q.excerpt : q.missing}</p><div class="citation-pill">${icon("link")} ${record.cited ? "acme.work" + q.page : record.external}</div><span class="badge ${record.mention ? "green" : "neutral"}">${record.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record.date} · Illustrative response to a monitored prompt, not a private conversation.</p>`;
+    `<div class="card-label">${logo(e.id)}<span>${e.name} · Sample answer</span></div><p>${record.mention ? "<mark>Acme</mark> " + q.excerpt : q.missing}</p><div class="citation-pill">${icon("link")} ${record.cited ? "acme.work" + q.page : record.external}</div><span class="badge ${record.mention ? "green" : "neutral"}">${record.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record.date} · Sample response to a monitored prompt, not a private conversation.</p>`;
   $("#question-rows")
     .querySelectorAll("button")
     .forEach((b) =>
       b.addEventListener("click", () => {
         question = b.dataset.question;
+        trackKobbe("product_question_click", { question, engine: engine || "all" });
         renderQuestions();
         $(`[data-question="${question}"]`).focus({ preventScroll: true });
         motion($("#sample-answer"));
@@ -142,6 +158,14 @@ function render(initialReport) {
     const q = report.questions.find((q) => q.id === a.question);
     return `<details class="opportunity-item"><summary><div><span>${a.label} · ${q.visibility.toFixed(0)}% visibility</span>${a.title}</div>${icon("plus")}</summary><p>${a.body}</p></details>`;
   }).join("");
+  $("#opportunity-rows").querySelectorAll("details").forEach((details, index) => {
+    details.addEventListener("toggle", () => {
+      trackKobbe(details.open ? "product_opportunity_open" : "product_opportunity_close", {
+        opportunity: ACTIONS[index]?.id || ACTIONS[index]?.label || String(index + 1),
+        engine: engine || "all",
+      });
+    });
+  });
   const scopeStatus = $("#scope-status");
   if (scopeStatus)
     scopeStatus.textContent =
@@ -171,7 +195,10 @@ function setStory(next) {
 // Do not use the gallery's data-tab handler: it replaces panels with specimen copy.
 document
   .querySelectorAll("[data-story]")
-  .forEach((b) => b.addEventListener("click", () => setStory(b.dataset.story)));
+  .forEach((b) => b.addEventListener("click", () => {
+    trackKobbe("product_view_click", { view: b.dataset.story });
+    setStory(b.dataset.story);
+  }));
 $(".story-nav").addEventListener("keydown", (e) => {
   if (ready) return;
   const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
@@ -198,6 +225,7 @@ document.querySelectorAll("[data-engine]").forEach((b) => {
   );
   b.addEventListener("click", () => {
     engine = b.dataset.engine;
+    trackKobbe("product_engine_click", { engine: engine || "all", view: story });
     document.querySelectorAll("[data-engine]").forEach((x) => {
       x.classList.toggle("active", x === b);
       x.setAttribute("aria-pressed", x === b);
@@ -209,6 +237,12 @@ document.querySelectorAll("[data-engine]").forEach((b) => {
     render();
   });
 });
+document.querySelector("[data-menu-toggle]")?.addEventListener("click", (event) => {
+  trackKobbe("product_engine_menu", {
+    state: event.currentTarget.getAttribute("aria-expanded") === "true" ? "open" : "closed",
+  });
+});
+
 $(".action-checks").addEventListener("change", () => {
   const n = $(".action-checks").querySelectorAll("input:checked").length;
   $("#brief-count").textContent = `${n} of 3 brief items ready`;
@@ -243,6 +277,13 @@ new ResizeObserver((entries) => {
     chart();
   }
 }).observe($("#visibility-chart"));
+document.querySelectorAll("#faq details").forEach((details, index) => {
+  details.addEventListener("toggle", () => {
+    const question = details.querySelector("summary")?.textContent?.trim().replace(/\s+/g, " ") || String(index + 1);
+    trackKobbe(details.open ? "faq_open" : "faq_close", { question });
+  });
+});
+
 try {
   await initializeOrbit();
   ready = true;
@@ -292,7 +333,7 @@ window.addEventListener("pagehide", (event) => {
   if (!event.persisted) globe.destroy();
 });
 
-// The scene is a browsable set of illustrative questions, not live geolocation.
+// The scene is a browsable set of sample questions, not live geolocation.
 const sceneQuestions = [
  { city:'San Francisco', country:'United States', engine:'chatgpt', question:'What’s the best project tool for a small team?', answer:'Asana makes the shortlist. Acme is missing from this answer.', source:'G2 comparison', action:'Explain which team sizes Acme supports.', evidence:'The sample answer discusses team size and setup effort, but does not mention Acme.' },
  { city:'London', country:'United Kingdom', engine:'claude', question:'Which Notion alternative is best for project tracking?', answer:'ClickUp is recommended for task dependencies. Acme is not mentioned.', source:'Product comparison', action:'Show how dependencies work in Acme.', evidence:'The sample answer focuses on dependency tracking and project views. A clear comparison page would help explain Acme’s fit.' },
@@ -307,7 +348,7 @@ function selectScene(index, animate = true) {
  $('.question-float .card-label > span').textContent = item.city === item.country ? item.city : `${item.city} · ${item.country}`;
  $('.question-float p').textContent = item.question;
  $('.answer-float .card-label img').src = `/assets/brands/${item.engine}.svg`;
- $('.answer-float .card-label > span').textContent = 'Illustrative answer';
+ $('.answer-float .card-label > span').textContent = 'Sample answer';
  $('.answer-float p').textContent = item.answer;
  $('.citation-pill').innerHTML = `${icon('link')} ${item.source}`;
  $('.signal-float strong').textContent = item.action;
@@ -324,7 +365,7 @@ function selectScene(index, animate = true) {
 }
 function openScene() {
  const item=sceneQuestions[sceneIndex];
- $('#scene-detail-content').innerHTML=`<h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.city} · ${item.engine} · illustrative</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
+ $('#scene-detail-content').innerHTML=`<h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.city} · ${item.engine} · sample</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
  $('#scene-detail').showModal();
 }
 document.querySelectorAll('[data-globe-question]').forEach(b=>b.addEventListener('click',()=>selectScene(Number(b.dataset.globeQuestion))));
