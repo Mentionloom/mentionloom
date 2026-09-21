@@ -621,6 +621,177 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
+let insightsMotionPlayed = false;
+function playInsightsMotion() {
+  const section = $("#insights");
+  if (!section || insightsMotionPlayed) return;
+  insightsMotionPlayed = true;
+  section.dataset.motionState = reduced.matches || paused ? "complete" : "running";
+  if (reduced.matches || paused || !window.OrbitMotion) return;
+
+  const enter = (el, delay = 0, distance = 8, duration = 360, scale = 0.992) => {
+    if (!el) return;
+    animate(
+      el,
+      [
+        { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      duration,
+      { delay, fill: "backwards" },
+    );
+  };
+  const enterMany = (elements, delay = 0, step = 70, options = {}) => {
+    [...elements].forEach((el, index) =>
+      enter(
+        el,
+        delay + index * step,
+        options.distance ?? 8,
+        options.duration ?? 360,
+        options.scale ?? 0.992,
+      ),
+    );
+  };
+  const rollInitial = (el, delay = 0) => {
+    if (!el || !window.OrbitNumbers) return;
+    const value = Number(el.textContent.replace(/[^\d.-]/g, ""));
+    if (!Number.isFinite(value)) return;
+    setTimeout(() => {
+      if (!el.isConnected) return;
+      window.OrbitNumbers.set(el, value, { initial: true });
+    }, delay);
+  };
+
+  const cards = [...section.querySelectorAll(".feature-card")];
+  cards.forEach((card, index) => {
+    const base = 80 + index * 120;
+    enter(card.querySelector(".feature-label"), base, 5, 260, 1);
+    enter(card.querySelector(".feature-copy h3"), base + 55, 10, 420, 0.996);
+    enter(card.querySelector(".feature-copy > p"), base + 125, 7, 330, 1);
+    enter(
+      card.querySelector(".source-visual,.funnel-visual,.action-visual,.shortlist-visual"),
+      base + 205,
+      14,
+      520,
+      0.988,
+    );
+  });
+
+  // Cited content — table structure resolves like the product's ranked evidence lists.
+  const sourceCard = section.querySelector(".source-card");
+  if (sourceCard) {
+    const base = 365;
+    enter(sourceCard.querySelector(".visual-table-head"), base, 5, 280, 1);
+    const rows = [...sourceCard.querySelectorAll(".source-row")];
+    enterMany(rows, base + 90, 75, { distance: 6, duration: 320, scale: 0.995 });
+    rows.forEach((row, index) => rollInitial(row.querySelector("b"), base + 150 + index * 75));
+  }
+
+  // Referrals — roll the outcome numbers, then build the funnel from top to bottom.
+  const trafficCard = section.querySelector(".traffic-card");
+  if (trafficCard) {
+    const base = 470;
+    const stats = [...trafficCard.querySelectorAll(".funnel-stats > div")];
+    enterMany(stats, base, 95, { distance: 7, duration: 330, scale: 0.995 });
+    rollInitial($("#referral-number"), base + 45);
+    rollInitial($("#lead-number"), base + 140);
+    const steps = [...trafficCard.querySelectorAll(".marketing-funnel-step")];
+    enterMany(steps, base + 250, 95, { distance: 7, duration: 320, scale: 0.995 });
+    steps.forEach((step, index) => {
+      const bar = step.querySelector(".marketing-funnel-track > span");
+      if (!bar) return;
+      animate(
+        bar,
+        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
+        720,
+        { delay: base + 325 + index * 105, fill: "backwards" },
+      );
+    });
+  }
+
+  // Opportunity — assemble the brief as a real task, not a decorative card.
+  const actionCard = section.querySelector(".action-card");
+  if (actionCard) {
+    const base = 650;
+    enter(actionCard.querySelector(".action-card-heading"), base, 5, 280, 1);
+    enter(actionCard.querySelector(".action-visual h4"), base + 70, 9, 360, 0.996);
+    enter(actionCard.querySelector(".action-visual > p"), base + 135, 6, 300, 1);
+    const choices = [...actionCard.querySelectorAll(".action-checks .choice")];
+    enterMany(choices, base + 235, 85, { distance: 6, duration: 300, scale: 0.995 });
+    choices.forEach((choice, index) => {
+      const input = choice.querySelector("input");
+      if (!input) return;
+      animate(
+        input,
+        [
+          { opacity: 0.45, transform: "scale(.76)" },
+          { opacity: 1, transform: "scale(1.08)", offset: 0.72 },
+          { opacity: 1, transform: "scale(1)" },
+        ],
+        300,
+        { delay: base + 315 + index * 85, fill: "backwards" },
+      );
+    });
+    enter(actionCard.querySelector(".brief-progress"), base + 520, 6, 300, 1);
+    const progress = actionCard.querySelector(".brief-progress > div > span");
+    progress &&
+      animate(progress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 650, {
+        delay: base + 585,
+        fill: "backwards",
+      });
+  }
+
+  // Competitive context — question first, shortlist assembles, then Acme lands in context.
+  const audienceCard = section.querySelector(".audience-card");
+  if (audienceCard) {
+    const base = 830;
+    enter(audienceCard.querySelector(".shortlist-question"), base, 8, 340, 0.992);
+    const brandGroup = audienceCard.querySelector(".shortlist-brands");
+    brandGroup &&
+      animate(
+        brandGroup,
+        [{ opacity: 0.18 }, { opacity: 1 }],
+        430,
+        { delay: base + 120, fill: "backwards" },
+      );
+    const brands = [...audienceCard.querySelectorAll(".shortlist-brands > span")];
+    brands.forEach((brand, index) => {
+      const isSelf = brand.classList.contains("your-brand");
+      animate(
+        brand,
+        [
+          {
+            opacity: 0,
+            transform: isSelf
+              ? "translateY(3px) scale(.78)"
+              : "translateY(8px) scale(.82)",
+          },
+          {
+            opacity: 1,
+            transform: isSelf
+              ? "translateY(-7px) scale(1.06)"
+              : "translateY(0) scale(1.04)",
+            offset: 0.76,
+          },
+          {
+            opacity: 1,
+            transform: isSelf
+              ? "translateY(-7px) scale(1)"
+              : "translateY(0) scale(1)",
+          },
+        ],
+        430,
+        { delay: base + 205 + index * 95, fill: "backwards" },
+      );
+    });
+    enter(audienceCard.querySelector(".your-brand-caption"), base + 640, 6, 300, 1);
+  }
+
+  setTimeout(() => {
+    section.dataset.motionState = "complete";
+  }, 2350);
+}
+
 let approachMotionPlayed = false;
 function playApproachMotion() {
   const section = $("#approach");
@@ -803,6 +974,19 @@ try {
   await enhance($(".faq-list"));
   await enhance($("#opportunity-rows"));
   window.OrbitMotion.prepare($(".story-nav"));
+
+  const insights = $("#insights");
+  if (insights) {
+    const insightsObserver = new IntersectionObserver(
+      ([entry], observer) => {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        playInsightsMotion();
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -6% 0px" },
+    );
+    insightsObserver.observe(insights);
+  }
 
   const approach = $("#approach");
   if (approach) {
