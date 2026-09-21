@@ -341,7 +341,12 @@ window.addEventListener("pagehide", (event) => {
 const sceneQuestions = [
  { city:'San Francisco', country:'United States', flag:'us', engine:'chatgpt', question:'What’s the best project tool for a small team?', answer:'Asana makes the shortlist. Acme is missing from this answer.', source:'G2 comparison', action:'Explain which team sizes Acme supports.', evidence:'The answer discusses team size and setup effort, but does not mention Acme.' },
  { city:'London', country:'United Kingdom', flag:'gb', engine:'claude', question:'Which Notion alternative is best for project tracking?', answer:'ClickUp is recommended for task dependencies. Acme is not mentioned.', source:'Product comparison', action:'Show how dependencies work in Acme.', evidence:'The answer focuses on dependency tracking and project views. A clear comparison page would help explain Acme’s fit.' },
- { city:'Singapore', country:'Singapore', flag:'sg', engine:'perplexity', question:'What is an affordable tool for a growing remote team?', answer:'Notion appears for its entry price. Acme is missing from the comparison.', source:'Pricing guide', action:'Make the per-seat cost easy to compare.', evidence:'The answer compares entry plans. Explain included features and the cost as a team grows.' }
+ { city:'Singapore', country:'Singapore', flag:'sg', engine:'perplexity', question:'What is an affordable tool for a growing remote team?', answer:'Notion appears for its entry price. Acme is missing from the comparison.', source:'Pricing guide', action:'Make the per-seat cost easy to compare.', evidence:'The answer compares entry plans. Explain included features and the cost as a team grows.' },
+ { city:'Madrid', country:'Spain', flag:'es', engine:'gemini', question:'Which project tool is easiest for a small European startup?', answer:'ClickUp is highlighted for flexible setup. Acme is not included.', source:'Startup software guide', action:'Clarify setup time and EU-ready workflows.', evidence:'The answer rewards quick setup and team flexibility. Acme needs clearer proof around both.' },
+ { city:'Tokyo', country:'Japan', flag:'jp', engine:'chatgpt', question:'What project tool works well for distributed product teams?', answer:'Notion and Asana are recommended. Acme is missing from the shortlist.', source:'Remote work comparison', action:'Show async handoffs and ownership clearly.', evidence:'The answer emphasizes asynchronous context and clear ownership across time zones.' },
+ { city:'São Paulo', country:'Brazil', flag:'br', engine:'claude', question:'What is a good affordable project tool for a growing agency?', answer:'Monday and ClickUp appear for agency workflows. Acme is not mentioned.', source:'Agency tools guide', action:'Make agency workflows and pricing easier to compare.', evidence:'The answer weighs client work, templates, and cost as teams grow.' },
+ { city:'Sydney', country:'Australia', flag:'au', engine:'perplexity', question:'Which project tool is best for a remote-first team?', answer:'Asana appears for coordination across remote teams. Acme is absent.', source:'Remote teams roundup', action:'Show remote collaboration patterns.', evidence:'The answer highlights visibility, handoffs, and asynchronous collaboration.' },
+ { city:'Berlin', country:'Germany', flag:'de', engine:'gemini', question:'Which project management tool is a good fit for a lean SaaS team?', answer:'Linear and Notion are favored for focused product teams. Acme is not listed.', source:'SaaS tools comparison', action:'Explain Acme’s fit for lean product teams.', evidence:'The answer favors focus, fast setup, and product-development workflows.' }
 ];
 let sceneIndex = 0;
 function selectScene(index, animate = true) {
@@ -382,7 +387,7 @@ const discoveryScene = $('.discovery-scene');
 let sceneVisible = false, sceneTimer;
 function scheduleScene() {
  clearTimeout(sceneTimer);
- if (!sceneVisible || document.hidden || paused || reduced.matches || $('#scene-detail').open || discoveryScene.matches(':hover') || discoveryScene.contains(document.activeElement)) return;
+ if (!sceneVisible || document.hidden || paused || reduced.matches || $('#scene-detail').open || discoveryScene.matches(':hover') || discoveryScene.contains(document.activeElement) || discoveryScene.querySelector('.globe-wrap')?.classList.contains('is-dragging')) return;
  sceneTimer = setTimeout(() => {
    selectScene((sceneIndex + 1) % sceneQuestions.length);
    scheduleScene();
@@ -395,25 +400,13 @@ const sceneObserver = new IntersectionObserver(([entry]) => {
 sceneObserver.observe(discoveryScene);
 ['pointerenter','pointerleave','focusin'].forEach(event => discoveryScene.addEventListener(event, scheduleScene));
 discoveryScene.addEventListener('focusout', () => setTimeout(scheduleScene, 0));
+discoveryScene.addEventListener('mentionloom:globe-drag-end', scheduleScene);
 $('#scene-detail').addEventListener('close', scheduleScene);
 document.addEventListener('visibilitychange', scheduleScene);
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
 
 
-
-const brandFooter = document.querySelector(".brand-footer");
-let footerFrame = 0;
-function syncFooterFlush() {
-  if (!brandFooter) return;
-  const remaining = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
-  brandFooter.classList.toggle("is-flush", remaining <= 4);
-}
-function requestFooterSync() {
-  if (footerFrame) return;
-  footerFrame = requestAnimationFrame(() => {
-    footerFrame = 0;
-    syncFooterFlush();
   });
 }
 window.addEventListener("scroll", requestFooterSync, { passive: true });
