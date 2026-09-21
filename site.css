@@ -2480,35 +2480,7 @@
 
 .marketing-app .section-heading.step-revealed { animation:rise-in 640ms var(--ease-out) both; }
 
-/* Insights: the four widgets build themselves in view. */
-.marketing-app #insights .feature-card.step-revealed .feature-copy { animation:rise-in 560ms var(--ease-out) both; }
-.marketing-app #insights .feature-card.step-revealed .feature-copy h3 { animation:rise-in 520ms var(--ease-out) 70ms both; }
-.marketing-app #insights .feature-card.step-revealed .feature-copy p { animation:rise-in 520ms var(--ease-out) 140ms both; }
-.marketing-app #insights .source-row { animation:rise-in 460ms var(--ease-out) both; }
-.marketing-app #insights .source-row:nth-child(2) { animation-delay:90ms; }
-.marketing-app #insights .source-row:nth-child(3) { animation-delay:180ms; }
-.marketing-app #insights .source-row:nth-child(4) { animation-delay:270ms; }
-.marketing-app #insights .funnel-stats > div { animation:rise-in 480ms var(--ease-out) both; }
-.marketing-app #insights .funnel-stats > div:nth-child(2) { animation-delay:110ms; }
-.marketing-app #insights .marketing-funnel-step { animation:rise-in 480ms var(--ease-out) both; }
-.marketing-app #insights .marketing-funnel-step:nth-child(1) { animation-delay:180ms; }
-.marketing-app #insights .marketing-funnel-step:nth-child(2) { animation-delay:300ms; }
-.marketing-app #insights .marketing-funnel-step:nth-child(3) { animation-delay:420ms; }
-.marketing-app #insights .marketing-funnel-track > span { transform-origin:left; animation:grow-bar 720ms var(--ease-out) both; }
-.marketing-app #insights .marketing-funnel-step:nth-child(2) .marketing-funnel-track > span { animation-delay:120ms; }
-.marketing-app #insights .marketing-funnel-step:nth-child(3) .marketing-funnel-track > span { animation-delay:240ms; }
-.marketing-app #insights .action-card .action-card-heading { animation:rise-in 460ms var(--ease-out) 60ms both; }
-.marketing-app #insights .action-card h4 { animation:rise-in 520ms var(--ease-out) 140ms both; }
-.marketing-app #insights .action-card .choice { animation:tick-in 460ms var(--ease-out) both; }
-.marketing-app #insights .action-card .choice:nth-child(2) { animation-delay:120ms; }
-.marketing-app #insights .action-card .choice:nth-child(3) { animation-delay:240ms; }
-.marketing-app #insights .action-card .brief-progress { animation:rise-in 460ms var(--ease-out) 360ms both; }
-.marketing-app #insights .shortlist-question { animation:rise-in 520ms var(--ease-out) both; }
-.marketing-app #insights .shortlist-brands > span { animation:pop-in 520ms var(--ease-out) both; }
-.marketing-app #insights .shortlist-brands > span:nth-child(1) { animation-delay:160ms; }
-.marketing-app #insights .shortlist-brands > span:nth-child(2) { animation-delay:260ms; }
-.marketing-app #insights .shortlist-brands > span:nth-child(3) { animation-delay:360ms; }
-.marketing-app #insights .shortlist-brands > span:nth-child(4) { animation-delay:460ms; }
+/* Insights motion is orchestrated with Syntari/OrbitMotion in site.js on viewport entry. */
 
 /* Workflow step 1: the site is mapped, so the company mark loads with the domain. */
 .workflow-address .workflow-site { display:flex; align-items:center; gap:8px; }
