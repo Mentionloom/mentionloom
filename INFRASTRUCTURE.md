@@ -52,6 +52,8 @@ The migration creates `jobs` and the atomic `claim_jobs()` function.
 
 The initial handler supports `provider_config_check` only. Provider probe execution should be registered here next rather than embedded in browser requests.
 
+The repository currently schedules a **daily** Vercel Cron fallback because the project rejected the initial five-minute cron configuration. Before live baseline execution, either move the project to a cadence that supports frequent workers or use a dedicated workflow runner. Do not pretend the daily fallback is sufficient for an interactive baseline.
+
 ## Cost ledger
 
 Use `recordCost()` immediately after each provider request resolves (or after a provider reports billable usage). Store:
