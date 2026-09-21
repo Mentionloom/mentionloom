@@ -1299,9 +1299,8 @@ function finishBaseline() {
   state.step = 8;
   unlock(8);
   save();
-  render();
-  document.querySelector("#main")?.focus({ preventScroll: true });
-  window.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
+  store("first-report-dismissed", false);
+  window.location.assign("/app/overview/?firstReport=1");
 }
 
 function resetPrototype() {
