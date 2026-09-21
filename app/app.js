@@ -210,7 +210,7 @@ function update(patch) {
   }
   $("#filter-status").textContent =
     currentView === "traffic" ? `Showing ${trafficData.current.referrals} visits, ${sourceLabel(state.source)}, ${countryLabel(state.country)}, ${state.device || "all devices"}.` :
-    `Showing ${state.days} days, ${state.engine ? engine(state.engine).name : "all engines"}, ${state.topic || "all topics"}. ${fmt(data.current.samples)} sampled answers.`;
+    `Showing ${state.days} days, ${state.engine ? engine(state.engine).name : "all engines"}, ${state.topic || "all topics"}. ${fmt(data.current.samples)} answers.`;
 }
 function render() {
   data = select(state);
@@ -318,7 +318,7 @@ function renderMainChart() {
   $("#comparison-dates").textContent = `${date(comparison.start)} – ${date(comparison.end)}`;
   $("#sample-count").textContent =
     state.metric === "visibility" || state.metric === "citations"
-      ? `${fmt(data.current.samples)} sampled answers`
+      ? `${fmt(data.current.samples)} answers`
       : `${fmt(data.current.referrals)} attributed sessions`;
   renderChart(
     $("#main-chart"),
@@ -584,7 +584,7 @@ function answerCard(r) {
   const names = r.competitors.length
     ? r.competitors.join(", ")
     : "other dedicated project management tools";
-  return `<article class="answer-card"><div class="answer-head">${engineIcon(e)}${e.name}<span class="badge ${r.mention ? "green" : "amber"}">${r.mention ? "Mentioned" : "Missing"}</span></div><blockquote>${r.mention ? `<mark>Acme</mark> ${esc(q.excerpt)} ${r.competitors.length ? "Other options to compare include " + esc(names) + "." : ""}` : `${esc(q.missing)} ${r.competitors.length ? "The options in this answer include " + esc(names) + "." : ""}`}</blockquote><div class="answer-source">${icon("link")}${r.cited ? "acme.work" + esc(r.page) : esc(r.external)}</div><div class="answer-meta">Illustrative answer excerpt · ${date(r.date)}, 2026${r.position ? " · Acme at position " + r.position : ""}</div></article>`;
+  return `<article class="answer-card"><div class="answer-head">${engineIcon(e)}${e.name}<span class="badge ${r.mention ? "green" : "amber"}">${r.mention ? "Mentioned" : "Missing"}</span></div><blockquote>${r.mention ? `<mark>Acme</mark> ${esc(q.excerpt)} ${r.competitors.length ? "Other options to compare include " + esc(names) + "." : ""}` : `${esc(q.missing)} ${r.competitors.length ? "The options in this answer include " + esc(names) + "." : ""}`}</blockquote><div class="answer-source">${icon("link")}${r.cited ? "acme.work" + esc(r.page) : esc(r.external)}</div><div class="answer-meta">Answer excerpt · ${date(r.date)}, 2026${r.position ? " · Acme at position " + r.position : ""}</div></article>`;
 }
 function answerSamplesHTML(rows) {
   if (!rows.length) return empty("No samples in this view", "Change the topic filter to see this question’s measurements.");
@@ -616,7 +616,7 @@ function openQuestion(id, answerDate, answerEngine) {
   detail(
     q.text,
     q.topic + " · BUYER QUESTION",
-    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(rows.length ? (hits / rows.length) * 100 : 0)}</strong></div><div><span>Answers sampled</span><strong>${fmt(rows.length)}</strong></div></div>${evidence}<h3>${specific ? "Selected answer" : "Latest answers"}</h3>${answerSamplesHTML(specific ? [specific] : latest)}<h3>Target page</h3><button class="rank-row self" data-source-page="${q.page}" style="--share:100%">${icon("file")}<span class="rank-name">acme.work${q.page}</span>${icon("arrow")}</button>${
+    `<div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(rows.length ? (hits / rows.length) * 100 : 0)}</strong></div><div><span>Answers</span><strong>${fmt(rows.length)}</strong></div></div>${evidence}<h3>${specific ? "Selected answer" : "Latest answers"}</h3>${answerSamplesHTML(specific ? [specific] : latest)}<h3>Target page</h3><button class="rank-row self" data-source-page="${q.page}" style="--share:100%">${icon("file")}<span class="rank-name">acme.work${q.page}</span>${icon("arrow")}</button>${
       ACTIONS.some((a) => a.question === id)
         ? `<h3>Next move</h3><div class="drawer-list">${ACTIONS.filter(
             (a) => a.question === id,
@@ -632,7 +632,7 @@ function openQuestion(id, answerDate, answerEngine) {
 }
 function questionEvidenceHTML(rows) {
   const e = recommendationEvidence(rows);
-  if (!e.lostAnswers) return '<p class="small-label">No competitor-only answers in this sample.</p>';
+  if (!e.lostAnswers) return '<p class="small-label">No competitor-only answers in this view.</p>';
   return `<div class="benchmark-heading"><h3>Competitors</h3><span>${e.lostAnswers} / ${e.samples} answers</span></div><div class="rank-list">${e.competitors.map((c) => `<button class="rank-row" data-competitor="${esc(c.name)}"><span class="rank-name">${esc(c.name)}</span><span class="rank-value">${c.count}</span>${icon("right")}</button>`).join("")}</div><details class="evidence-disclosure"><summary>Cited sources<span class="disclosure-end">${e.sources.length}${icon("down")}</span></summary><div class="rank-list">${e.sources.map((s) => `<button class="rank-row" data-source-page="${esc(s.name)}"><span class="rank-name">${esc(s.name)}</span><span class="rank-value">${s.count} citations</span>${icon("right")}</button>`).join("")}</div><p>Sources cited in answers naming competitors without Acme. Frequency shows association, not causation.</p></details>`;
 }
 function openRecommendationEvidence(id) {
@@ -642,12 +642,12 @@ function openRecommendationEvidence(id) {
 }
 function recommendationDetails() {
   const e = recommendationEvidence(data.a);
-  detail("Recommendation share", "METRIC DETAILS", `<div class="drawer-stats"><div><span>Shortlisted answers</span><strong>${fmt(e.recommendations)}</strong></div><div><span>Total answers</span><strong>${fmt(e.samples)}</strong></div></div><p>${pct(e.share)} of sampled answers record an Acme shortlist position.</p><details><summary>Definition${icon("down")}</summary><p>Shortlisted answers divided by all sampled answers in the selected period, engines, and topics. Mention rate remains available in Visibility. The demo assigns a position to every mention, so these two rates currently match.</p></details><button class="button" data-action="lost-questions">Explore lost questions${icon("right")}</button>`);
+  detail("Recommendation share", "METRIC DETAILS", `<div class="drawer-stats"><div><span>Shortlisted answers</span><strong>${fmt(e.recommendations)}</strong></div><div><span>Total answers</span><strong>${fmt(e.samples)}</strong></div></div><p>${pct(e.share)} of answers record an Acme shortlist position.</p><details><summary>Definition${icon("down")}</summary><p>Shortlisted answers divided by all answers in the selected period, engines, and topics. Mention rate remains available in Visibility. The demo assigns a position to every mention, so these two rates currently match.</p></details><button class="button" data-action="lost-questions">Explore lost questions${icon("right")}</button>`);
 }
 function lostQuestions() {
   const e = recommendationEvidence(data.a);
   const questions = data.questions.map((q) => ({ ...q, losses: recommendationEvidence(q.rows).lostAnswers })).filter((q) => q.losses).sort((a, b) => b.losses - a.losses);
-  detail("Lost questions", "RECOMMENDATION GAPS", `<div class="drawer-stats"><div><span>Questions with losses</span><strong>${e.lostQuestions}<small> / ${e.questions}</small></strong></div><div><span>Lost answers</span><strong>${fmt(e.lostAnswers)}</strong></div></div><div class="benchmark-heading"><h3>Buyer question</h3><span>Lost answers</span></div><div class="benchmark-list">${questions.map((q) => `<button class="benchmark-question" data-question="${q.id}"><span class="benchmark-question-copy"><strong>${esc(q.text)}</strong></span><span class="benchmark-count"><strong>${q.losses}</strong></span>${icon("right")}</button>`).join("") || '<p>No lost questions in this view.</p>'}</div><details><summary>Definition${icon("down")}</summary><p>A lost question has at least one sampled answer naming a competitor without Acme. The same question can also have wins on other dates or engines. Counts follow your current filters; pending questions are excluded.</p></details>`);
+  detail("Lost questions", "RECOMMENDATION GAPS", `<div class="drawer-stats"><div><span>Questions with losses</span><strong>${e.lostQuestions}<small> / ${e.questions}</small></strong></div><div><span>Lost answers</span><strong>${fmt(e.lostAnswers)}</strong></div></div><div class="benchmark-heading"><h3>Buyer question</h3><span>Lost answers</span></div><div class="benchmark-list">${questions.map((q) => `<button class="benchmark-question" data-question="${q.id}"><span class="benchmark-question-copy"><strong>${esc(q.text)}</strong></span><span class="benchmark-count"><strong>${q.losses}</strong></span>${icon("right")}</button>`).join("") || '<p>No lost questions in this view.</p>'}</div><details><summary>Definition${icon("down")}</summary><p>A lost question has at least one answer naming a competitor without Acme. The same question can also have wins on other dates or engines. Counts follow your current filters; pending questions are excluded.</p></details>`);
 }
 function openPage(path) {
   const own = path.startsWith("/");
@@ -658,7 +658,7 @@ function openPage(path) {
   detail(
     own ? "acme.work" + path : path,
     own ? "YOUR WEBSITE · CITED PAGE" : "EXTERNAL SOURCE",
-    `<div class="drawer-stats"><div><span>Sampled citations</span><strong>${fmt(rows.length)}</strong></div><div><span>${own ? "AI referrals" : "Distinct questions"}</span><strong>${own ? fmt(v.length) : new Set(rows.map((r) => r.question)).size}</strong></div></div><div class="notice">${own ? "Website citations and referrals are separate signals. We cannot tie a particular click to a specific private AI conversation." : "External sources are pages cited in sampled answers. They can shape the answer even when your own website is not cited."}</div><h3>Source answers</h3><div class="drawer-list">${answersList(rows) || empty("No citations in this view", "Try another reporting period or filter.")}</div>${
+    `<div class="drawer-stats"><div><span>Citations</span><strong>${fmt(rows.length)}</strong></div><div><span>${own ? "AI referrals" : "Distinct questions"}</span><strong>${own ? fmt(v.length) : new Set(rows.map((r) => r.question)).size}</strong></div></div><div class="notice">${own ? "Website citations and referrals are separate signals. We cannot tie a particular click to a specific private AI conversation." : "External sources are pages cited in answers. They can shape the answer even when your own website is not cited."}</div><h3>Source answers</h3><div class="drawer-list">${answersList(rows) || empty("No citations in this view", "Try another reporting period or filter.")}</div>${
       own
         ? `<h3>Page traffic</h3><table class="data-table"><thead><tr><th>Engine</th><th>Sessions</th><th>Leads</th></tr></thead><tbody>${ENGINES.filter(
             (e) => !state.engine || state.engine === e.id,
@@ -691,7 +691,7 @@ function openCompetitor(name) {
   detail(
     name,
     name === "Acme" ? "YOUR BRAND" : "COMPETITOR BENCHMARK",
-    `<p class="benchmark-scope">${state.engine ? esc(engine(state.engine).name) : "All engines"} · ${date(data.start)} – ${date(data.end)} · Sample data</p><div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(c.share)}</strong></div><div><span>${name === "Acme" ? "Answers mentioning you" : "Answers without Acme"}</span><strong>${fmt(name === "Acme" ? c.count : gaps.length)}</strong></div></div><div class="benchmark-heading"><h3>${name === "Acme" ? "Mentions" : "Visibility gaps"}</h3><span>${grouped.length} questions</span></div><p class="benchmark-description">${name === "Acme" ? "Ranked by sampled mentions." : esc(name) + " appears in these answers without Acme. Open a question to inspect the latest sample."}</p><div class="benchmark-list">${evidence || empty("No missing mentions here", "Acme appears alongside this brand in the current sample.")}</div><details class="benchmark-method"><summary>How this is measured</summary><p>${fmt(c.count)} of ${fmt(data.current.samples)} sampled answers mention ${esc(name)}. Each question groups its matching answers across this reporting period. Multiple brands can appear in one answer; rates do not add to 100%.</p></details>`,
+    `<p class="benchmark-scope">${state.engine ? esc(engine(state.engine).name) : "All engines"} · ${date(data.start)} – ${date(data.end)} · Demo data</p><div class="drawer-stats"><div><span>Mention rate</span><strong>${pct(c.share)}</strong></div><div><span>${name === "Acme" ? "Answers mentioning you" : "Answers without Acme"}</span><strong>${fmt(name === "Acme" ? c.count : gaps.length)}</strong></div></div><div class="benchmark-heading"><h3>${name === "Acme" ? "Mentions" : "Visibility gaps"}</h3><span>${grouped.length} questions</span></div><p class="benchmark-description">${name === "Acme" ? "Ranked by sampled mentions." : esc(name) + " appears in these answers without Acme. Open a question to inspect the latest answer."}</p><div class="benchmark-list">${evidence || empty("No missing mentions here", "Acme appears alongside this brand in the current view.")}</div><details class="benchmark-method"><summary>How this is measured</summary><p>${fmt(c.count)} of ${fmt(data.current.samples)} answers mention ${esc(name)}. Each question groups its matching answers across this reporting period. Multiple brands can appear in one answer; rates do not add to 100%.</p></details>`,
   );
 }
 function openAction(id, replace = false) {
@@ -800,8 +800,8 @@ function addonPreview(addon) {
   if (addon.id === "weekly-brief")
     return `<div class="addon-preview"><div class="addon-preview-head"><strong>Monday, at a glance</strong><span>Last ${state.days} days</span></div><div class="addon-preview-row"><span>Mention rate</span><strong>${pct(data.current.visibility)}</strong></div><div class="addon-preview-row"><span>AI referrals</span><strong>${fmt(data.current.referrals)}</strong></div><div class="addon-preview-row"><span>Next opportunity</span><strong>${esc(gap?.topic || "Discovery")}</strong></div></div>`;
   if (addon.id === "crawler-guard")
-    return `<div class="addon-preview"><div class="addon-preview-head"><strong>Illustrative access check</strong><span>30 days</span></div>${CRAWLERS.slice(0, 3).map((crawler) => `<div class="addon-preview-row"><span>${esc(crawler.name)}</span><strong>${esc(crawler.status)} · ${fmt(crawler.count)}</strong></div>`).join("")}</div>`;
-  return `<div class="addon-preview"><div class="addon-preview-head"><strong>Illustrative AI pipeline</strong><span>Current view</span></div><div class="addon-preview-row"><span>Attributed sessions</span><strong>${fmt(data.current.referrals)}</strong></div><div class="addon-preview-row"><span>Leads created</span><strong>${fmt(data.current.leads)}</strong></div><div class="addon-preview-row"><span>Visit → lead</span><strong>${pct(data.current.referrals ? (data.current.leads / data.current.referrals) * 100 : 0)}</strong></div></div>`;
+    return `<div class="addon-preview"><div class="addon-preview-head"><strong>Access check</strong><span>30 days</span></div>${CRAWLERS.slice(0, 3).map((crawler) => `<div class="addon-preview-row"><span>${esc(crawler.name)}</span><strong>${esc(crawler.status)} · ${fmt(crawler.count)}</strong></div>`).join("")}</div>`;
+  return `<div class="addon-preview"><div class="addon-preview-head"><strong>AI pipeline</strong><span>Current view</span></div><div class="addon-preview-row"><span>Attributed sessions</span><strong>${fmt(data.current.referrals)}</strong></div><div class="addon-preview-row"><span>Leads created</span><strong>${fmt(data.current.leads)}</strong></div><div class="addon-preview-row"><span>Visit → lead</span><strong>${pct(data.current.referrals ? (data.current.leads / data.current.referrals) * 100 : 0)}</strong></div></div>`;
 }
 function openAddon(id, replace = false) {
   const addon = ADDONS.find(item => item.id === id);
@@ -822,7 +822,7 @@ function renderAddons() {
     document.title = `${addon.name} · Add-ons · Mentionloom`;
     root.innerHTML = `<a class="market-back" href="/app/addons/" data-route="addons">${icon("right")} All add-ons</a>${addonDetailHTML(addon, addonState[addon.id])}`;
   } else {
-    root.innerHTML = `<div class="market-intro"><div><h2>Tools for your next step</h2><p>Content, monitoring and reporting. Add what your team needs.</p></div><label class="market-search">${icon("search")}<input type="search" id="market-search" placeholder="Search add-ons" aria-label="Search add-ons"></label></div><div class="market-toolbar"><div class="market-categories" aria-label="Product categories">${["All products", "Content", "Monitoring", "Reporting", "Attribution"].map((c,i)=>`<button class="button" data-market-category="${c}" aria-pressed="${i===0}">${c}</button>`).join("")}</div><span class="small-label">Sample pricing · USD / month</span></div><div class="market-grid">${ADDONS.map(a=>`<div data-product-category="${a.category}" data-product-search="${esc(`${a.name} ${a.description}`.toLowerCase())}">${addonRowHTML(a,addonState[a.id])}</div>`).join("")}</div><p id="market-empty" class="market-empty" hidden>No add-ons match. Try another search or category.</p>`;
+    root.innerHTML = `<div class="market-intro"><div><h2>Tools for your next step</h2><p>Content, monitoring and reporting. Add what your team needs.</p></div><label class="market-search">${icon("search")}<input type="search" id="market-search" placeholder="Search add-ons" aria-label="Search add-ons"></label></div><div class="market-toolbar"><div class="market-categories" aria-label="Product categories">${["All products", "Content", "Monitoring", "Reporting", "Attribution"].map((c,i)=>`<button class="button" data-market-category="${c}" aria-pressed="${i===0}">${c}</button>`).join("")}</div><span class="small-label">Preview pricing · USD / month</span></div><div class="market-grid">${ADDONS.map(a=>`<div data-product-category="${a.category}" data-product-search="${esc(`${a.name} ${a.description}`.toLowerCase())}">${addonRowHTML(a,addonState[a.id])}</div>`).join("")}</div><p id="market-empty" class="market-empty" hidden>No add-ons match. Try another search or category.</p>`;
   }
 }
 function filterMarketplace() {
@@ -873,7 +873,7 @@ function openDay(start, end = start, metric = state.metric) {
   detail(
     date(start) + (end !== start ? " – " + date(end) : ""),
     "DAILY DETAIL · " + LABELS[metric].toUpperCase(),
-    `<div class="drawer-stats"><div><span>Answers mentioning Acme</span><strong>${rows.filter((r) => r.mention).length}<small style="font-size:15px;color:var(--muted)"> / ${rows.length}</small></strong></div><div><span>AI referrals</span><strong>${fmt(visits.length)}</strong></div></div><h3>Answer samples</h3><div class="drawer-list">${answersList(rows, 16)}</div><div class="notice">This panel follows the engine and topic filters on your dashboard. All entries belong to the sample workspace.</div>`,
+    `<div class="drawer-stats"><div><span>Answers mentioning Acme</span><strong>${rows.filter((r) => r.mention).length}<small style="font-size:15px;color:var(--muted)"> / ${rows.length}</small></strong></div><div><span>AI referrals</span><strong>${fmt(visits.length)}</strong></div></div><h3>Answer samples</h3><div class="drawer-list">${answersList(rows, 16)}</div><div class="notice">This panel follows the engine and topic filters on your dashboard. All entries belong to the demo workspace.</div>`,
   );
 }
 function methodology() {
@@ -884,8 +884,8 @@ function methodology() {
       [
         "spark",
         "Answer visibility",
-        "Sampled",
-        "We ask a defined set of buyer questions, then count brand mentions and website citations in the returned answers. This estimates visibility for that sample; it cannot observe every conversation.",
+        "Observed",
+        "We ask a defined set of buyer questions, then count brand mentions and website citations in the returned answers. This estimates visibility for that question set; it cannot observe every conversation.",
       ],
       [
         "people",
@@ -912,14 +912,14 @@ function methodology() {
       )
       .join(
         "",
-      )}<div class="notice">This entire workspace uses deterministic sample data through September 9, 2026. No live integrations or private AI conversations are connected. Topic filters map answer topics to their related landing pages; this is not a session-to-answer identity match.</div><details><summary>How are chart comparisons calculated?</summary><p>Each period is compared with the immediately preceding period of the same length. Mention-rate changes use percentage points; count changes use relative percentages. The 90-day chart groups observations into three-day intervals. All chart axes start at zero.</p></details><details><summary>What counts as a citation?</summary><p>A sampled answer that links to acme.work counts as one website citation. Mentions without a link still count toward mention rate. An external page may be cited alongside or instead of your website.</p></details><details><summary>Can a mention guarantee traffic or revenue?</summary><p>No. Answers, referrals, and lead events are different datasets. The dashboard brings them together for analysis without claiming that a specific answer caused a visit.</p></details>`,
+      )}<div class="notice">This entire workspace uses demo data through September 9, 2026. No live integrations or private AI conversations are connected. Topic filters map answer topics to their related landing pages; this is not a session-to-answer identity match.</div><details><summary>How are chart comparisons calculated?</summary><p>Each period is compared with the immediately preceding period of the same length. Mention-rate changes use percentage points; count changes use relative percentages. The 90-day chart groups observations into three-day intervals. All chart axes start at zero.</p></details><details><summary>What counts as a citation?</summary><p>A answer that links to acme.work counts as one website citation. Mentions without a link still count toward mention rate. An external page may be cited alongside or instead of your website.</p></details><details><summary>Can a mention guarantee traffic or revenue?</summary><p>No. Answers, referrals, and lead events are different datasets. The dashboard brings them together for analysis without claiming that a specific answer caused a visit.</p></details>`,
   );
 }
 function sourceDetails() {
   detail(
     "Data setup",
     "WORKSPACE",
-    `<p>This workspace uses sample data. Live connections are not available yet.</p><dl class="data-setup-list"><div><dt>AI answers</dt><dd>Answer samples power mention rates and citations.</dd></div><div><dt>Website analytics</dt><dd>Visits and events power traffic and conversions.</dd></div><div><dt>Server logs</dt><dd>Optional crawler monitoring for Crawler Guard.</dd></div></dl>`,
+    `<p>This workspace uses demo data. Live connections are not available yet.</p><dl class="data-setup-list"><div><dt>AI answers</dt><dd>AI answers power mention rates and citations.</dd></div><div><dt>Website analytics</dt><dd>Visits and events power traffic and conversions.</dd></div><div><dt>Server logs</dt><dd>Optional crawler monitoring for Crawler Guard.</dd></div></dl>`,
   );
 }
 function setup() {
@@ -1005,7 +1005,7 @@ function renderSearch(term) {
 function exportReport() {
   if (currentView === "traffic") return exportTraffic();
   const rows = [
-    ["Mentionloom sample workspace — Acme"],
+    ["Mentionloom demo workspace — Acme"],
     ["Period", data.start, data.end],
     ["Engine", state.engine ? engine(state.engine).name : "All"],
     ["Topic", state.topic || "All"],
@@ -1056,14 +1056,14 @@ function renderTrafficChart() {
   $('#chart-legend').textContent = `${date(trafficData.start)} – ${date(trafficData.end)}`;
   $('#comparison-legend').hidden = !comparing;
   $('#comparison-dates').textContent = `${date(comparison.start)} – ${date(comparison.end)}`;
-  $('#sample-count').textContent = `${fmt(trafficData.current.referrals)} visits · Sample data`;
+  $('#sample-count').textContent = `${fmt(trafficData.current.referrals)} visits · Demo data`;
   $('#traffic-milestones').hidden = !trafficData.milestones.length;
   $('#traffic-milestones').innerHTML = trafficData.milestones.map((event, i) => `<button class="text-button" data-milestone="${event.id}"><span class="milestone-number">${i + 1}</span>${date(event.date)} · ${event.label}${icon('right')}</button>`).join('');
   renderChart($('#main-chart'), trafficData.series, state.metric, comparing, openTrafficDay, { label: TRAFFIC_METRICS[state.metric], milestones: trafficData.milestones, onMilestone: openMilestone });
 }
 function openTrafficSessions(title, rows, note = '') {
   const c = trafficMetrics(rows);
-  detail(title, 'SAMPLE VISITS', `<div class="drawer-stats"><div><span>Visits</span><strong>${fmt(c.referrals)}</strong></div><div><span>Leads</span><strong>${fmt(c.leads)}</strong></div></div>${note ? `<p>${esc(note)}</p>` : ''}${sessionsHTML(rows.slice().sort((a,b) => b.date.localeCompare(a.date)))}`);
+  detail(title, 'VISITS', `<div class="drawer-stats"><div><span>Visits</span><strong>${fmt(c.referrals)}</strong></div><div><span>Leads</span><strong>${fmt(c.leads)}</strong></div></div>${note ? `<p>${esc(note)}</p>` : ''}${sessionsHTML(rows.slice().sort((a,b) => b.date.localeCompare(a.date)))}`);
 }
 function openTrafficDay(start, end = start) {
   openTrafficSessions(date(start) + (end !== start ? ' – ' + date(end) : ''), trafficData.rows.filter(v => v.date >= start && v.date <= end));
@@ -1072,13 +1072,13 @@ function openMilestone(id) {
   const event = MILESTONES.find(e => e.id === id);
   if (!event) return;
   const rows = trafficData.rows.filter(v => v.campaign === event.campaign), c = trafficMetrics(rows);
-  detail(event.title, `${date(event.date).toUpperCase()} · SAMPLE EVENT`, `<div class="traffic-event-post"><span>${esc(sourceLabel(event.source))} · Illustrative post</span><p>${esc(event.post)}</p></div><div class="drawer-stats"><div><span>Tagged visits</span><strong>${c.referrals}</strong></div><div><span>Leads</span><strong>${c.leads}</strong></div></div><p>Visits tagged to this campaign within the selected filters. The chart shows all matching visits; timing alone does not establish impact.</p>${sessionsHTML(rows)}`);
+  detail(event.title, `${date(event.date).toUpperCase()} · EVENT`, `<div class="traffic-event-post"><span>${esc(sourceLabel(event.source))} · Post</span><p>${esc(event.post)}</p></div><div class="drawer-stats"><div><span>Tagged visits</span><strong>${c.referrals}</strong></div><div><span>Leads</span><strong>${c.leads}</strong></div></div><p>Visits tagged to this campaign within the selected filters. The chart shows all matching visits; timing alone does not establish impact.</p>${sessionsHTML(rows)}`);
 }
 function openTrafficNumbers() {
   detail(TRAFFIC_METRICS[state.metric], `${date(trafficData.start)} – ${date(trafficData.end)} · ${sourceLabel(state.source)} · ${countryLabel(state.country)}`, trafficTableHTML(trafficData, state.metric, TRAFFIC_METRICS[state.metric], $('#compare-toggle').checked));
 }
 function exportTraffic() {
-  const rows = [ ['Acme · Sample website traffic'], ['Period', trafficData.start, trafficData.end], ['Source', sourceLabel(state.source)], ['Country', countryLabel(state.country)], ['Device', state.device || 'All devices'], [], ['Date', 'Visits', 'Visitors', 'Page views', 'Leads'] ];
+  const rows = [ ['Acme · Acme · Website traffic'], ['Period', trafficData.start, trafficData.end], ['Source', sourceLabel(state.source)], ['Country', countryLabel(state.country)], ['Device', state.device || 'All devices'], [], ['Date', 'Visits', 'Visitors', 'Page views', 'Leads'] ];
   trafficData.series.forEach(d => rows.push([d.date, d.referrals, d.visitors, d.pageviews, d.leads]));
   rows.push([], ['Visit ID', 'Date', 'Source', 'Country', 'City', 'Device', 'Browser', 'System', 'Entry', 'Journey', 'Seconds', 'Lead', 'Attribution', 'Campaign']);
   trafficData.rows.forEach(v => rows.push([v.id, v.date, sourceLabel(v.source), countryLabel(v.country), v.city, v.device, v.browser, v.os, v.page, v.journey.join(' → '), v.seconds, v.lead, v.method, v.campaign]));
@@ -1118,7 +1118,7 @@ const actions = {
     detail(
       "Why this comes next",
       "RECOMMENDATION LOGIC",
-      `<p>We rank the suggested improvements by the number of sampled answers that omit Acme. An improvement you’ve already started stays first.</p><div class="notice">This follows your engine, topic and date filters. It is an observed coverage gap, not a prediction of search volume or revenue.</div><button class="button" data-action="growth-improve">Explore the improvement queue${icon("right")}</button>`,
+      `<p>We rank the suggested improvements by the number of answers that omit Acme. An improvement you’ve already started stays first.</p><div class="notice">This follows your engine, topic and date filters. It is an observed coverage gap, not a prediction of search volume or revenue.</div><button class="button" data-action="growth-improve">Explore the improvement queue${icon("right")}</button>`,
     ),
   methodology,
   "add-question": addQuestion,
@@ -1158,31 +1158,31 @@ const actions = {
     detail(
       "Competitors",
       "SAME QUESTIONS · SAME PERIOD",
-      `<p>Compare brands across ${fmt(data.current.samples)} sampled answers. Open a brand to find the questions behind its visibility.</p><div class="drawer-list">${data.competitors.map((c) => `<button data-competitor="${c.name}"><span class="brand-initial ${c.self ? "self acme-mark" : ""}">${c.self ? '<img src="/assets/brands/acme.svg" width="23" height="23" alt="">' : esc(c.name[0])}</span><span>${c.name}<small>${fmt(c.count)} answers · ${pct(c.share)} mention rate</small></span>${icon("right")}</button>`).join("")}</div>`,
+      `<p>Compare brands across ${fmt(data.current.samples)} answers. Open a brand to find the questions behind its visibility.</p><div class="drawer-list">${data.competitors.map((c) => `<button data-competitor="${c.name}"><span class="brand-initial ${c.self ? "self acme-mark" : ""}">${c.self ? '<img src="/assets/brands/acme.svg" width="23" height="23" alt="">' : esc(c.name[0])}</span><span>${c.name}<small>${fmt(c.count)} answers · ${pct(c.share)} mention rate</small></span>${icon("right")}</button>`).join("")}</div>`,
     ),
   pages: () =>
     detail(
       "Cited pages",
       "SOURCES IN AI ANSWERS",
-      `<p>Counts include website and external citations. An answer can cite both. Select a page to inspect its answer samples.</p><h3>Your website</h3><div class="drawer-list">${data.pages.map((p) => `<button data-source-page="${esc(p.path)}">${icon("file")}<span>acme.work${esc(p.path)}<small>${fmt(p.citations)} citations · ${fmt(p.referrals)} referrals</small></span>${icon("right")}</button>`).join("")}</div><h3>External sources</h3><div class="drawer-list">${data.external.map((p) => `<button data-source-page="${esc(p.path)}">${icon("globe")}<span>${esc(p.path)}<small>${fmt(p.citations)} sampled citations</small></span>${icon("right")}</button>`).join("")}</div>`,
+      `<p>Counts include website and external citations. An answer can cite both. Select a page to inspect its answer samples.</p><h3>Your website</h3><div class="drawer-list">${data.pages.map((p) => `<button data-source-page="${esc(p.path)}">${icon("file")}<span>acme.work${esc(p.path)}<small>${fmt(p.citations)} citations · ${fmt(p.referrals)} referrals</small></span>${icon("right")}</button>`).join("")}</div><h3>External sources</h3><div class="drawer-list">${data.external.map((p) => `<button data-source-page="${esc(p.path)}">${icon("globe")}<span>${esc(p.path)}<small>${fmt(p.citations)} citations</small></span>${icon("right")}</button>`).join("")}</div>`,
     ),
   attribution: () =>
     detail(
       "The click is only the beginning.",
       "REFERRAL ATTRIBUTION",
-      `<p>AI referrals are identified from a known AI referrer or campaign source. Once a visitor arrives, their session can be associated with an event on your own website.</p><div class="drawer-stats"><div><span>Identified by UTM</span><strong>${fmt(data.v.filter((v) => v.method === "UTM source").length)}</strong></div><div><span>Identified by referrer</span><strong>${fmt(data.v.filter((v) => v.method === "Referrer").length)}</strong></div></div><h3>Sample</h3><ol class="step-list"><li><span class="step-number">1</span><span>A session arrives with an AI source in the UTM or referrer.</span></li><li><span class="step-number">2</span><span>An engaged visit views another page or stays for at least 30 seconds.</span></li><li><span class="step-number">3</span><span>A lead is a form completion in that same session.</span></li></ol><div class="notice">Referrer loss means some AI visits cannot be identified. A UTM does not expose the prompt that produced a visit. This dashboard does not claim to read private chats.</div><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
+      `<p>AI referrals are identified from a known AI referrer or campaign source. Once a visitor arrives, their session can be associated with an event on your own website.</p><div class="drawer-stats"><div><span>Identified by UTM</span><strong>${fmt(data.v.filter((v) => v.method === "UTM source").length)}</strong></div><div><span>Identified by referrer</span><strong>${fmt(data.v.filter((v) => v.method === "Referrer").length)}</strong></div></div><h3>How it works</h3><ol class="step-list"><li><span class="step-number">1</span><span>A session arrives with an AI source in the UTM or referrer.</span></li><li><span class="step-number">2</span><span>An engaged visit views another page or stays for at least 30 seconds.</span></li><li><span class="step-number">3</span><span>A lead is a form completion in that same session.</span></li></ol><div class="notice">Referrer loss means some AI visits cannot be identified. A UTM does not expose the prompt that produced a visit. This dashboard does not claim to read private chats.</div><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
     ),
   crawlers: () =>
     detail(
       "A clear path for search engines.",
-      "CRAWLER ACCESS · SAMPLE SNAPSHOT",
-      `<p>Crawler requests tell you whether AI systems can retrieve your pages. They are separate from mentions, human visits, and conversions.</p><table class="data-table"><thead><tr><th>Crawler / purpose</th><th>Requests</th><th>Access</th></tr></thead><tbody>${CRAWLERS.map((c) => `<tr><td>${c.name}<br><span class="small-label">${c.purpose}</span></td><td>${fmt(c.count)}</td><td><span class="badge ${c.status === "Allowed" ? "green" : "neutral"}">${c.status}</span></td></tr>`).join("")}</tbody></table><div class="notice">Illustrative 30-day server-log snapshot, independent of your dashboard filters. No server or CDN is connected.</div><h3>Crawler types</h3><p>Allowing a search crawler can help it retrieve a page, but does not guarantee indexing or recommendations. Training crawlers have a different purpose and can be managed separately.</p><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
+      "CRAWLER ACCESS",
+      `<p>Crawler requests tell you whether AI systems can retrieve your pages. They are separate from mentions, human visits, and conversions.</p><table class="data-table"><thead><tr><th>Crawler / purpose</th><th>Requests</th><th>Access</th></tr></thead><tbody>${CRAWLERS.map((c) => `<tr><td>${c.name}<br><span class="small-label">${c.purpose}</span></td><td>${fmt(c.count)}</td><td><span class="badge ${c.status === "Allowed" ? "green" : "neutral"}">${c.status}</span></td></tr>`).join("")}</tbody></table><div class="notice">30-day server-log view, independent of your dashboard filters. No server or CDN is connected.</div><h3>Crawler types</h3><p>Allowing a search crawler can help it retrieve a page, but does not guarantee indexing or recommendations. Training crawlers have a different purpose and can be managed separately.</p><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
     ),
   activity: () =>
     detail(
       "Inside the answer.",
-      "ANSWER FEED · SAMPLE DATA",
-      `<p>Recent sampled answers for your current filters. Open an entry to explore the underlying question.</p><div class="drawer-list">${answersList(data.a, 24)}</div>`,
+      "ANSWER FEED",
+      `<p>Recent answers for your current filters. Open an entry to explore the underlying question.</p><div class="drawer-list">${answersList(data.a, 24)}</div>`,
     ),
 };
 
@@ -1580,7 +1580,7 @@ document.addEventListener("submit", (e) => {
       detail(
         "Your setup plan is saved.",
         "WORKSPACE SETUP · PREVIEW",
-        `<p>We’ve saved <strong>${esc(url.hostname)}</strong> in this browser. Here’s what needs to be connected to make the dashboard yours.</p><ol class="step-list"><li><span class="step-number">1</span><span>Verify your domain and define the buyer questions you want to track.</span></li><li><span class="step-number">2</span><span>Connect answer sampling to collect mentions and citations.</span></li><li><span class="step-number">3</span><span>Install your website collector and define a lead event.</span></li></ol><div class="notice">This is a saved plan, not an active connection. The Acme dashboard continues to show sample data.</div><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
+        `<p>We’ve saved <strong>${esc(url.hostname)}</strong> in this browser. Here’s what needs to be connected to make the dashboard yours.</p><ol class="step-list"><li><span class="step-number">1</span><span>Verify your domain and define the buyer questions you want to track.</span></li><li><span class="step-number">2</span><span>Connect answer sampling to collect mentions and citations.</span></li><li><span class="step-number">3</span><span>Install your website collector and define a lead event.</span></li></ol><div class="notice">This is a saved plan, not an active connection. The Acme dashboard continues to show demo data.</div><button class="button" data-action="sources">Data setup${icon("right")}</button>`,
       );
       toast("Setup plan saved in this browser.");
     }
@@ -1671,8 +1671,8 @@ recommendationObserver.observe(recommendationCard);
 document.addEventListener('visibilitychange', syncRecommendationMotion);
 let tourStep = -1;
 const tourSteps = [
-  { view: "overview", target: "#discovery-metrics", action: '[data-metric="visibility"]', title: "Choose a signal", copy: "Select a metric to see how it changed. Mention rate measures how often Acme appears in sampled AI answers.", task: "Select mention rate" },
-  { view: "questions", target: ".question-table-wrap", title: "Find a missing answer", copy: "Start with a buyer question where Acme rarely appears. Open a row to inspect the sampled answer.", task: "Open a buyer question" },
+  { view: "overview", target: "#discovery-metrics", action: '[data-metric="visibility"]', title: "Choose a signal", copy: "Select a metric to see how it changed. Mention rate measures how often Acme appears in AI answers.", task: "Select mention rate" },
+  { view: "questions", target: ".question-table-wrap", title: "Find a missing answer", copy: "Start with a buyer question where Acme rarely appears. Open a row to inspect the answer.", task: "Open a buyer question" },
   { view: "opportunities", target: "#action-cards", action: '[data-improvement]', title: "Turn evidence into work", copy: "Each opportunity connects a visibility gap to a page you can improve and a plan you can follow.", task: "Open an improvement" },
   { view: "traffic", target: ".traffic-card:has(#traffic-funnel)", title: "Follow the visit", copy: "See how website visits progress to engagement, pricing, signup and a lead. Select a stage to inspect its sessions.", task: "Explore the funnel" },
   { view: "addons", target: ".market-card", title: "Add a capability", copy: "Explore focused tools for content, monitoring and reporting. Each product has a preview and its own pricing.", task: "Preview Brief Studio" },
