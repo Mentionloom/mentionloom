@@ -3595,33 +3595,27 @@
 }
 
 .marketing-app .visibility-chart .plot-fill {
+  transform-box:fill-box;
   transform-origin:left center;
+  will-change:transform,opacity;
 }
-.marketing-app .visibility-chart svg.chart-building .plot-fill,
-.marketing-app .visibility-chart svg.chart-building .plot-previous {
-  clip-path:inset(0 100% 0 0);
-  animation:chart-context-reveal 720ms var(--ease-out) forwards;
+.marketing-app .visibility-chart .plot-current,
+.marketing-app .visibility-chart .plot-previous {
+  will-change:stroke-dashoffset,opacity,transform;
 }
-.marketing-app .visibility-chart svg.chart-building .plot-current {
-  stroke-dasharray:1;
-  stroke-dashoffset:1;
-  animation:chart-line-build 760ms var(--ease-out) 60ms forwards;
+.marketing-app .visibility-chart .plot-outgoing {
+  pointer-events:none;
+  transform-box:fill-box;
+  transform-origin:center;
 }
-.marketing-app .visibility-chart svg.chart-building #chart-cursor,
-.marketing-app .visibility-chart svg.chart-building #chart-dot {
-  opacity:0;
-  animation:chart-marker-in 220ms ease-out 760ms forwards;
+.marketing-app .visibility-chart .plot-outgoing .plot-fill {
+  opacity:.35;
 }
-@keyframes chart-context-reveal {
-  from { clip-path:inset(0 100% 0 0); opacity:.35; }
-  to { clip-path:inset(0 0 0 0); opacity:1; }
+.marketing-app .visibility-chart .plot-outgoing .plot-previous {
+  opacity:.42;
 }
-@keyframes chart-line-build {
-  from { stroke-dashoffset:1; opacity:.55; }
-  to { stroke-dashoffset:0; opacity:1; }
-}
-@keyframes chart-marker-in {
-  to { opacity:1; }
+.marketing-app .visibility-chart .plot-outgoing .plot-current {
+  opacity:.56;
 }
 
 .marketing-app .scene-detail {
@@ -3825,17 +3819,5 @@
   .marketing-app .scene-takeaway-item + .scene-takeaway-item {
     border-left:0;
     border-top:1px solid var(--border);
-  }
-}
-@media (prefers-reduced-motion:reduce) {
-  .marketing-app .visibility-chart svg.chart-building .plot-fill,
-  .marketing-app .visibility-chart svg.chart-building .plot-previous,
-  .marketing-app .visibility-chart svg.chart-building .plot-current,
-  .marketing-app .visibility-chart svg.chart-building #chart-cursor,
-  .marketing-app .visibility-chart svg.chart-building #chart-dot {
-    animation:none !important;
-    clip-path:none !important;
-    stroke-dashoffset:0 !important;
-    opacity:1 !important;
   }
 }
