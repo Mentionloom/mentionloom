@@ -288,14 +288,9 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
-try {
-  await initializeOrbit();
-  ready = true;
-  await enhance($(".engine-controls"));
-  await enhance($(".faq-list"));
-  await enhance($("#opportunity-rows"));
-  window.OrbitMotion.prepare($(".story-nav"));
-  // Keep all content readable by default; arm motion only after observers exist.
+// Viewport motion is independent from Orbit so product content can never disappear
+// just because an enhancement module fails.
+if ("IntersectionObserver" in window) {
   const buildSections = [$("#insights"), $("#approach")].filter(Boolean);
   const sectionBuild = new IntersectionObserver(
     (entries) => {
@@ -312,6 +307,15 @@ try {
     section.classList.add("motion-armed");
     sectionBuild.observe(section);
   });
+}
+
+try {
+  await initializeOrbit();
+  ready = true;
+  await enhance($(".engine-controls"));
+  await enhance($(".faq-list"));
+  await enhance($("#opportunity-rows"));
+  window.OrbitMotion.prepare($(".story-nav"));
 
   const simpleReveal = new IntersectionObserver(
     (entries) => {
