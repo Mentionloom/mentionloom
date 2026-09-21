@@ -295,41 +295,49 @@ try {
   await enhance($(".faq-list"));
   await enhance($("#opportunity-rows"));
   window.OrbitMotion.prepare($(".story-nav"));
-  // Build and animate components only as they enter the viewport.
-  const revealTargets = [
-    ...document.querySelectorAll(
-      "#product .section-heading,.story-nav,.product-stage,.value-trio>div,#insights .section-heading,.feature-card,#approach .section-heading,.steps-grid article,#faq>div,.faq-list details,.early-access-card",
-    ),
-  ];
-  revealTargets.forEach((el) => el.setAttribute("data-reveal", ""));
-  document.body.classList.add("motion-ready");
+  // Keep all content readable by default; arm motion only after observers exist.
+  const buildSections = [$("#insights"), $("#approach")].filter(Boolean);
+  const sectionBuild = new IntersectionObserver(
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        target.dataset.inView = String(isIntersecting);
+        if (!isIntersecting || target.classList.contains("has-built")) continue;
+        target.classList.add("has-built");
+        requestAnimationFrame(() => target.classList.add("build-visible"));
+      }
+    },
+    { threshold: 0.16, rootMargin: "0px 0px -6% 0px" },
+  );
+  buildSections.forEach((section) => {
+    section.classList.add("motion-armed");
+    sectionBuild.observe(section);
+  });
 
-  const reveal = new IntersectionObserver(
+  const simpleReveal = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
         if (!isIntersecting) continue;
-        reveal.unobserve(target);
-        target.classList.add("is-visible", "step-revealed");
+        simpleReveal.unobserve(target);
+        target.classList.add("is-visible");
         if (!paused && !reduced.matches) window.OrbitMotion.enter(target);
       }
     },
-    { threshold: 0.14, rootMargin: "0px 0px -8% 0px" },
+    { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
   );
-  revealTargets.forEach((el) => reveal.observe(el));
+  document
+    .querySelectorAll("#product .section-heading,.story-nav,.product-stage,.value-trio>div,#faq>div,.faq-list details,.early-access-card")
+    .forEach((el) => simpleReveal.observe(el));
 
-  // Looping motion only runs while its section is on screen.
   const inView = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
         target.dataset.inView = String(isIntersecting);
       }
     },
-    { threshold: 0.08 },
+    { threshold: 0.05 },
   );
   document
-    .querySelectorAll(
-      "#product,#approach,#insights,.provider-strip,.discovery-scene,.early-access-section",
-    )
+    .querySelectorAll("#product,.provider-strip,.discovery-scene,.early-access-section")
     .forEach((el) => inView.observe(el));
 } catch (error) {
   console.warn(
@@ -357,6 +365,11 @@ function selectScene(index, animate = true) {
  sceneIndex = index;
  const item = sceneQuestions[index];
  $('.discovery-scene').dataset.location = String(index);
+ const flag = $('.question-float .scene-country-flag');
+ if (flag) {
+   flag.src = `/assets/flags/${item.flag}.svg`;
+   flag.alt = '';
+ }
  $('.question-float .card-label > span').textContent = item.country;
  $('.question-float p').textContent = item.question;
  $('.answer-float .card-label img').src = `/assets/brands/${item.engine}.svg`;
@@ -365,7 +378,11 @@ function selectScene(index, animate = true) {
  $('.citation-pill').innerHTML = `${icon('link')} ${item.source}`;
  $('.signal-float strong').textContent = item.action;
  $('.signal-float span').textContent = 'Click a message to explore the evidence.';
- document.querySelectorAll('[data-globe-question]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.globeQuestion)===index)));
+ document.querySelectorAll('[data-globe-question]').forEach((b) => {
+   const active = Number(b.dataset.globeQuestion) === index;
+   b.setAttribute('aria-pressed', String(active));
+   b.setAttribute('aria-label', `${sceneQuestions[Number(b.dataset.globeQuestion)]?.country || 'Country'} question${active ? ', selected' : ''}`);
+ });
  document.dispatchEvent(new CustomEvent("mentionloom:scene", {detail:{index,item,animate}}));
  if (!animate || $(".discovery-scene").classList.contains("connected-scene")) return;
  const pin = $(`[data-globe-question="${index}"]`).getBoundingClientRect();
@@ -377,11 +394,20 @@ function selectScene(index, animate = true) {
 }
 function openScene() {
  const item=sceneQuestions[sceneIndex];
- $('#scene-detail-content').innerHTML=`<h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.city} · ${item.engine}</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
+ $('#scene-detail-content').innerHTML=`<div class="scene-detail-location"><img src="/assets/flags/${item.flag}.svg" alt=""><span>${item.country} · ${item.city}</span></div><h2 id="scene-detail-title">${item.question}</h2><div class="scene-answer"><span>${item.engine}</span><p>${item.answer}</p></div><h3>Why it matters</h3><p>${item.evidence}</p><h3>Next action</h3><p>${item.action}</p><a class="button" href="/app/questions/">Explore buyer questions ${icon('arrow')}</a>`;
  $('#scene-detail').showModal();
 }
-document.querySelectorAll('[data-globe-question]').forEach(b=>b.addEventListener('click',()=>selectScene(Number(b.dataset.globeQuestion))));
-$('.globe-explore').addEventListener('click',()=>{ selectScene((sceneIndex+1)%sceneQuestions.length); });
+let sceneManualUntil = 0;
+document.querySelectorAll('[data-globe-question]').forEach((b) => b.addEventListener('click', () => {
+  const index = Number(b.dataset.globeQuestion);
+  sceneManualUntil = performance.now() + 12000;
+  trackKobbe("globe_country_click", { country: sceneQuestions[index]?.country || index });
+  selectScene(index);
+}));
+$('.globe-explore').addEventListener('click',()=> {
+  sceneManualUntil = performance.now() + 12000;
+  selectScene((sceneIndex+1)%sceneQuestions.length);
+});
 document.querySelectorAll('[data-scene-detail]').forEach(b=>b.addEventListener('click',openScene));
 $('[data-scene-close]').addEventListener('click',()=>$('#scene-detail').close());
 selectScene(0,false);
@@ -389,7 +415,7 @@ const discoveryScene = $('.discovery-scene');
 let sceneVisible = false, sceneTimer;
 function scheduleScene() {
  clearTimeout(sceneTimer);
- if (!sceneVisible || document.hidden || paused || reduced.matches || $('#scene-detail').open || discoveryScene.matches(':hover') || discoveryScene.contains(document.activeElement) || discoveryScene.querySelector('.globe-wrap')?.classList.contains('is-dragging')) return;
+ if (!sceneVisible || document.hidden || paused || reduced.matches || performance.now() < sceneManualUntil || $('#scene-detail').open || discoveryScene.matches(':hover') || discoveryScene.contains(document.activeElement) || discoveryScene.querySelector('.globe-wrap')?.classList.contains('is-dragging')) return;
  sceneTimer = setTimeout(() => {
    selectScene((sceneIndex + 1) % sceneQuestions.length);
    scheduleScene();
