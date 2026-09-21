@@ -1135,6 +1135,7 @@
   color: var(--surface);
 }
 .marketing-app .action-visual {
+  position:relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -1363,6 +1364,7 @@
 }
 .marketing-app .shortlist-brands:before {
   content: "";
+  transition:opacity 220ms ease;
   position: absolute;
   width: 80%;
   height: 50px;
@@ -1374,6 +1376,10 @@
 }
 .marketing-app .shortlist-brands > span {
   display: grid;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    outline-color var(--motion-fast) ease;
   place-items: center;
   width: 66px;
   height: 66px;
