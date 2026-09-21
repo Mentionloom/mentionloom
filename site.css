@@ -4111,3 +4111,127 @@
     max-width:none;
   }
 }
+
+
+/* 2026-09-21 motion stability pass.
+   Structural cards stay fixed; only their contents/data animate. */
+.marketing-app #insights .feature-card.motion-card-armed,
+.marketing-app #insights .feature-card.motion-card-armed:not(.card-visible),
+.marketing-app #insights .feature-card.motion-card-armed.card-visible {
+  opacity:1;
+  transform:none;
+  animation:none;
+}
+.marketing-app #insights .feature-card {
+  contain:layout paint;
+}
+.marketing-app #insights .source-visual,
+.marketing-app #insights .funnel-visual,
+.marketing-app #insights .action-visual,
+.marketing-app #insights .shortlist-visual {
+  transform:none !important;
+}
+.marketing-app #insights .source-visual,
+.marketing-app #insights .funnel-visual {
+  height:244px;
+  min-height:244px;
+}
+.marketing-app #insights .action-visual {
+  height:322px;
+  min-height:322px;
+}
+.marketing-app #insights .shortlist-visual {
+  height:352px;
+  min-height:352px;
+}
+@media (min-width:761px) {
+  .marketing-app #insights .source-card,
+  .marketing-app #insights .traffic-card {
+    height:500px;
+    min-height:500px;
+  }
+  .marketing-app #insights .action-card,
+  .marketing-app #insights .audience-card {
+    height:600px;
+    min-height:600px;
+  }
+}
+.marketing-app #insights .action-checks .choice.demo-hover {
+  transform:none;
+}
+
+/* Recommendation card: same quiet surface as the other onboarding miniatures. */
+.marketing-app .action-builder-visual {
+  isolation:auto;
+  background:var(--background-subtle) !important;
+}
+.marketing-app .action-builder-visual > * {
+  position:relative;
+  z-index:1;
+}
+
+/* Final checklist result sits in the visual center and makes Acme the clear focus. */
+.marketing-app .action-card-heading {
+  position:relative;
+  min-height:30px;
+}
+.marketing-app .action-card-heading > span:last-child {
+  margin-left:auto;
+}
+.marketing-app .gap-status {
+  position:absolute;
+  left:0;
+  top:50%;
+  min-width:0;
+  transform:translateY(-50%);
+  transition:
+    left 620ms cubic-bezier(.16,1,.3,1),
+    transform 620ms cubic-bezier(.16,1,.3,1);
+}
+.marketing-app .action-visual.gap-resolved .gap-status {
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+.marketing-app .gap-resolution {
+  align-items:center;
+  justify-content:center;
+}
+.marketing-app .gap-brand {
+  transition:
+    filter 700ms cubic-bezier(.16,1,.3,1),
+    opacity 700ms cubic-bezier(.16,1,.3,1),
+    transform 700ms cubic-bezier(.16,1,.3,1);
+}
+.marketing-app .action-visual.gap-resolved .gap-brand-asana {
+  z-index:1;
+  opacity:.32;
+  filter:blur(1.5px);
+  transform:scale(.92);
+}
+.marketing-app .action-visual.gap-resolved .gap-brand-acme {
+  z-index:2;
+  opacity:1;
+  filter:none;
+  transform:scale(1.04);
+}
+
+/* Competitive result: resolve sharply on Acme and softly defocus alternatives. */
+.marketing-app .shortlist-brands > span {
+  transition:
+    filter 760ms cubic-bezier(.16,1,.3,1),
+    opacity 760ms cubic-bezier(.16,1,.3,1),
+    background-color 320ms ease,
+    border-color 320ms ease,
+    outline-color 420ms cubic-bezier(.16,1,.3,1);
+}
+.marketing-app .shortlist-visual.is-acme-highlighted .shortlist-brands > span:not(.your-brand) {
+  opacity:.34;
+  filter:blur(2.2px);
+}
+.marketing-app .shortlist-visual.is-acme-highlighted .shortlist-brands:before {
+  opacity:.22;
+}
+.marketing-app .shortlist-visual.is-acme-highlighted .shortlist-brands > span.your-brand {
+  opacity:1;
+  filter:none;
+}
