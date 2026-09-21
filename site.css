@@ -4137,8 +4137,8 @@
 }
 .marketing-app #insights .source-visual,
 .marketing-app #insights .funnel-visual {
-  height:244px;
-  min-height:244px;
+  height:260px;
+  min-height:260px;
 }
 .marketing-app #insights .action-visual {
   height:322px;
@@ -4151,13 +4151,13 @@
 @media (min-width:761px) {
   .marketing-app #insights .source-card,
   .marketing-app #insights .traffic-card {
-    height:500px;
-    min-height:500px;
+    height:530px;
+    min-height:530px;
   }
   .marketing-app #insights .action-card,
   .marketing-app #insights .audience-card {
-    height:600px;
-    min-height:600px;
+    height:620px;
+    min-height:620px;
   }
 }
 .marketing-app #insights .action-checks .choice.demo-hover {
