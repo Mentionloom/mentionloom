@@ -43,9 +43,9 @@ function motion(el) {
 function chart(animateChart = false) {
   const host = $("#visibility-chart");
   const oldSvg = host.querySelector("svg");
-  const oldCurrent = oldSvg?.querySelector(".plot-current")?.getAttribute("d") || "";
-  const oldPrevious = oldSvg?.querySelector(".plot-previous")?.getAttribute("d") || "";
-  const oldFill = oldSvg?.querySelector(".plot-fill")?.getAttribute("d") || "";
+  const oldCurrent = oldSvg?.querySelector(".plot-current.plot-incoming")?.getAttribute("d") || "";
+  const oldPrevious = oldSvg?.querySelector(".plot-previous.plot-incoming")?.getAttribute("d") || "";
+  const oldFill = oldSvg?.querySelector(".plot-fill.plot-incoming")?.getAttribute("d") || "";
   const width = Math.max(270, host.clientWidth || 530),
     height = 140,
     pad = 32,
@@ -519,10 +519,7 @@ function playApproachMotion() {
     );
 
   setTimeout(() => {
-    if (statusLabel) {
-      statusLabel.textContent = "Ready";
-      window.OrbitMotion.feedback(statusLabel, "Ready");
-    }
+    if (statusLabel) window.OrbitMotion.feedback(statusLabel, "Ready");
     section.dataset.motionState = "complete";
   }, 2350);
 }
