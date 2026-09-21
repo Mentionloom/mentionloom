@@ -404,62 +404,103 @@ function playApproachMotion() {
   if (!section || approachMotionPlayed) return;
   approachMotionPlayed = true;
   section.dataset.motionState = reduced.matches || paused ? "complete" : "running";
-  const statusLabel = section.querySelector("[data-company-status] span");
 
+  const statusLabel = section.querySelector("[data-company-status] span");
   if (reduced.matches || paused || !window.OrbitMotion) {
     if (statusLabel) statusLabel.textContent = "Ready";
     return;
   }
 
-  const companyProgress = section.querySelector(".company-progress > span");
-  const companyRows = [...section.querySelectorAll(".company-intel-row")];
-  const companyReady = section.querySelector(".company-ready");
-  const statusDot = section.querySelector(".mini-product-status i");
-  animate(companyProgress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 900, {
-    delay: 90,
-    fill: "backwards",
+  const enter = (el, delay = 0, distance = 8, duration = 360, scale = 0.992) => {
+    if (!el) return;
+    animate(
+      el,
+      [
+        { opacity: 0, transform: `translateY(${distance}px) scale(${scale})` },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      duration,
+      { delay, fill: "backwards" },
+    );
+  };
+  const enterMany = (elements, delay = 0, step = 70, options = {}) => {
+    [...elements].forEach((el, index) =>
+      enter(
+        el,
+        delay + index * step,
+        options.distance ?? 8,
+        options.duration ?? 360,
+        options.scale ?? 0.992,
+      ),
+    );
+  };
+
+  // Build the section copy first, then let each miniature assemble itself.
+  enter(section.querySelector(".section-heading .eyebrow"), 0, 6, 280, 1);
+  enter(section.querySelector(".section-heading h2"), 55, 12, 460, 0.995);
+  enter(section.querySelector(".section-heading > p"), 125, 8, 360, 1);
+
+  const steps = [...section.querySelectorAll(".clearer-step")];
+  steps.forEach((step, index) => {
+    const baseDelay = 230 + index * 135;
+    enter(step.querySelector(".step-visual"), baseDelay, 16, 540, 0.988);
+    enter(step.querySelector(".step-number"), baseDelay + 95, 6, 260, 1);
+    enter(step.querySelector("h3"), baseDelay + 145, 9, 360, 0.995);
+    enter(step.querySelector(":scope > p"), baseDelay + 205, 7, 340, 1);
   });
+
+  // 01 — company intelligence assembles from status → scan → discovered profile.
+  const companyDelay = 390;
+  enter(section.querySelector(".mini-product-heading"), companyDelay, 6, 300, 1);
+  const companyProgress = section.querySelector(".company-progress > span");
+  companyProgress &&
+    animate(companyProgress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 820, {
+      delay: companyDelay + 80,
+      fill: "backwards",
+    });
+  const statusDot = section.querySelector(".mini-product-status i");
   statusDot &&
     animate(
       statusDot,
       [
-        { transform: "scale(.8)", boxShadow: "0 0 0 0 var(--accent-soft)" },
-        { transform: "scale(1.18)", boxShadow: "0 0 0 6px transparent", offset: 0.55 },
+        { transform: "scale(.78)", boxShadow: "0 0 0 0 var(--accent-soft)" },
+        { transform: "scale(1.16)", boxShadow: "0 0 0 6px transparent", offset: 0.58 },
         { transform: "scale(1)", boxShadow: "0 0 0 0 transparent" },
       ],
-      900,
-      { delay: 120, fill: "backwards" },
+      820,
+      { delay: companyDelay + 105, fill: "backwards" },
     );
-  companyRows.forEach((row, index) =>
+  enterMany(section.querySelectorAll(".company-intel-row"), companyDelay + 210, 92, {
+    distance: 8,
+    duration: 340,
+    scale: 0.988,
+  });
+  enter(section.querySelector(".company-ready"), companyDelay + 650, 5, 300, 1);
+
+  // 02 — question generation: header appears, rows resolve, checks confirm, then intent totals land.
+  const questionsDelay = 535;
+  enter(section.querySelector(".question-generator-head"), questionsDelay, 6, 300, 1);
+  enter(section.querySelector(".generated-questions"), questionsDelay + 70, 10, 420, 0.994);
+  const questionRows = [...section.querySelectorAll(".generated-question")];
+  enterMany(questionRows, questionsDelay + 165, 105, {
+    distance: 7,
+    duration: 320,
+    scale: 0.994,
+  });
+  const questionChecks = [...section.querySelectorAll(".question-check")];
+  questionChecks.forEach((check, index) =>
     animate(
-      row,
+      check,
       [
-        { opacity: 0, transform: "translateY(8px) scale(.985)" },
-        { opacity: 1, transform: "translateY(0) scale(1)" },
+        { opacity: 0.16, transform: "scale(.78)" },
+        { opacity: 1, transform: "scale(1.1)", offset: 0.7 },
+        { opacity: 1, transform: "scale(1)" },
       ],
       360,
-      { delay: 260 + index * 105, fill: "backwards" },
+      { delay: questionsDelay + 390 + index * 175, fill: "both" },
     ),
   );
-  companyReady &&
-    animate(
-      companyReady,
-      [{ opacity: 0, transform: "translateY(5px)" }, { opacity: 1, transform: "translateY(0)" }],
-      320,
-      { delay: 770, fill: "backwards" },
-    );
-
-  const questionRows = [...section.querySelectorAll(".generated-question")];
-  const questionChecks = [...section.querySelectorAll(".question-check")];
   const questionSelection = section.querySelector(".question-selection");
-  questionRows.forEach((row, index) =>
-    animate(
-      row,
-      [{ opacity: 0, transform: "translateY(7px)" }, { opacity: 1, transform: "translateY(0)" }],
-      320,
-      { delay: 650 + index * 90, fill: "backwards" },
-    ),
-  );
   if (questionSelection && questionRows.length === 3) {
     const y2 = questionRows[1].offsetTop - questionRows[0].offsetTop;
     const y3 = questionRows[2].offsetTop - questionRows[0].offsetTop;
@@ -467,61 +508,48 @@ function playApproachMotion() {
       questionSelection,
       [
         { transform: "translateY(0) scale(1)", offset: 0 },
-        { transform: "translateY(0) scale(1)", offset: 0.22 },
-        { transform: `translateY(${y2}px) scale(.995)`, offset: 0.34 },
-        { transform: `translateY(${y2}px) scale(1)`, offset: 0.55 },
-        { transform: `translateY(${y3}px) scale(.995)`, offset: 0.68 },
+        { transform: "translateY(0) scale(1)", offset: 0.18 },
+        { transform: `translateY(${y2}px) scale(.994)`, offset: 0.36 },
+        { transform: `translateY(${y2}px) scale(1)`, offset: 0.5 },
+        { transform: `translateY(${y3}px) scale(.994)`, offset: 0.72 },
         { transform: `translateY(${y3}px) scale(1)`, offset: 1 },
       ],
-      3600,
-      { delay: 980, fill: "both" },
+      2200,
+      { delay: questionsDelay + 470, fill: "both" },
     );
   }
-  questionChecks.forEach((check, index) =>
-    animate(
-      check,
-      [
-        { opacity: 0.18, transform: "scale(.82)" },
-        { opacity: 1, transform: "scale(1.08)", offset: 0.68 },
-        { opacity: 1, transform: "scale(1)" },
-      ],
-      380,
-      { delay: 1350 + index * 950, fill: "both" },
-    ),
-  );
+  enterMany(section.querySelectorAll(".question-footer > span"), questionsDelay + 730, 55, {
+    distance: 4,
+    duration: 260,
+    scale: 0.97,
+  });
 
+  // 03 — comparison gap resolves into a concrete next move.
+  const actionDelay = 680;
+  enter(section.querySelector(".gap-header"), actionDelay, 6, 300, 1);
   const rankRows = [...section.querySelectorAll(".mini-rank-row")];
-  const rankFills = [...section.querySelectorAll(".mini-rank-fill")];
-  rankRows.forEach((row, index) =>
-    animate(
-      row,
-      [{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "translateY(0)" }],
-      340,
-      { delay: 1180 + index * 120, fill: "backwards" },
-    ),
-  );
-  rankFills.forEach((fill, index) =>
-    animate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 720, {
-      delay: 1320 + index * 130,
+  enterMany(rankRows, actionDelay + 130, 105, {
+    distance: 7,
+    duration: 330,
+    scale: 0.993,
+  });
+  [...section.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
+    animate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 700, {
+      delay: actionDelay + 220 + index * 120,
       fill: "backwards",
     }),
   );
   const brief = section.querySelector(".brief-build");
-  brief &&
-    animate(
-      brief,
-      [
-        { opacity: 0, transform: "translateY(12px) scale(.985)" },
-        { opacity: 1, transform: "translateY(0) scale(1)" },
-      ],
-      520,
-      { delay: 1780, fill: "backwards" },
-    );
+  enter(brief, actionDelay + 500, 13, 500, 0.986);
+  enter(section.querySelector(".brief-kicker"), actionDelay + 610, 5, 260, 1);
+  enter(section.querySelector(".brief-build > strong"), actionDelay + 675, 7, 320, 0.995);
+  enter(section.querySelector(".brief-build > p"), actionDelay + 740, 6, 300, 1);
+  enter(section.querySelector(".brief-ready"), actionDelay + 820, 5, 300, 1);
 
   setTimeout(() => {
     if (statusLabel) window.OrbitMotion.feedback(statusLabel, "Ready");
     section.dataset.motionState = "complete";
-  }, 2350);
+  }, 2920);
 }
 
 // Viewport motion is independent from Orbit so product content can never disappear
