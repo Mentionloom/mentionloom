@@ -326,7 +326,7 @@ async function handleApi(request, env) {
       return json({
         ok: true,
         databaseConfigured: Boolean(env.SUPABASE_URL && (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)),
-        workerConfigured: Boolean(env.CRON_SECRET),
+        workerConfigured: Boolean(env.SUPABASE_URL && (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)),
       });
     }
     if (path === '/api/auth/sign-up') return await handleSignUp(request);
