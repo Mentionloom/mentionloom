@@ -6,7 +6,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   const dragSurface = wrap.querySelector(".globe-explore") || canvas;
   const pins = [...wrap.querySelectorAll("[data-globe-question]")];
   const vectors = COUNTRY_LOCATIONS.map(locationVector);
-  let size = Math.max(240, wrap.clientWidth);
+  let size = Math.max(240, Math.round(wrap.getBoundingClientRect().width || wrap.clientWidth || 590));
   let fallback, fallbackContext, land = [];
   const blue = canvas.dataset.palette === "blue";
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -27,19 +27,43 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     dragMoved = false,
     holdUntil = 0;
 
-  const measure = () => size;
   const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  const pixelSize = () => Math.max(1, Math.round(size * dpr));
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  let resizeTimer;
+
+  function sizeCanvas() {
+    const pixels = pixelSize();
+    if (canvas.width !== pixels) canvas.width = pixels;
+    if (canvas.height !== pixels) canvas.height = pixels;
+  }
+
+  async function restartWebGL() {
+    if (disposed || !globe) return;
+    globe.destroy();
+    globe = null;
+    started = false;
+    sizeCanvas();
+    await start();
+  }
 
   const resize = new ResizeObserver(() => {
-    size = Math.max(240, wrap.clientWidth);
+    const next = Math.max(240, Math.round(wrap.getBoundingClientRect().width || wrap.clientWidth || size));
+    if (Math.abs(next - size) < 2) return;
+    size = next;
+    sizeCanvas();
     if (fallback) {
-      fallback.width = size * dpr;
-      fallback.height = size * dpr;
+      fallback.width = pixelSize();
+      fallback.height = pixelSize();
     }
     drawFallback();
     positionPins();
+    if (globe) {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => void restartWebGL(), 120);
+    }
   });
+  sizeCanvas();
   resize.observe(wrap);
 
   function positionPins() {
@@ -93,8 +117,8 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     fallback = document.createElement("canvas");
     fallback.setAttribute("aria-hidden", "true");
     fallback.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none";
-    fallback.width = size * dpr;
-    fallback.height = size * dpr;
+    fallback.width = pixelSize();
+    fallback.height = pixelSize();
     fallbackContext = fallback.getContext("2d");
     wrap.insertBefore(fallback, wrap.querySelector(".engine-network") || dragSurface);
     const mask = getComputedStyle(wrap.querySelector(".css-globe"), "::before").maskImage;
@@ -133,7 +157,8 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     if (disposed) return;
     try {
       const context = { alpha: true, antialias: true };
-      const gl = canvas.getContext("webgl2", context) || canvas.getContext("webgl", context);
+      const probe = document.createElement("canvas");
+      const gl = probe.getContext("webgl2", context) || probe.getContext("webgl", context);
       if (!gl) {
         void startFallback();
         return;
@@ -144,13 +169,15 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         void startFallback();
         return;
       }
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
 
+      size = Math.max(240, Math.round(wrap.getBoundingClientRect().width || wrap.clientWidth || size));
+      sizeCanvas();
+      const renderSize = pixelSize();
       const markerSizes = [.035, .03, .026, .028, .03, .028, .026, .028];
       globe = createGlobe(canvas, {
         devicePixelRatio: dpr,
-        width: measure,
-        height: measure,
+        width: renderSize,
+        height: renderSize,
         phi,
         theta,
         dark: 0,
@@ -181,8 +208,6 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
           }
           state.phi = phi;
           state.theta = theta;
-          state.width = measure();
-          state.height = measure();
           positionPins();
         },
       });
@@ -305,6 +330,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       disposed = true;
       clearTimeout(scrollTimer);
       clearTimeout(resumeTimer);
+      clearTimeout(resizeTimer);
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(frame);
       observer.disconnect();
