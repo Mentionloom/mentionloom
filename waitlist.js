@@ -15,8 +15,8 @@
   const copy = {
     signup: [
       "EARLY ACCESS",
-      "Join Mentionloom<br>early access.",
-      "See where your brand appears in AI answers—and what to improve when it doesn’t. We’ll email you when access opens.",
+      "Get Mentionloom<br>early.",
+      "See where AI recommends your brand—and what to improve.",
     ],
     profile: [
       "Your place is saved",
@@ -25,8 +25,8 @@
     ],
     success: [
       "YOU’RE IN",
-      "You’re on<br>the waitlist.",
-      "Your email is saved. We’ll email you when access opens—nothing else to fill out.",
+      "You’re on<br>the list.",
+      "We’ll email you when access opens.",
     ],
     removed: [
       "All taken care of",
