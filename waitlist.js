@@ -159,11 +159,15 @@
   document.querySelectorAll("[data-join]").forEach((button) =>
     button.addEventListener("click", (event) => {
       event.preventDefault();
-      try {
-        window.kobbe?.track?.("waitlist_click", {
-          source: String(button.dataset.join || "direct").slice(0, 120),
-        });
-      } catch {}
+      const properties = {
+        source: String(button.dataset.join || "direct").slice(0, 120),
+      };
+      const kobbeEvent = { name: "waitlist_click", properties, timestamp: Date.now() };
+      window.__kobbeEvents = window.__kobbeEvents || [];
+      window.__kobbeEvents.push(kobbeEvent);
+      if (window.__kobbeEvents.length > 200) window.__kobbeEvents.shift();
+      try { window.kobbe?.track?.("waitlist_click", properties); } catch {}
+      try { window.dispatchEvent(new CustomEvent("kobbe:event", { detail: kobbeEvent })); } catch {}
       open(button.dataset.join);
     }),
   );
