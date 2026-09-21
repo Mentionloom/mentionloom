@@ -589,24 +589,39 @@
         <div class="steps-grid clearer-start-grid">
           <article class="clearer-step clearer-step-company">
             <div class="step-visual company-visual" aria-hidden="true">
-              <div class="company-browser">
-                <div class="company-browser-bar">
-                  <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-                  <span class="company-url"><img src="/assets/brands/acme.svg" width="18" height="18" alt="" />acme.work</span>
-                  <span class="scan-state"><i></i>Scanning</span>
+              <div class="company-intel-card">
+                <div class="mini-product-heading">
+                  <span class="mini-product-title"><img src="/assets/brands/acme.svg" width="18" height="18" alt="" />acme.work</span>
+                  <span class="mini-product-status" data-company-status><i></i><span>Analyzing</span></span>
                 </div>
-                <div class="crawl-line"><span></span></div>
-                <div class="company-map">
-                  <span><b>Product</b><small>4 pages</small></span>
-                  <span><b>Pricing</b><small>2 pages</small></span>
-                  <span><b>Use cases</b><small>3 pages</small></span>
-                  <span><b>Competitors</b><small>3 found</small></span>
+                <div class="company-progress" aria-hidden="true"><span></span></div>
+                <div class="company-intel-list">
+                  <div class="company-intel-row">
+                    <span class="mini-row-icon"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-layers" /></svg></span>
+                    <span><b>Product</b><small>Project management</small></span>
+                    <strong>4 pages</strong>
+                  </div>
+                  <div class="company-intel-row">
+                    <span class="mini-row-icon"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-file" /></svg></span>
+                    <span><b>Use cases</b><small>Small teams · Agencies</small></span>
+                    <strong>3 found</strong>
+                  </div>
+                  <div class="company-intel-row">
+                    <span class="mini-row-icon"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-target" /></svg></span>
+                    <span><b>Audience</b><small>Product · Growth</small></span>
+                    <strong>2 groups</strong>
+                  </div>
+                  <div class="company-intel-row">
+                    <span class="mini-row-icon"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-layers" /></svg></span>
+                    <span><b>Competitors</b><small>Asana · Notion · ClickUp</small></span>
+                    <strong>3 found</strong>
+                  </div>
                 </div>
                 <div class="company-ready">
-                  <span>Company model</span><strong>Ready <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></strong>
+                  <span>Company profile</span>
+                  <strong><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg> Ready to review</strong>
                 </div>
               </div>
-              <span class="scan-beam"></span>
             </div>
             <span class="step-number">01</span>
             <h3>Start with your company.</h3>
@@ -616,25 +631,25 @@
           <article class="clearer-step clearer-step-questions">
             <div class="step-visual questions-visual" aria-hidden="true">
               <div class="question-generator-head">
-                <span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-spark" /></svg> Buyer questions</span>
+                <span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-chat" /></svg> Buyer questions</span>
                 <strong>20 generated</strong>
               </div>
               <div class="generated-questions">
+                <span class="question-selection" aria-hidden="true"></span>
                 <span class="generated-question">
-                  <b>Best tools for a small team?</b>
-                  <small><img src="/assets/brands/chatgpt.svg" alt="" /> Discovery</small>
+                  <span class="generated-copy"><b>Best tools for a small team?</b><small><img src="/assets/brands/chatgpt.svg" alt="" /> Discovery</small></span>
+                  <span class="question-check"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                 </span>
                 <span class="generated-question">
-                  <b>Alternatives to Monday?</b>
-                  <small><img src="/assets/brands/claude.svg" alt="" /> Comparison</small>
+                  <span class="generated-copy"><b>Alternatives to Monday?</b><small><img src="/assets/brands/claude.svg" alt="" /> Comparison</small></span>
+                  <span class="question-check"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                 </span>
                 <span class="generated-question">
-                  <b>Which tool fits our budget?</b>
-                  <small><img src="/assets/brands/gemini.svg" alt="" /> Decision</small>
+                  <span class="generated-copy"><b>Which tool fits our budget?</b><small><img src="/assets/brands/gemini.svg" alt="" /> Decision</small></span>
+                  <span class="question-check"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                 </span>
               </div>
-              <span class="question-cursor"></span>
-              <div class="question-footer"><span>Discovery</span><span>Comparison</span><span>Decision</span></div>
+              <div class="question-footer"><span>Discovery · 8</span><span>Comparison · 7</span><span>Decision · 5</span></div>
             </div>
             <span class="step-number">02</span>
             <h3>Choose your questions.</h3>
@@ -643,18 +658,25 @@
 
           <article class="clearer-step clearer-step-action">
             <div class="step-visual action-builder-visual" aria-hidden="true">
-              <div class="gap-header"><span>Comparison gap</span><strong><i></i> Found</strong></div>
-              <div class="shortlist-flow">
-                <span><img src="/assets/brands/asana.svg" alt="" /></span>
-                <span><img src="/assets/brands/notion.svg" alt="" /></span>
-                <span><img src="/assets/brands/clickup.svg" alt="" /></span>
-                <span class="brand-slot"><img src="/assets/brands/acme.svg" alt="" /></span>
+              <div class="gap-header">
+                <span>Who gets recommended?</span>
+                <strong><i></i> Comparison gap</strong>
+              </div>
+              <div class="mini-rank-list">
+                <div class="mini-rank-row">
+                  <i class="mini-rank-fill" style="--share:82%"></i>
+                  <span><img src="/assets/brands/asana.svg" alt="" />Asana</span><b>65.4%</b>
+                </div>
+                <div class="mini-rank-row self">
+                  <i class="mini-rank-fill" style="--share:57%"></i>
+                  <span><img src="/assets/brands/acme.svg" alt="" />Acme <small>you</small></span><b>45.4%</b>
+                </div>
               </div>
               <div class="brief-build">
-                <span class="brief-kicker">NEXT MOVE</span>
+                <span class="brief-kicker"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-spark" /></svg> NEXT MOVE</span>
                 <strong>Make the shortlist.</strong>
-                <div class="brief-lines"><i></i><i></i><i></i></div>
-                <div class="brief-ready"><span>Comparison brief</span><b>Ready <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg></b></div>
+                <p>Publish a small-team comparison with clearer proof around setup and team size.</p>
+                <div class="brief-ready"><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-circlecheck" /></svg> Evidence-backed</span><b>Ready <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg></b></div>
               </div>
             </div>
             <span class="step-number">03</span>
@@ -663,7 +685,6 @@
           </article>
         </div>
       </section>
-
       <section class="faq-section wrap section-space" id="faq">
         <div>
           <span class="eyebrow">GOOD QUESTIONS</span>
