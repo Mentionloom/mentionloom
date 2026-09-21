@@ -2852,3 +2852,63 @@
   }
   .marketing-app .brand-footer.is-flush { margin:0; }
 }
+
+
+/* Interactive globe: finger/mouse drag without fighting page scroll. */
+.marketing-app .globe-explore {
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:grab;
+  z-index:1;
+}
+.marketing-app .globe-wrap.is-dragging .globe-explore { cursor:grabbing; }
+.marketing-app .globe-wrap.is-dragging { cursor:grabbing; }
+.marketing-app .globe-pin[aria-pressed="true"] > span img { display:none; }
+
+/* Keep the engine switcher compact and fully visible on phones. */
+@media (max-width:760px) {
+  .marketing-app .engine-controls .segmented {
+    width:100%;
+    display:grid;
+    grid-template-columns:56px repeat(5,minmax(0,1fr));
+    gap:2px;
+    overflow:hidden;
+  }
+  .marketing-app .engine-controls .segmented > button,
+  .marketing-app .engine-controls .segmented > button:first-child,
+  .marketing-app .engine-controls .segmented > button:not(:first-child) {
+    min-width:0;
+    width:100%;
+    padding:7px 5px;
+    justify-content:center;
+  }
+  .marketing-app .engine-controls .segmented > button:first-child {
+    font-size:11px;
+    white-space:nowrap;
+  }
+}
+
+/* Footer ends in brand navy: no white strip and no position-changing bottom animation. */
+.marketing-app .brand-footer {
+  margin:12px 12px 0;
+  background:#000036;
+  border-radius:26px 26px 0 0;
+  transition:none;
+}
+.marketing-app .brand-footer-shell {
+  border-radius:26px 26px 0 0;
+  transition:none;
+  padding-bottom:max(0px, env(safe-area-inset-bottom));
+}
+.marketing-app .brand-footer.is-flush { margin:12px 12px 0; }
+.marketing-app .brand-footer.is-flush .brand-footer-shell { border-radius:26px 26px 0 0; }
+@media (max-width:760px) {
+  .marketing-app .brand-footer {
+    margin:8px 8px 0;
+    border-radius:20px 20px 0 0;
+  }
+  .marketing-app .brand-footer-shell { border-radius:20px 20px 0 0; }
+  .marketing-app .brand-footer.is-flush { margin:8px 8px 0; }
+  .marketing-app .brand-footer.is-flush .brand-footer-shell { border-radius:20px 20px 0 0; }
+}
