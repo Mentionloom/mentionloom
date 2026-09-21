@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          EMAIL="mentionloom-gate1-${GITHUB_RUN_ID}@example.com"
+          EMAIL="gate1-smoke@mentionloom.com"
           PASSWORD="Gate1-${GITHUB_RUN_ID}-Qz7!"
           WORKSPACE_SLUG="gate1-${GITHUB_RUN_ID}"
           COOKIE_JAR="${RUNNER_TEMP}/mentionloom-cookies.txt"
