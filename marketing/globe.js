@@ -176,10 +176,14 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         arcHeight: 0.22,
         opacity: 1,
         onRender: (state) => {
+          if (visible && !document.hidden && !isPaused() && !reduced.matches && !dragging && performance.now() >= holdUntil) {
+            phi += 0.00075;
+          }
           state.phi = phi;
           state.theta = theta;
           state.width = measure();
           state.height = measure();
+          positionPins();
         },
       });
       wrap.classList.add("globe-ready");
@@ -208,7 +212,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     cancelAnimationFrame(frame);
     frame = 0;
     last = 0;
-    if ((globe || fallback) && visible && !document.hidden && !isPaused() && !reduced.matches)
+    if (fallback && visible && !document.hidden && !isPaused() && !reduced.matches)
       frame = requestAnimationFrame(tick);
   }
 
