@@ -75,9 +75,10 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         return;
       }
       const point = projectVector(vector, phi, theta);
-      pin.style.left = "0px";
-      pin.style.top = "0px";
-      pin.style.transform = `translate(${point.x * size}px, ${point.y * size}px) translate(-50%, -50%)`;
+      pin.style.setProperty("--pin-x", `${point.x * size}px`);
+      pin.style.setProperty("--pin-y", `${point.y * size}px`);
+      pin.style.opacity = point.visible ? "1" : "0";
+      pin.style.pointerEvents = point.visible ? "auto" : "none";
       pin.style.visibility = point.visible ? "visible" : "hidden";
       pin.dataset.facing = point.visible ? "front" : "back";
     });
@@ -174,7 +175,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       size = Math.max(240, Math.round(wrap.getBoundingClientRect().width || wrap.clientWidth || size));
       sizeCanvas();
       const renderSize = pixelSize();
-      const markerSizes = [.035, .03, .026, .028, .03, .028, .026, .028];
+      const markerSizes = [.045, .04, .038, .04, .042, .04, .038, .04];
       globe = createGlobe(canvas, {
         devicePixelRatio: dpr,
         width: renderSize,
@@ -186,7 +187,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
         mapSamples: 14000,
         mapBrightness: 5.8,
         baseColor: blue ? [0.87, 0.94, 1] : [0.91, 0.9, 0.98],
-        markerColor: blue ? [0.12, 0.38, 0.85] : [0.39, 0.32, 0.74],
+        markerColor: [0.18, 0.38, 0.84],
         glowColor: blue ? [0.95, 0.98, 1] : [0.98, 0.97, 1],
         markerElevation: 0,
         markers: COUNTRY_LOCATIONS.map((location, i) => ({ location, size: markerSizes[i] || .026 })),
