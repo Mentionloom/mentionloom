@@ -3014,3 +3014,574 @@
 /* deployment sync: discovery cleanup */
 
 /* sync canvas sizing deployment */
+
+
+/* 2026-09-21 restored interactive landing motion */
+
+/* Globe: dots stay minimal; country identity lives in the active card. */
+.marketing-app .question-float .scene-country-flag {
+  display:block;
+  width:22px;
+  height:15px;
+  flex:0 0 auto;
+  object-fit:cover;
+  border-radius:2px;
+  box-shadow:0 0 0 1px #00000012;
+}
+.marketing-app .scene-detail-location {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:var(--muted);
+  font-size:var(--text-xs);
+  margin-top:20px;
+}
+.marketing-app .scene-detail-location img {
+  width:24px;
+  height:16px;
+  object-fit:cover;
+  border-radius:2px;
+  box-shadow:0 0 0 1px #00000012;
+}
+.marketing-app .globe-pin {
+  width:22px;
+  height:22px;
+  border-width:4px;
+  background:#2f62d6;
+  box-shadow:0 0 0 1px #d7deed;
+}
+.marketing-app .globe-pin[aria-pressed="true"] {
+  background:#16a36a;
+  box-shadow:0 0 0 5px #dcf5e8,0 0 0 6px #96d6b5;
+}
+
+/* FROM A LOST ANSWER: everything is readable without JS.
+   Once the observer is armed, the section assembles only when it enters view. */
+.marketing-app #insights.motion-armed:not(.build-visible) .section-heading,
+.marketing-app #insights.motion-armed:not(.build-visible) .feature-card {
+  opacity:0;
+  transform:translateY(20px);
+}
+.marketing-app #insights.motion-armed.build-visible .section-heading {
+  animation:ml-section-rise 620ms var(--ease-out) both;
+}
+.marketing-app #insights.motion-armed.build-visible .feature-card {
+  animation:ml-card-build 720ms var(--ease-out) both;
+}
+.marketing-app #insights.motion-armed.build-visible .feature-card:nth-child(2) { animation-delay:90ms; }
+.marketing-app #insights.motion-armed.build-visible .feature-card:nth-child(3) { animation-delay:180ms; }
+.marketing-app #insights.motion-armed.build-visible .feature-card:nth-child(4) { animation-delay:270ms; }
+
+.marketing-app #insights.motion-armed:not(.build-visible) :is(
+  .source-row,
+  .marketing-funnel-step,
+  .action-checks .choice,
+  .shortlist-question,
+  .shortlist-brands > span,
+  .your-brand-caption
+) {
+  opacity:0;
+  transform:translateY(8px);
+}
+.marketing-app #insights.motion-armed.build-visible .source-row,
+.marketing-app #insights.motion-armed.build-visible .marketing-funnel-step,
+.marketing-app #insights.motion-armed.build-visible .action-checks .choice,
+.marketing-app #insights.motion-armed.build-visible .shortlist-question,
+.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span,
+.marketing-app #insights.motion-armed.build-visible .your-brand-caption {
+  animation:ml-content-build 480ms var(--ease-out) both;
+}
+.marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(2),
+.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(2) { animation-delay:160ms; }
+.marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(3),
+.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(3) { animation-delay:240ms; }
+.marketing-app #insights.motion-armed.build-visible :is(.source-row,.marketing-funnel-step,.action-checks .choice):nth-child(4),
+.marketing-app #insights.motion-armed.build-visible .shortlist-brands > span:nth-child(4) { animation-delay:320ms; }
+
+.marketing-app #insights.motion-armed:not(.build-visible) .marketing-funnel-track > span,
+.marketing-app #insights.motion-armed:not(.build-visible) .brief-progress > div > span {
+  transform:scaleX(0);
+}
+.marketing-app #insights.motion-armed.build-visible .marketing-funnel-track > span,
+.marketing-app #insights.motion-armed.build-visible .brief-progress > div > span {
+  transform-origin:left;
+  animation:ml-bar-grow 760ms var(--ease-out) 260ms both;
+}
+
+@keyframes ml-section-rise {
+  from { opacity:0; transform:translateY(14px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes ml-card-build {
+  from { opacity:0; transform:translateY(20px) scale(.992); }
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes ml-content-build {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes ml-bar-grow {
+  from { transform:scaleX(0); }
+  to { transform:scaleX(1); }
+}
+
+/* A CLEARER START — three miniature product moments. */
+.marketing-app #approach .section-heading > p {
+  max-width:420px;
+  margin-inline:auto;
+}
+.marketing-app #approach .clearer-start-grid {
+  align-items:start;
+  gap:24px;
+}
+.marketing-app #approach .clearer-step .step-visual {
+  position:relative;
+  height:294px;
+  padding:22px;
+  justify-content:stretch;
+  background:#f4f6fa;
+  border:1px solid #dfe4ed;
+  border-radius:20px;
+  box-shadow:0 14px 42px #25324d0a;
+  overflow:hidden;
+}
+.marketing-app #approach .clearer-step h3 {
+  font-size:20px;
+}
+.marketing-app #approach .clearer-step p {
+  max-width:330px;
+}
+.marketing-app #approach.motion-armed:not(.build-visible) .section-heading,
+.marketing-app #approach.motion-armed:not(.build-visible) .clearer-step {
+  opacity:0;
+  transform:translateY(20px);
+}
+.marketing-app #approach.motion-armed.build-visible .section-heading {
+  animation:ml-section-rise 620ms var(--ease-out) both;
+}
+.marketing-app #approach.motion-armed.build-visible .clearer-step {
+  animation:ml-card-build 720ms var(--ease-out) both;
+}
+.marketing-app #approach.motion-armed.build-visible .clearer-step:nth-child(2) { animation-delay:110ms; }
+.marketing-app #approach.motion-armed.build-visible .clearer-step:nth-child(3) { animation-delay:220ms; }
+
+/* 01 — website ingestion */
+.marketing-app .company-browser {
+  position:relative;
+  width:100%;
+  height:100%;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 18px 35px #182c5010;
+  overflow:hidden;
+}
+.marketing-app .company-browser-bar {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-height:52px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.marketing-app .browser-dot {
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#d4d9e3;
+}
+.marketing-app .company-url {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  margin-left:5px;
+  font-size:11px;
+  color:var(--text);
+}
+.marketing-app .company-url img {
+  width:18px;
+  height:18px;
+  border-radius:5px;
+}
+.marketing-app .scan-state {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  margin-left:auto;
+  font-size:9px;
+  color:var(--muted);
+}
+.marketing-app .scan-state i {
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#2a66dc;
+}
+.marketing-app .crawl-line {
+  height:3px;
+  background:#eef1f6;
+  overflow:hidden;
+}
+.marketing-app .crawl-line > span {
+  display:block;
+  width:100%;
+  height:100%;
+  background:#2f62d6;
+  transform-origin:left;
+}
+.marketing-app .company-map {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:16px 14px 12px;
+}
+.marketing-app .company-map > span {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+  padding:11px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fbfcfe;
+}
+.marketing-app .company-map b {
+  font-size:10px;
+  font-weight:500;
+}
+.marketing-app .company-map small {
+  color:var(--muted);
+  font-size:9px;
+}
+.marketing-app .company-ready {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 14px;
+  padding:10px 0 0;
+  border-top:1px solid var(--border);
+  font-size:10px;
+  color:var(--muted);
+}
+.marketing-app .company-ready strong {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  color:#168456;
+  font-weight:500;
+}
+.marketing-app .company-ready .icon { width:12px; height:12px; }
+.marketing-app .scan-beam {
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-18%;
+  width:22%;
+  background:linear-gradient(90deg,transparent,#3874e31f,transparent);
+  transform:skewX(-8deg);
+  pointer-events:none;
+}
+
+.marketing-app #approach.build-visible .clearer-step-company .crawl-line > span {
+  animation:ml-crawl 1700ms var(--ease-out) both;
+}
+.marketing-app #approach.build-visible .clearer-step-company .scan-state i {
+  animation:ml-scan-pulse 1.2s ease-in-out infinite;
+}
+.marketing-app #approach.build-visible .clearer-step-company .scan-beam {
+  animation:ml-scan-beam 3.6s ease-in-out 400ms infinite;
+}
+.marketing-app #approach.build-visible .clearer-step-company .company-map > span {
+  animation:ml-content-build 480ms var(--ease-out) both;
+}
+.marketing-app #approach.build-visible .clearer-step-company .company-map > span:nth-child(1) { animation-delay:420ms; }
+.marketing-app #approach.build-visible .clearer-step-company .company-map > span:nth-child(2) { animation-delay:540ms; }
+.marketing-app #approach.build-visible .clearer-step-company .company-map > span:nth-child(3) { animation-delay:660ms; }
+.marketing-app #approach.build-visible .clearer-step-company .company-map > span:nth-child(4) { animation-delay:780ms; }
+.marketing-app #approach.build-visible .clearer-step-company .company-ready {
+  animation:ml-content-build 500ms var(--ease-out) 940ms both;
+}
+@keyframes ml-crawl { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@keyframes ml-scan-pulse { 50% { transform:scale(1.4); box-shadow:0 0 0 5px #2f62d61a; } }
+@keyframes ml-scan-beam {
+  0%,15% { transform:translateX(0) skewX(-8deg); opacity:0; }
+  30% { opacity:1; }
+  70% { opacity:1; }
+  85%,100% { transform:translateX(540%) skewX(-8deg); opacity:0; }
+}
+
+/* 02 — question generation and selection */
+.marketing-app .questions-visual {
+  position:relative;
+  display:block !important;
+}
+.marketing-app .question-generator-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+  font-size:10px;
+}
+.marketing-app .question-generator-head > span {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--muted);
+}
+.marketing-app .question-generator-head .icon { width:14px; height:14px; color:var(--accent-text); }
+.marketing-app .question-generator-head strong {
+  padding:4px 7px;
+  border-radius:999px;
+  background:#eaf1ff;
+  color:#2f62d6;
+  font-size:9px;
+  font-weight:500;
+}
+.marketing-app .generated-questions {
+  display:grid;
+  gap:8px;
+}
+.marketing-app .generated-question {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:57px;
+  padding:10px 11px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:#fff;
+  box-shadow:0 7px 18px #182c5008;
+}
+.marketing-app .generated-question b {
+  font-size:10.5px;
+  font-weight:500;
+}
+.marketing-app .generated-question small {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex:0 0 auto;
+  color:var(--muted);
+  font-size:8.5px;
+}
+.marketing-app .generated-question img { width:13px; height:13px; }
+.marketing-app .question-footer {
+  display:flex;
+  gap:5px;
+  margin-top:10px;
+}
+.marketing-app .question-footer span {
+  padding:4px 7px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:#fff;
+  color:var(--muted);
+  font-size:8px;
+}
+.marketing-app .question-cursor {
+  position:absolute;
+  width:14px;
+  height:14px;
+  right:31px;
+  top:74px;
+  border:2px solid #fff;
+  border-radius:4px 4px 4px 1px;
+  background:#2f62d6;
+  box-shadow:0 3px 10px #25324d33;
+  transform:rotate(-12deg);
+  z-index:3;
+}
+.marketing-app .question-cursor::after {
+  content:"";
+  position:absolute;
+  inset:-9px;
+  border-radius:50%;
+  border:1px solid #2f62d6;
+  opacity:0;
+}
+.marketing-app #approach.build-visible .clearer-step-questions .generated-question {
+  animation:ml-question-cycle 7.8s ease-in-out infinite;
+}
+.marketing-app #approach.build-visible .clearer-step-questions .generated-question:nth-child(2) { animation-delay:2.6s; }
+.marketing-app #approach.build-visible .clearer-step-questions .generated-question:nth-child(3) { animation-delay:5.2s; }
+.marketing-app #approach.build-visible .clearer-step-questions .question-cursor {
+  animation:ml-cursor-tour 7.8s var(--ease-out) infinite;
+}
+.marketing-app #approach.build-visible .clearer-step-questions .question-cursor::after {
+  animation:ml-cursor-tap 2.6s ease-out infinite;
+}
+@keyframes ml-question-cycle {
+  0%,24%,100% { border-color:var(--border); background:#fff; transform:translateX(0); }
+  7%,18% { border-color:#2f62d6; background:#edf3ff; transform:translateX(3px); }
+}
+@keyframes ml-cursor-tour {
+  0%,24% { transform:translate(0,0) rotate(-12deg); }
+  34%,57% { transform:translate(0,65px) rotate(-12deg); }
+  67%,90% { transform:translate(0,130px) rotate(-12deg); }
+  100% { transform:translate(0,0) rotate(-12deg); }
+}
+@keyframes ml-cursor-tap {
+  0%,10% { opacity:.55; transform:scale(.35); }
+  22%,100% { opacity:0; transform:scale(1.7); }
+}
+
+/* 03 — recommendation gap becomes a brief */
+.marketing-app .action-builder-visual {
+  display:block !important;
+  background:linear-gradient(180deg,#f5f7fb,#eef3ff) !important;
+}
+.marketing-app .gap-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:var(--muted);
+  font-size:10px;
+}
+.marketing-app .gap-header strong {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  color:#2f62d6;
+  font-weight:500;
+}
+.marketing-app .gap-header i {
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#2f62d6;
+}
+.marketing-app .shortlist-flow {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:16px 0 12px;
+}
+.marketing-app .shortlist-flow > span {
+  display:grid;
+  place-items:center;
+  width:31px;
+  height:31px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:#fff;
+  box-shadow:0 5px 12px #182c5008;
+}
+.marketing-app .shortlist-flow img { width:17px; height:17px; }
+.marketing-app .shortlist-flow .brand-slot {
+  margin-left:6px;
+  border-style:dashed;
+  border-color:#2f62d6;
+  background:#edf3ff;
+}
+.marketing-app .brief-build {
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 12px 28px #182c500d;
+}
+.marketing-app .brief-kicker {
+  color:#2f62d6;
+  font-size:8px;
+  letter-spacing:.1em;
+}
+.marketing-app .brief-build > strong {
+  display:block;
+  margin-top:5px;
+  font-size:18px;
+  font-weight:500;
+  letter-spacing:-.45px;
+}
+.marketing-app .brief-lines {
+  display:grid;
+  gap:5px;
+  margin:10px 0;
+}
+.marketing-app .brief-lines i {
+  display:block;
+  width:88%;
+  height:5px;
+  border-radius:4px;
+  background:#e7ecf5;
+  transform-origin:left;
+}
+.marketing-app .brief-lines i:nth-child(2) { width:68%; }
+.marketing-app .brief-lines i:nth-child(3) { width:46%; }
+.marketing-app .brief-ready {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-top:9px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+  font-size:9px;
+}
+.marketing-app .brief-ready b {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  color:#2f62d6;
+  font-weight:500;
+}
+.marketing-app .brief-ready .icon { width:11px; height:11px; }
+.marketing-app #approach.build-visible .clearer-step-action .shortlist-flow > span {
+  animation:ml-pop 440ms var(--ease-out) both;
+}
+.marketing-app #approach.build-visible .clearer-step-action .shortlist-flow > span:nth-child(1) { animation-delay:240ms; }
+.marketing-app #approach.build-visible .clearer-step-action .shortlist-flow > span:nth-child(2) { animation-delay:380ms; }
+.marketing-app #approach.build-visible .clearer-step-action .shortlist-flow > span:nth-child(3) { animation-delay:520ms; }
+.marketing-app #approach.build-visible .clearer-step-action .shortlist-flow > span:nth-child(4) { animation-delay:720ms; }
+.marketing-app #approach.build-visible .clearer-step-action .brand-slot {
+  animation:ml-brand-arrive 650ms var(--ease-out) 720ms both,ml-brand-pulse 2.8s ease-in-out 1.6s infinite !important;
+}
+.marketing-app #approach.build-visible .clearer-step-action .brief-build {
+  animation:ml-brief-rise 620ms var(--ease-out) 900ms both;
+}
+.marketing-app #approach.build-visible .clearer-step-action .brief-lines i {
+  animation:ml-crawl 650ms var(--ease-out) 1.35s both;
+}
+.marketing-app #approach.build-visible .clearer-step-action .brief-lines i:nth-child(2) { animation-delay:1.48s; }
+.marketing-app #approach.build-visible .clearer-step-action .brief-lines i:nth-child(3) { animation-delay:1.61s; }
+@keyframes ml-pop {
+  from { opacity:0; transform:scale(.72); }
+  to { opacity:1; transform:scale(1); }
+}
+@keyframes ml-brand-arrive {
+  from { opacity:0; transform:translateX(-14px) scale(.75); }
+  to { opacity:1; transform:translateX(0) scale(1); }
+}
+@keyframes ml-brand-pulse { 50% { box-shadow:0 0 0 5px #2f62d614; } }
+@keyframes ml-brief-rise {
+  from { opacity:0; transform:translateY(12px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+@media(max-width:760px) {
+  .marketing-app #approach .clearer-start-grid { gap:34px; }
+  .marketing-app #approach .clearer-step .step-visual {
+    height:286px;
+    padding:18px;
+  }
+  .marketing-app .company-map { padding-inline:12px; }
+  .marketing-app .generated-question { padding:10px; }
+  .marketing-app .generated-question small { font-size:8px; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app #insights.motion-armed *,
+  .marketing-app #approach.motion-armed *,
+  .marketing-app #insights.motion-armed *::before,
+  .marketing-app #approach.motion-armed *::before,
+  .marketing-app #insights.motion-armed *::after,
+  .marketing-app #approach.motion-armed *::after {
+    animation:none !important;
+    opacity:1 !important;
+    transform:none !important;
+  }
+}
