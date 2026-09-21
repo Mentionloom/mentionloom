@@ -544,7 +544,7 @@ function renderResearch() {
     stageHeading(
       "02",
       "Understanding your company",
-      "Mentionloom is turning the public site into a structured company profile instead of asking you to configure everything manually."
+      "Analyzing " + state.website + ". Mentionloom is turning the public site into a structured company profile instead of asking you to configure everything manually."
     ) +
     '<section class="stage-surface"><div class="stage-body">' +
     '<div class="research-layout"><div class="research-list">' +
@@ -601,6 +601,7 @@ function renderProfile() {
     '<section class="stage-surface"><div class="stage-body">' +
     '<div class="profile-grid">' +
     profileField("Brand", "brand", c.brand) +
+    profileField("Website", "website", c.website || state.website) +
     profileField("Category", "category", c.category) +
     profileField("Description", "description", c.description, { wide: true }) +
     profileField("Products", "products", c.products, { list: true }) +
@@ -1133,8 +1134,11 @@ function moveTo(step) {
 }
 
 function beginResearch(rawWebsite) {
+  state.website = String(rawWebsite || "").trim();
+  state.websiteError = "";
+  save();
   try {
-    const website = normalizeWebsite(rawWebsite);
+    const website = normalizeWebsite(state.website);
     const context = contextForWebsite(website);
     state.website = website;
     state.websiteError = "";
@@ -1150,6 +1154,7 @@ function beginResearch(rawWebsite) {
     runResearch();
   } catch (error) {
     state.websiteError = error.message || "Enter a valid website.";
+    save();
     render();
   }
 }
@@ -1393,6 +1398,13 @@ document.addEventListener("change", function (event) {
 });
 
 document.addEventListener("input", function (event) {
+  if (event.target.matches('input[name="website"]')) {
+    state.website = event.target.value;
+    state.websiteError = "";
+    save();
+    return;
+  }
+
   const profile = event.target.closest("[data-profile]");
   if (profile) {
     state.company[profile.dataset.profile] = profile.value;
