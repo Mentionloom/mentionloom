@@ -3585,3 +3585,260 @@
     transform:none !important;
   }
 }
+
+/* 2026-09-21 engine context + answer detail refinement */
+.marketing-app .engine-all-mobile { display:none; }
+@media (min-width:761px) {
+  .marketing-app .engine-controls .segmented {
+    display:inline-flex;
+    width:max-content;
+    max-width:100%;
+    overflow:visible;
+  }
+}
+@media (max-width:760px) {
+  .marketing-app .engine-all-desktop { display:none; }
+  .marketing-app .engine-all-mobile { display:inline; }
+}
+
+.marketing-app .visibility-chart .plot-fill {
+  transform-origin:left center;
+}
+.marketing-app .visibility-chart svg.chart-building .plot-fill,
+.marketing-app .visibility-chart svg.chart-building .plot-previous {
+  clip-path:inset(0 100% 0 0);
+  animation:chart-context-reveal 720ms var(--ease-out) forwards;
+}
+.marketing-app .visibility-chart svg.chart-building .plot-current {
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+  animation:chart-line-build 760ms var(--ease-out) 60ms forwards;
+}
+.marketing-app .visibility-chart svg.chart-building #chart-cursor,
+.marketing-app .visibility-chart svg.chart-building #chart-dot {
+  opacity:0;
+  animation:chart-marker-in 220ms ease-out 760ms forwards;
+}
+@keyframes chart-context-reveal {
+  from { clip-path:inset(0 100% 0 0); opacity:.35; }
+  to { clip-path:inset(0 0 0 0); opacity:1; }
+}
+@keyframes chart-line-build {
+  from { stroke-dashoffset:1; opacity:.55; }
+  to { stroke-dashoffset:0; opacity:1; }
+}
+@keyframes chart-marker-in {
+  to { opacity:1; }
+}
+
+.marketing-app .scene-detail {
+  width:min(720px,calc(100% - 32px));
+  max-height:min(86vh,760px);
+  padding:0;
+  overflow:hidden;
+  border-radius:22px;
+  box-shadow:0 28px 90px #15162526;
+}
+.marketing-app .scene-detail::backdrop {
+  background:#1819255c;
+  backdrop-filter:blur(7px);
+}
+.marketing-app .scene-detail-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:62px;
+  padding:14px 18px 14px 22px;
+  border-bottom:1px solid var(--border);
+}
+.marketing-app .scene-detail-heading > span {
+  color:var(--muted);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.marketing-app .scene-detail-heading .icon-button {
+  width:34px;
+  height:34px;
+  border:1px solid var(--border);
+  background:var(--surface);
+}
+.marketing-app #scene-detail-content {
+  padding:26px;
+  overflow:auto;
+}
+.marketing-app .scene-chat {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.marketing-app .scene-chat .message {
+  width:fit-content;
+  max-width:min(86%,560px);
+  padding:14px 16px;
+  border:1px solid var(--border);
+  font-size:13px;
+  line-height:1.55;
+  box-shadow:0 1px 0 #10111b08;
+}
+.marketing-app .scene-chat .message.sent {
+  border-color:transparent;
+  background:var(--accent-soft);
+  color:var(--text);
+}
+.marketing-app .scene-chat .message p {
+  margin:8px 0 0;
+  font-size:14px;
+  line-height:1.55;
+}
+.marketing-app .scene-question-message {
+  align-self:flex-end;
+}
+.marketing-app .scene-answer-message {
+  align-self:flex-start;
+}
+.marketing-app .scene-message-label {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:20px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:500;
+}
+.marketing-app .scene-message-label > .icon {
+  width:15px;
+  height:15px;
+}
+.marketing-app .scene-answer-meta > img {
+  width:20px;
+  height:20px;
+}
+.marketing-app .scene-message-location {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-left:auto;
+  padding-left:10px;
+  color:var(--muted);
+  font-size:10px;
+}
+.marketing-app .scene-message-location img {
+  width:18px;
+  height:12px;
+  border-radius:2px;
+  object-fit:cover;
+  box-shadow:0 0 0 1px #00000012;
+}
+.marketing-app .scene-answer-source {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:fit-content;
+  margin-top:12px;
+  padding:5px 8px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--surface);
+  color:var(--muted);
+  font-size:10px;
+}
+.marketing-app .scene-answer-source .icon {
+  width:12px;
+  height:12px;
+}
+.marketing-app .scene-takeaway {
+  margin-top:24px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+}
+.marketing-app .scene-takeaway-heading {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+  color:var(--accent-text);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.02em;
+}
+.marketing-app .scene-takeaway-heading .icon {
+  width:15px;
+  height:15px;
+}
+.marketing-app .scene-takeaway-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  background:var(--surface);
+}
+.marketing-app .scene-takeaway-item {
+  display:grid;
+  grid-template-columns:34px 1fr;
+  gap:12px;
+  min-width:0;
+  padding:18px;
+}
+.marketing-app .scene-takeaway-item + .scene-takeaway-item {
+  border-left:1px solid var(--border);
+}
+.marketing-app .scene-takeaway-icon {
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:var(--subtle);
+  color:var(--text);
+}
+.marketing-app .scene-takeaway-icon .icon {
+  width:16px;
+  height:16px;
+}
+.marketing-app .scene-takeaway-item h3 {
+  margin:1px 0 6px;
+  font-size:12px;
+  font-weight:600;
+}
+.marketing-app .scene-takeaway-item p {
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+@media (max-width:620px) {
+  .marketing-app .scene-detail {
+    width:calc(100% - 20px);
+    max-height:90vh;
+    border-radius:18px;
+  }
+  .marketing-app #scene-detail-content {
+    padding:18px;
+  }
+  .marketing-app .scene-chat .message {
+    max-width:92%;
+  }
+  .marketing-app .scene-takeaway-grid {
+    grid-template-columns:1fr;
+  }
+  .marketing-app .scene-takeaway-item + .scene-takeaway-item {
+    border-left:0;
+    border-top:1px solid var(--border);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .marketing-app .visibility-chart svg.chart-building .plot-fill,
+  .marketing-app .visibility-chart svg.chart-building .plot-previous,
+  .marketing-app .visibility-chart svg.chart-building .plot-current,
+  .marketing-app .visibility-chart svg.chart-building #chart-cursor,
+  .marketing-app .visibility-chart svg.chart-building #chart-dot {
+    animation:none !important;
+    clip-path:none !important;
+    stroke-dashoffset:0 !important;
+    opacity:1 !important;
+  }
+}
