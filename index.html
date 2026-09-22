@@ -70,9 +70,9 @@
     <link rel="stylesheet" href="/app/tokens.css" />
     <link rel="stylesheet" href="/app/foundation.css" />
     <link rel="stylesheet" href="/waitlist.css" />
-    <link rel="stylesheet" href="/site.css?v=20260921-6" />
+    <link rel="stylesheet" href="/site.css?v=20260922-1" />
     <script src="/waitlist.js" defer></script>
-    <script type="module" src="/site.js?v=20260921-6"></script>
+    <script type="module" src="/site.js?v=20260922-1"></script>
   </head>
   <body class="discovery-app marketing-app">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -216,14 +216,14 @@
         </div>
       </section>
       <section class="product-section wrap section-space" id="product">
-        <div class="section-heading">
-          <span class="eyebrow">FROM ANSWERS TO ACTION</span>
-          <h2>Stop guessing.<br />See where you stand.</h2>
-          <p>
-            Understand your visibility, uncover the gaps,<br
+        <div class="section-heading product-context-heading" aria-live="polite">
+          <span class="eyebrow" id="product-context-eyebrow">RECOMMENDATION SHARE</span>
+          <h2 id="product-context-title">See who makes<br />the shortlist.</h2>
+          <p id="product-context-copy">
+            Measure where Acme appears across your monitored buyer questions<br
               class="desktop-break"
             />
-            and give your team a better next move.
+            and which competitors show up instead.
           </p>
         </div>
         <div
@@ -426,7 +426,7 @@
       </section>
       <section class="feature-section wrap section-space" id="insights">
         <div class="section-heading">
-          <span class="eyebrow">QUESTION → ANSWER → COMPETITOR → WHY → ACTION</span>
+          <span class="eyebrow">GAP → EVIDENCE → ACTION</span>
           <h2>From a lost answer<br />to your next move.</h2>
           <p>
             Inspect who appears, follow the sources,<br class="desktop-break" />
@@ -502,42 +502,50 @@
               </p>
             </div>
             <div class="action-visual">
-              <div class="action-card-heading">
-                <span class="gap-status">
-                  <span class="badge purple" data-gap-badge>Comparison gap</span>
-                  <span class="gap-resolution" aria-hidden="true">
-                    <span class="gap-brand gap-brand-asana"><img src="/assets/brands/asana.svg" width="22" height="22" alt="" /></span>
-                    <span class="gap-brand gap-brand-acme"><img src="/assets/brands/acme.svg" width="22" height="22" alt="" /></span>
-                    <strong>Gap closed</strong>
-                  </span>
+              <div class="action-task">
+                <div class="action-card-heading">
+                  <span class="badge purple">Comparison gap</span>
+                  <span
+                    ><svg class="icon" aria-hidden="true">
+                      <use href="/assets/icons/lucide.svg#i-clock" />
+                    </svg>
+                    ~2 hours</span
+                  >
+                </div>
+                <h4>Give buyers a better<br />Asana comparison.</h4>
+                <p>“What is a simpler alternative to Asana?”</p>
+                <div class="action-checks">
+                  <label class="choice"
+                    ><input type="checkbox" /> Compare setup and
+                    collaboration</label
+                  ><label class="choice"
+                    ><input type="checkbox" /> Answer who your product is
+                    for</label
+                  ><label class="choice"
+                    ><input type="checkbox" /> Link from product and pricing
+                    pages</label
+                  >
+                </div>
+                <span class="demo-cursor" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 3.5 18.5 13l-5.6 1.15-2.55 5.1L5 3.5Z" fill="white" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>
                 </span>
-                <span
-                  ><svg class="icon" aria-hidden="true">
-                    <use href="/assets/icons/lucide.svg#i-clock" />
-                  </svg>
-                  ~2 hours</span
-                >
+                <div class="brief-progress" aria-label="Brief completion">
+                  <div><span id="brief-bar" style="width: 0%"></span></div>
+                </div>
               </div>
-              <h4>Give buyers a better<br />Asana comparison.</h4>
-              <p>“What is a simpler alternative to Asana?”</p>
-              <div class="action-checks">
-                <label class="choice"
-                  ><input type="checkbox" /> Compare setup and
-                  collaboration</label
-                ><label class="choice"
-                  ><input type="checkbox" /> Answer who your product is
-                  for</label
-                ><label class="choice"
-                  ><input type="checkbox" /> Link from product and pricing
-                  pages</label
-                >
-              </div>
-              <span class="demo-cursor" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M5 3.5 18.5 13l-5.6 1.15-2.55 5.1L5 3.5Z" fill="white" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>
-              </span>
-              <div class="brief-progress">
-                <span id="brief-count">0 of 3 brief items ready</span>
-                <div><span id="brief-bar" style="width: 0%"></span></div>
+              <div class="action-success" aria-hidden="true">
+                <span class="action-success-kicker">
+                  <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-circlecheck" /></svg>
+                  Success
+                </span>
+                <strong>Gap closed</strong>
+                <div class="action-success-brands" aria-label="Acme moves into the competitive set">
+                  <span class="success-brand success-asana"><img src="/assets/brands/asana.svg" alt="" /></span>
+                  <span class="success-brand success-notion"><img src="/assets/brands/notion.svg" alt="" /></span>
+                  <span class="success-brand success-acme"><img src="/assets/brands/acme.svg" alt="Acme" /></span>
+                  <span class="success-brand success-clickup"><img src="/assets/brands/clickup.svg" alt="" /></span>
+                </div>
+                <p>Acme is now the clearest result.</p>
               </div>
             </div>
           </article>
@@ -639,10 +647,6 @@
                     <strong>3 found</strong>
                   </div>
                 </div>
-                <div class="company-ready">
-                  <span>Company profile</span>
-                  <strong><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg> Ready to review</strong>
-                </div>
               </div>
             </div>
             <span class="step-number">01</span>
@@ -671,7 +675,6 @@
                   <span class="question-check"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                 </span>
               </div>
-              <div class="question-footer"><span>Discovery · 8</span><span>Comparison · 7</span><span>Decision · 5</span></div>
             </div>
             <span class="step-number">02</span>
             <h3>Choose your questions.</h3>
@@ -681,7 +684,6 @@
           <article class="clearer-step clearer-step-action">
             <div class="step-visual action-builder-visual" aria-hidden="true">
               <div class="gap-header">
-                <span>Who gets recommended?</span>
                 <strong><i></i> Comparison gap</strong>
               </div>
               <div class="mini-rank-list">
@@ -697,8 +699,6 @@
               <div class="brief-build">
                 <span class="brief-kicker"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-spark" /></svg> NEXT MOVE</span>
                 <strong>Make the shortlist.</strong>
-                <p>Publish a small-team comparison with clearer proof around setup and team size.</p>
-                <div class="brief-ready"><span><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-circlecheck" /></svg> Evidence-backed</span><b>Ready <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg></b></div>
               </div>
             </div>
             <span class="step-number">03</span>
