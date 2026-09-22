@@ -4462,3 +4462,12 @@
   opacity:1 !important;
   animation:none !important;
 }
+
+.marketing-app .funnel-stats strong.rolling-number {
+  display:inline-flex;
+  align-items:baseline;
+  min-width:auto;
+  font-size:42px;
+  line-height:1.05;
+  white-space:nowrap;
+}
