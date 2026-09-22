@@ -1,23 +1,77 @@
 /* Orbit 0.2 component dimensions, matching runtime/styles.css and controls.css.
    Product compositions use the same scale; touch input expands hit targets. */
-.discovery-app #recommendation-summary { margin-block: var(--space-2) var(--space-4); border: 0; }
+.discovery-app #recommendation-summary {
+  margin: var(--space-5) 0 var(--space-6);
+  border: 0;
+}
 .discovery-app #recommendation-summary[hidden],
 .discovery-app[data-current-view="questions"] #question-stats,
 .discovery-app .page-context:empty { display: none; }
-.discovery-app .recommendation-stats { gap: 0; }
-.discovery-app .recommendation-stats .stat {
-  flex: 1; min-width: 0; gap: var(--space-2); padding: var(--space-4) var(--space-5);
-  text-align: left; border: 0;
-  transition: background var(--motion-fast);
+.discovery-app .recommendation-stats {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: var(--space-3);
 }
-.discovery-app .recommendation-stats .stat:first-child { padding-inline-start: 0; }
-.discovery-app .recommendation-stats .stat:last-child { border-inline-end: 0; }
-.discovery-app .recommendation-stats .stat:hover { background: var(--bg-a1); }
-.discovery-app .recommendation-stats .stat > span:first-child { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-base); color: var(--muted); }
-.discovery-app .recommendation-stats .stat strong { font-size: var(--metric-size); }
-.discovery-app .recommendation-stats .stat small { font-size: var(--text-base); letter-spacing: normal; font-weight: 400; color: var(--muted); }
-.discovery-app .recommendation-stats .stat .icon { width: var(--space-4); height: var(--space-4); opacity: 0; transition: opacity var(--motion-fast); }
-.discovery-app .recommendation-stats .stat:is(:hover, :focus-visible) .icon { opacity: 1; }
+.discovery-app .recommendation-stats .stat {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto 18px;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  min-height: 82px;
+  padding: var(--space-4) var(--space-5);
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  transition: background var(--motion-fast), border-color var(--motion-fast), transform var(--motion-fast);
+}
+.discovery-app .recommendation-stats .stat:hover {
+  background: var(--background-subtle);
+  border-color: color-mix(in srgb,var(--border) 65%,var(--text) 35%);
+}
+.discovery-app .recommendation-stats .stat > span:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.discovery-app .recommendation-kicker {
+  color: var(--text);
+  font-size: var(--text-base);
+  font-weight: 500;
+}
+.discovery-app .recommendation-stats .stat > span:first-child > small {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+.discovery-app .recommendation-stats .stat > strong {
+  color: var(--text);
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  letter-spacing: -.6px;
+  white-space: nowrap;
+}
+.discovery-app .recommendation-stats .stat > strong small {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.discovery-app .recommendation-stats .stat > .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  transition: transform var(--motion-fast), color var(--motion-fast);
+}
+.discovery-app .recommendation-stats .stat:is(:hover,:focus-visible) > .icon {
+  color: var(--text);
+  transform: translateX(2px);
+}
+@media (max-width: 700px) {
+  .discovery-app .recommendation-stats { grid-template-columns: 1fr; }
+  .discovery-app .recommendation-stats .stat { min-height: 74px; padding: var(--space-4); }
+}
 .discovery-app .disclosure-end { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--muted); }
 .discovery-app .evidence-disclosure[open] > summary .icon { transform: rotate(180deg); }
 .discovery-app .intelligence-action { border-block: 1px solid var(--border); padding-block: var(--space-3); }
