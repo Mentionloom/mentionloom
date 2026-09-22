@@ -1032,25 +1032,23 @@ function playSourceCard(card) {
 }
 
 function playTrafficCard(card) {
-  motionEnterMany(card.querySelectorAll(".funnel-stats > div"), 240, 140, {
-    distance: 5,
-    duration: 640,
-    scale: 1,
-  });
-
-  animateMetricText(card.querySelector("#referral-number"), base.current.referrals, 3000, 300);
-  animateMetricText(card.querySelector("#lead-number"), base.current.leads, 3000, 440);
+  // Keep the information architecture visible and perfectly stable.
+  // Only the numeric glyphs roll and the bar fills build in-place.
+  // Hiding/revealing the stat and funnel rows caused the empty-card flash
+  // and vertical jumps visible in the production recording.
+  animateMetricText(card.querySelector("#referral-number"), base.current.referrals, 1800, 120);
+  animateMetricText(card.querySelector("#lead-number"), base.current.leads, 1800, 180);
 
   const steps = [...card.querySelectorAll(".marketing-funnel-step")];
-  motionEnterMany(steps, 620, 180, { distance: 5, duration: 620, scale: 1 });
   steps.forEach((step, index) => {
     const bar = step.querySelector(".marketing-funnel-track > span");
     if (!bar) return;
+    bar.style.transformOrigin = "left center";
     motionAnimate(
       bar,
       [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-      3000,
-      { delay: 720 + index * 180, fill: "backwards" },
+      1800,
+      { delay: 260 + index * 110, fill: "backwards" },
     );
   });
 }
