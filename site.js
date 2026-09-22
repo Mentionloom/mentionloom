@@ -667,22 +667,27 @@ function animateMetricText(el, value, duration = 3000, delay = 0) {
   if (!el) return;
   const target = Number(value);
   if (!Number.isFinite(target)) return;
-  el.classList.remove("rolling-number");
-  el.removeAttribute("role");
-  el.removeAttribute("aria-label");
+
   setTimeout(() => {
     if (!el.isConnected) return;
-    const start = performance.now();
-    const tick = (now) => {
-      if (!el.isConnected) return;
-      const progress = Math.min(1, (now - start) / duration);
+    if (window.OrbitNumbers) {
+      window.OrbitNumbers.set(el, target, {
+        kind: "number",
+        initial: true,
+        duration,
+      });
+      return;
+    }
+
+    const started = performance.now();
+    const fallback = (now) => {
+      const progress = Math.min(1, (now - started) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
       el.textContent = format(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(tick);
-      else el.textContent = format(target);
+      if (progress < 1) requestAnimationFrame(fallback);
     };
     el.textContent = "0";
-    requestAnimationFrame(tick);
+    requestAnimationFrame(fallback);
   }, delay);
 }
 
