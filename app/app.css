@@ -2613,3 +2613,25 @@ main {
   .analytics-kpis { grid-template-columns: 1fr; }
   .analytics-bars { height: 130px; }
 }
+
+
+/* Footer carries the Mentionloom brand; workspace chrome stays focused on the customer workspace. */
+.app-footer .footer-brand {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  opacity: .62;
+  transition: opacity var(--motion-fast);
+}
+.app-footer .footer-brand:hover,
+.app-footer .footer-brand:focus-visible {
+  opacity: .9;
+}
+.app-footer .footer-brand img {
+  display: block;
+  width: 112px;
+  height: auto;
+  opacity: 1;
+}
