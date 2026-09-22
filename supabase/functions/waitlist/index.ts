@@ -45,6 +45,24 @@ function clean(value: unknown, max = 100) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+// Validate once, then persist the website in the same insert as the email.
+// Old cached clients remain compatible; the new two-field form requires it.
+function signupWebsite(value: unknown, required: boolean) {
+  const website = typeof value === "string" ? value.trim() : "";
+  if (!website && !required && (value === undefined || value === null || value === "")) return "";
+  try {
+    if (!website || website.length > 300 || /[\s<>\\]/.test(website)) throw new Error();
+    const url = new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`);
+    const labels = url.hostname.split(".");
+    if (!["https:", "http:"].includes(url.protocol) || url.username || url.password ||
+        labels.length < 2 || url.hostname.length > 253 ||
+        !labels.every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label))) throw new Error();
+    return url.origin;
+  } catch {
+    throw { status: 400, message: "Enter a valid website, such as company.com." };
+  }
+}
+
 function bytesToHex(bytes: Uint8Array) {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -130,6 +148,7 @@ async function signup(body: any, req: Request) {
     throw { status: 400, message: "Enter a valid email address." };
   }
   if (body.consent !== true) throw { status: 400, message: "Please agree to receive early-access updates." };
+  const website = signupWebsite(body.website, body.formVersion === "email-website-v1");
   const nonce = clean(body.requestId, 36);
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(nonce)) {
     throw { status: 400, message: "Please refresh the page and try again." };
@@ -167,6 +186,7 @@ async function signup(body: any, req: Request) {
       attribution,
       consent: { text: consentText, version: "2026-09-21", at: now },
       stage: "joined",
+      profile: website ? { website } : null,
       created_at: now,
       updated_at: now,
     });
@@ -175,10 +195,25 @@ async function signup(body: any, req: Request) {
 
   const { data: persisted, error: persistedError } = await db
     .from("waitlist_signups")
-    .select("email,owner_hash")
+    .select("email,owner_hash,profile")
     .eq("id", id)
     .single();
   if (persistedError || persisted?.email !== email) throw persistedError || new Error("Waitlist persistence verification failed.");
+
+  // An idempotent retry may finish an older signup or correct its website.
+  // Never let somebody who only knows an email overwrite another signup.
+  if (website && persisted.owner_hash === ownerHash && persisted.profile?.website !== website) {
+    const { data: updated, error: updateError } = await db
+      .from("waitlist_signups")
+      .update({ profile: { ...(persisted.profile || {}), website }, updated_at: now })
+      .eq("id", id)
+      .eq("owner_hash", ownerHash)
+      .select("profile")
+      .single();
+    if (updateError || updated?.profile?.website !== website) {
+      throw updateError || new Error("Waitlist website persistence verification failed.");
+    }
+  }
 
   return {
     ok: true,

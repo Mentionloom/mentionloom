@@ -1,77 +1,121 @@
 (() => {
   "use strict";
-  const $ = (selector) => document.querySelector(selector);
-  const dialog = $("#join-dialog");
+  const dialog = document.querySelector("#join-dialog");
+  if (!dialog) return;
+
+  // A single shared component replaces the legacy, duplicated page templates.
+  // Mount before any CTA can open the dialog; no private-link/profile UI remains.
+  dialog.classList.add("waitlist-dialog");
+  dialog.innerHTML = `
+    <button class="dialog-close waitlist-dismiss" type="button" aria-label="Close waitlist">
+      <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    </button>
+    <section class="waitlist-signup" data-waitlist-stage="signup">
+      <p class="waitlist-eyebrow">EARLY ACCESS</p>
+      <h2 class="waitlist-title" id="join-title" tabindex="-1">Get Mentionloom early.</h2>
+      <p class="waitlist-description" id="join-description">See where AI recommends your brand—and what to improve.</p>
+      <form id="join-form" class="waitlist-form">
+        <div class="waitlist-field">
+          <label for="email">Email</label>
+          <input class="waitlist-input" id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@company.com" maxlength="254" autocapitalize="none" spellcheck="false" required />
+        </div>
+        <div class="waitlist-field">
+          <label for="website">Website</label>
+          <input class="waitlist-input" id="website" name="website" type="text" autocomplete="url" inputmode="url" placeholder="company.com" maxlength="300" autocapitalize="none" spellcheck="false" required />
+        </div>
+        <div class="waitlist-trap" aria-hidden="true" inert>
+          <label for="company-fax">Company fax</label>
+          <input id="company-fax" name="company_fax" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+        <label class="waitlist-consent" for="waitlist-consent">
+          <input id="waitlist-consent" name="consent" type="checkbox" required />
+          <span>I agree to receive emails about Mentionloom early access and launch updates.</span>
+        </label>
+        <p class="waitlist-error" id="join-error" role="alert" tabindex="-1" hidden></p>
+        <button class="button primary waitlist-submit" type="submit"><span>Join the waitlist</span></button>
+        <p class="waitlist-legal"><a href="/privacy.html" target="_blank" rel="noopener">Privacy policy</a><span aria-hidden="true"> · </span><a href="/terms.html" target="_blank" rel="noopener">Terms</a></p>
+      </form>
+    </section>
+    <section class="waitlist-success" data-waitlist-stage="success" hidden>
+      <div class="waitlist-success-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6" /></svg>
+      </div>
+      <h2 class="waitlist-title" id="join-success-title" tabindex="-1">YOU’RE ON THE LIST</h2>
+      <p class="waitlist-description" id="join-success-description">We’ll email you when your early access is ready.</p>
+      <button class="button primary waitlist-done" id="close-success" type="button">Done</button>
+    </section>`;
+
+  const $ = (selector) => dialog.querySelector(selector);
+  const form = $("#join-form");
+  const emailInput = $("#email");
+  const websiteInput = $("#website");
+  const submitButton = $(".waitlist-submit");
+  const errorElement = $("#join-error");
   const storageKey = "mentionloom-waitlist";
-  let stage = "signup",
-    source = "direct",
-    busy = false,
-    token = "",
-    requestId = crypto.randomUUID();
+  const tokenPattern = /^[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64}$/i;
+  let token = "";
+  try { token = sessionStorage.getItem(storageKey) || ""; } catch {}
+  if (!tokenPattern.test(token)) token = "";
+  let stage = token ? "success" : "signup";
+  let source = "direct";
+  let busy = false;
+  let trigger = null;
+  let requestId = crypto.randomUUID();
   let requestEmail = "";
-  try {
-    token = sessionStorage.getItem(storageKey) || "";
-  } catch {}
-  const copy = {
-    signup: [
-      "EARLY ACCESS",
-      "Get Mentionloom<br>early.",
-      "See where AI recommends your brand—and what to improve.",
-    ],
-    profile: [
-      "Your place is saved",
-      "Make it<br>yours.",
-      "What brings you here? Help us make Mentionloom useful for the way you work.",
-    ],
-    success: [
-      "YOU’RE IN",
-      "You’re on<br>the list.",
-      "We’ll email you when access opens.",
-    ],
-    removed: [
-      "All taken care of",
-      "Your details<br>are removed.",
-      "You’re welcome back whenever the time is right.",
-    ],
-  };
+
   function remember(value) {
-    token = value;
+    token = typeof value === "string" && tokenPattern.test(value) ? value : "";
     try {
-      if (value) sessionStorage.setItem(storageKey, value);
+      if (token) sessionStorage.setItem(storageKey, token);
       else sessionStorage.removeItem(storageKey);
     } catch {}
   }
+
   function show(next, focus = true) {
     stage = next;
-    document
-      .querySelectorAll("[data-waitlist-stage]")
-      .forEach((el) => (el.hidden = el.dataset.waitlistStage !== stage));
-    $("#join-eyebrow").textContent = copy[stage][0];
-    $("#join-title").innerHTML = copy[stage][1];
-    $("#join-description").textContent = copy[stage][2];
-    const index = stage === "signup" ? 0 : stage === "profile" ? 1 : 2;
-    $(".waitlist-progress").setAttribute(
-      "aria-label",
-      `Step ${index + 1} of 3`,
-    );
-    document.querySelectorAll(".waitlist-progress>span").forEach((el, i) => {
-      el.classList.toggle("is-current", i === index);
-      el.classList.toggle("is-done", i < index);
+    dialog.dataset.stage = stage;
+    dialog.querySelectorAll("[data-waitlist-stage]").forEach((element) => {
+      element.hidden = element.dataset.waitlistStage !== stage;
     });
-    $(".waitlist-management").hidden = !token;
-    $("#remove-confirm").hidden = true;
+    $(".waitlist-dismiss").hidden = stage === "success";
+    const titleId = stage === "success" ? "join-success-title" : "join-title";
+    const descriptionId = stage === "success" ? "join-success-description" : "join-description";
+    dialog.setAttribute("aria-labelledby", titleId);
+    dialog.setAttribute("aria-describedby", descriptionId);
     dialog.scrollTop = 0;
-    if (focus) $("#join-title").focus({ preventScroll: true });
-  }
-  function errorAt(id, message = "") {
-    const el = $(id);
-    el.textContent = message;
-    el.hidden = !message;
-    if (message) {
-      el.tabIndex = -1;
-      el.focus();
+    if (focus && dialog.open) {
+      (stage === "success" ? $("#join-success-title") : emailInput).focus({ preventScroll: true });
     }
   }
+
+  function errorAt(message = "") {
+    errorElement.textContent = message;
+    errorElement.hidden = !message;
+    if (message && dialog.open) errorElement.focus({ preventScroll: false });
+  }
+
+  function normalizeWebsite(value) {
+    const website = value.trim();
+    try {
+      if (!website || website.length > 300 || /[\s<>\\]/.test(website)) throw new Error();
+      const url = new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`);
+      const labels = url.hostname.split(".");
+      if (!["https:", "http:"].includes(url.protocol) || url.username || url.password ||
+          labels.length < 2 || url.hostname.length > 253 ||
+          !labels.every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label))) throw new Error();
+      return url.origin;
+    } catch {
+      throw new Error("Enter a valid website, such as company.com.");
+    }
+  }
+
+  websiteInput.addEventListener("input", () => websiteInput.setCustomValidity(""));
+  websiteInput.addEventListener("blur", () => {
+    if (!websiteInput.value.trim()) return;
+    try { normalizeWebsite(websiteInput.value); websiteInput.setCustomValidity(""); }
+    catch (error) { websiteInput.setCustomValidity(error.message); }
+  });
+
   async function send(action, payload = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000);
@@ -83,220 +127,121 @@
         signal: controller.signal,
       });
       let data;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          "We couldn’t reach the waitlist. Please try again in a moment.",
-        );
+      try { data = await response.json(); }
+      catch { throw new Error("We couldn’t reach the waitlist. Please try again in a moment."); }
+      if (!response.ok || !data?.ok) {
+        throw Object.assign(new Error(data?.error || "We couldn’t save that. Please try again."), { status: response.status });
       }
-      if (!response.ok || !data.ok)
-        throw Object.assign(
-          new Error(data.error || "We couldn’t save that. Please try again."),
-          { status: response.status },
-        );
       return data;
     } catch (error) {
-      if (error.name === "AbortError")
-        throw new Error(
-          "That took a little longer than expected. Please try again; we’ll avoid duplicate signups.",
-        );
-      if (error instanceof TypeError)
-        throw new Error(
-          "Check your connection and try again. Your details are still here.",
-        );
+      if (error.name === "AbortError") throw new Error("That took a little longer than expected. Please try again; we’ll avoid duplicate signups.");
+      if (error instanceof TypeError) throw new Error("Check your connection and try again. Your details are still here.");
       throw error;
-    } finally {
-      clearTimeout(timeout);
-    }
+    } finally { clearTimeout(timeout); }
   }
-  async function perform(button, label, errorId, action) {
-    if (busy) return;
-    busy = true;
-    errorAt(errorId);
-    const text = button.querySelector("span") || button;
-    const original = text.textContent;
-    text.textContent = label;
-    button.disabled = true;
-    button.setAttribute("aria-busy", "true");
-    $("#skip-profile").disabled = true;
-    try {
-      await action();
-    } catch (error) {
-      errorAt(errorId, error.message);
-    } finally {
-      text.textContent = original;
-      button.disabled = false;
-      button.removeAttribute("aria-busy");
-      $("#skip-profile").disabled = false;
-      busy = false;
-    }
-  }
-  async function open(buttonSource) {
-    source = buttonSource || "direct";
-    if (!dialog.open) dialog.showModal();
-    if (token && stage !== "profile") {
-      try {
-        await send("status", { token });
-        show("success");
-      } catch (error) {
-        if ([401, 404].includes(error.status)) {
-          remember("");
-          show("signup");
-        } else {
-          show("signup");
-          errorAt(
-            "#join-error",
-            "We couldn’t check your saved signup. You can safely try joining again.",
-          );
-        }
-      }
-    } else {
-      show(stage === "removed" ? "signup" : stage, false);
-      if (stage === "signup") $("#email").focus();
-    }
-  }
-  document.querySelectorAll("[data-join]").forEach((button) =>
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      const properties = {
-        source: String(button.dataset.join || "direct").slice(0, 120),
-      };
-      const kobbeEvent = { name: "waitlist_click", properties, timestamp: Date.now() };
-      window.__kobbeEvents = window.__kobbeEvents || [];
-      window.__kobbeEvents.push(kobbeEvent);
-      if (window.__kobbeEvents.length > 200) window.__kobbeEvents.shift();
-      try { window.kobbe?.track?.("waitlist_click", properties); } catch {}
-      try { window.dispatchEvent(new CustomEvent("kobbe:event", { detail: kobbeEvent })); } catch {}
-      open(button.dataset.join);
-    }),
-  );
-  $(".dialog-close").addEventListener("click", () => dialog.close());
-  dialog.addEventListener("click", (event) => {
-    if (event.target !== dialog) return;
-    const r = dialog.getBoundingClientRect();
-    if (
-      event.clientX < r.left ||
-      event.clientX > r.right ||
-      event.clientY < r.top ||
-      event.clientY > r.bottom
-    )
-      dialog.close();
-  });
+
   function attribution() {
-    const query = new URLSearchParams(location.search),
-      values = {};
-    for (const name of ["utm_source", "utm_medium", "utm_campaign", "ref"])
+    const query = new URLSearchParams(location.search);
+    const values = {};
+    for (const name of ["utm_source", "utm_medium", "utm_campaign", "ref"]) {
       if (query.has(name)) values[name] = query.get(name).slice(0, 100);
+    }
     try {
       const referrer = new URL(document.referrer);
-      if (referrer.origin !== location.origin)
-        values.referrer = referrer.origin;
+      if (referrer.origin !== location.origin) values.referrer = referrer.origin;
     } catch {}
     return values;
   }
-  $("#join-form").addEventListener("submit", (event) => {
+
+  function setBusy(value) {
+    busy = value;
+    form.setAttribute("aria-busy", String(value));
+    for (const input of form.querySelectorAll("input")) input.disabled = value;
+    submitButton.disabled = value;
+    if (value) submitButton.setAttribute("aria-busy", "true");
+    else submitButton.removeAttribute("aria-busy");
+    submitButton.querySelector("span").textContent = value ? "Saving your place…" : "Join the waitlist";
+  }
+
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const email = $("#email").value.trim().toLowerCase();
+    if (busy) return;
+    errorAt();
+    const email = emailInput.value.trim().toLowerCase();
+    emailInput.value = email;
+    let website;
+    try { website = normalizeWebsite(websiteInput.value); }
+    catch (error) { websiteInput.setCustomValidity(error.message); websiteInput.reportValidity(); return; }
+    websiteInput.setCustomValidity("");
+    if (!form.reportValidity()) return;
     if (requestEmail && email !== requestEmail) requestId = crypto.randomUUID();
     requestEmail = email;
-    perform(
-      $("#join-form button[type=submit]"),
-      "Saving your place…",
-      "#join-error",
-      async () => {
-        const data = await send("signup", {
-          email,
-          consent: $("#waitlist-consent").checked,
-          company_fax: $("#company-fax").value,
-          requestId,
-          source,
-          attribution: attribution(),
-        });
-        remember(data.token || "");
-        show("success");
-      },
-    );
-  });
-  $("#profile-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    perform(
-      $("#profile-form button[type=submit]"),
-      "Saving your preferences…",
-      "#profile-error",
-      async () => {
-        await send("profile", {
-          token,
-          website: form.get("website").trim(),
-          role: form.get("role") || "",
-          goal: form.get("goal") || "",
-          urgency: form.get("urgency") || "",
-          tracking: form.get("tracking") || "",
-        });
-        show("success");
-      },
-    );
-  });
-  $("#skip-profile").addEventListener("click", () => {
-    if (!busy) show("success");
-  });
-  async function copyLink(value, message) {
+    const payload = {
+      email,
+      website,
+      formVersion: "email-website-v1",
+      consent: $("#waitlist-consent").checked,
+      company_fax: $("#company-fax").value,
+      requestId,
+      source,
+      attribution: attribution(),
+    };
+    setBusy(true);
     try {
-      await navigator.clipboard.writeText(value);
-      $("#copy-fallback").hidden = true;
-      $("#copy-status").textContent = message;
-    } catch {
-      $("#copy-fallback").value = value;
-      $("#copy-fallback").hidden = false;
-      $("#copy-fallback").select();
-      $("#copy-status").textContent = "Copy the selected link below.";
-    }
+      // Email and website are persisted atomically before showing success.
+      const data = await send("signup", payload);
+      remember(data.token);
+      show("success");
+    } catch (error) {
+      errorAt(error.message);
+    } finally { setBusy(false); }
+  });
+
+  function open(buttonSource, button = null) {
+    source = buttonSource || "direct";
+    trigger = button;
+    show(stage, false);
+    if (!dialog.open) dialog.showModal();
+    show(stage);
   }
-  $("#share-waitlist")?.addEventListener("click", () =>
-    copyLink(
-      `${location.origin}/?ref=waitlist`,
-      "Invite link copied. Share it with someone who’d find this useful.",
-    ),
-  );
-  $("#save-signup-link").addEventListener("click", () => {
-    if (token)
-      copyLink(
-        `${location.origin}/#signup=${token}`,
-        "Private signup link copied. Keep it somewhere safe; it lets you remove your signup.",
-      );
+
+  // Delegation also covers CTAs added later by the demo app.
+  document.addEventListener("click", (event) => {
+    const button = event.target instanceof Element ? event.target.closest("[data-join]") : null;
+    if (!button) return;
+    event.preventDefault();
+    const properties = { source: String(button.dataset.join || "direct").slice(0, 120) };
+    const kobbeEvent = { name: "waitlist_click", properties, timestamp: Date.now() };
+    window.__kobbeEvents = window.__kobbeEvents || [];
+    window.__kobbeEvents.push(kobbeEvent);
+    if (window.__kobbeEvents.length > 200) window.__kobbeEvents.shift();
+    try { window.kobbe?.track?.("waitlist_click", properties); } catch {}
+    try { window.dispatchEvent(new CustomEvent("kobbe:event", { detail: kobbeEvent })); } catch {}
+    open(button.dataset.join, button);
   });
-  $("#remove-signup").addEventListener("click", () => {
-    $("#remove-confirm").hidden = false;
-    $("#keep-signup").focus();
+  $(".waitlist-dismiss").addEventListener("click", () => dialog.close());
+  $("#close-success").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("close", () => {
+    if (trigger?.isConnected) trigger.focus({ preventScroll: true });
   });
-  $("#keep-signup").addEventListener("click", () => {
-    $("#remove-confirm").hidden = true;
-    $("#remove-signup").focus();
+  dialog.addEventListener("click", (event) => {
+    if (event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
   });
-  $("#confirm-remove").addEventListener("click", () =>
-    perform($("#confirm-remove"), "Removing…", "#manage-error", async () => {
-      await send("remove", { token });
-      remember("");
-      requestId = crypto.randomUUID();
-      requestEmail = "";
-      $("#join-form").reset();
-      $("#profile-form").reset();
-      show("removed");
-    }),
-  );
-  $("#back-to-product")?.addEventListener("click", () => {
-    dialog.close();
-    location.assign("/app/");
-  });
-  $("#close-success")?.addEventListener("click", () => dialog.close());
-  $("#close-removed").addEventListener("click", () => dialog.close());
+
+  show(stage, false);
+  // Previously saved links can still confirm a signup; new links are never shown.
   if (location.hash.startsWith("#signup=")) {
     const candidate = location.hash.slice(8);
     history.replaceState(null, "", location.pathname + location.search);
-    if (/^[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64}$/i.test(candidate)) {
-      remember(candidate);
-      open("direct");
+    if (tokenPattern.test(candidate)) {
+      send("status", { token: candidate }).then(() => {
+        if (busy) return;
+        remember(candidate);
+        show("success", false);
+        open("direct");
+      }).catch(() => {});
     }
   }
 })();
