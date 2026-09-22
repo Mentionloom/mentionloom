@@ -128,6 +128,65 @@ async function signIn(email, password) {
   });
 }
 
+const EMAIL_OTP_TYPES = new Set([
+  'email',
+  'signup',
+  'invite',
+  'magiclink',
+  'recovery',
+  'email_change',
+]);
+
+function safeNextPath(value, fallback = '/app/overview/') {
+  const next = String(value || '').trim();
+  if (!next.startsWith('/') || next.startsWith('//')) return fallback;
+  if (next.startsWith('/auth/confirm')) return fallback;
+  return next;
+}
+
+function redirectResponse(location, cookies = []) {
+  const headers = new Headers({
+    'Cache-Control': 'no-store',
+    Location: location,
+  });
+  for (const value of cookies) headers.append('Set-Cookie', value);
+  return new Response(null, { status: 303, headers });
+}
+
+async function handleAuthConfirm(request) {
+  if (request.method !== 'GET') return methodNotAllowed('GET');
+
+  const url = new URL(request.url);
+  const tokenHash = String(url.searchParams.get('token_hash') || '');
+  const type = String(url.searchParams.get('type') || '');
+  const next = safeNextPath(url.searchParams.get('next'));
+
+  if (!tokenHash || !EMAIL_OTP_TYPES.has(type)) {
+    return redirectResponse('/?auth=confirmation-missing');
+  }
+
+  try {
+    const session = await authRequest('/auth/v1/verify', {
+      method: 'POST',
+      body: {
+        token_hash: tokenHash,
+        type,
+      },
+    });
+
+    if (!session?.access_token || !session?.refresh_token) {
+      throw new InfraError(400, 'Confirmation did not return a session.');
+    }
+
+    return redirectResponse(next, sessionCookies(session, request));
+  } catch (error) {
+    if (error instanceof InfraError && [400, 401, 403, 422].includes(error.status)) {
+      return redirectResponse('/?auth=confirmation-error');
+    }
+    throw error;
+  }
+}
+
 async function fetchUser(accessToken) {
   return authRequest('/auth/v1/user', { token: accessToken });
 }
@@ -346,8 +405,14 @@ async function handleApi(request, env) {
 export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname;
-    if (path.startsWith('/api/')) return handleApi(request, env);
-    return env.ASSETS.fetch(request);
+
+    try {
+      if (path === '/auth/confirm') return await handleAuthConfirm(request);
+      if (path.startsWith('/api/')) return handleApi(request, env);
+      return env.ASSETS.fetch(request);
+    } catch (error) {
+      return errorResponse(error);
+    }
   },
 
   async scheduled(_controller, env, ctx) {
