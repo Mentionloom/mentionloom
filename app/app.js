@@ -34,6 +34,7 @@ import {
 } from "./lib/growth.js";
 import {
   nextMoveHTML,
+  growthChatHTML,
   journeyHTML,
   competitorHTML,
   workbenchHTML,
@@ -218,9 +219,9 @@ function render() {
   data = select(state);
   trafficData = selectTraffic(trafficScope());
   const intelligence = recommendationEvidence(data.a);
-  $("#recommendation-summary").innerHTML = `<div class="mini-stats recommendation-stats">
-    <button class="stat" data-action="recommendation-details"><span>Recommendation share${icon("right")}</span><strong>${pct(intelligence.share)}</strong></button>
-    <button class="stat" data-action="lost-questions"><span>Lost questions${icon("right")}</span><strong>${intelligence.lostQuestions}<small> / ${intelligence.questions}</small></strong></button>
+  $("#recommendation-summary").innerHTML = `<div class="recommendation-stats">
+    <button class="stat" data-action="recommendation-details"><span><span class="recommendation-kicker">Recommendation share</span><small>Shortlisted or recommended answers</small></span><strong>${pct(intelligence.share)}</strong>${icon("right")}</button>
+    <button class="stat" data-action="lost-questions"><span><span class="recommendation-kicker">Lost questions</span><small>Competitor wins where Acme is missing</small></span><strong>${intelligence.lostQuestions}<small> / ${intelligence.questions}</small></strong>${icon("right")}</button>
   </div>`;
   $("#period-label").textContent = `Last ${state.days} days`;
   const range = `${date(data.start)} – ${date(data.end)}, 2026`;
@@ -529,7 +530,7 @@ function limitOverviewList(id) {
 function empty(title, description) {
   return `<div class="empty-state">${icon("spark")}<h3>${title}</h3><p>${description}</p></div>`;
 }
-function detail(title, eyebrow, html, replace = false) {
+function detail(title, eyebrow, html, replace = false, mode = "drawer") {
   closeMenus();
   if ($("#search-dialog").open) $("#search-dialog").close();
   if ($("#detail").open && !replace)
@@ -538,8 +539,10 @@ function detail(title, eyebrow, html, replace = false) {
       eyebrow: $("#detail-eyebrow").textContent,
       html: $("#detail-body").innerHTML,
       scroll: $("#detail").scrollTop,
+      mode: $("#detail").dataset.mode || "drawer",
     });
   if (!$("#detail").open) detailHistory = [];
+  $("#detail").dataset.mode = mode;
   $("#app-detail-title").textContent = title;
   $("#detail-eyebrow").textContent = eyebrow;
   $("#detail-body").innerHTML = html;
@@ -565,7 +568,7 @@ $("#detail").addEventListener("close", () => {
 $("#drawer-back").addEventListener("click", () => {
   const previous = detailHistory.pop();
   if (!previous) return;
-  detail(previous.title, previous.eyebrow, previous.html, true);
+  detail(previous.title, previous.eyebrow, previous.html, true, previous.mode || "drawer");
   $("#detail").scrollTop = previous.scroll;
 });
 
@@ -700,22 +703,20 @@ function openAction(id, replace = false) {
   const action = ACTIONS.find((a) => a.id === id);
   if (!action) return;
   const record = growthWork[id],
-    done = shipped.includes(id);
+    done = shipped.includes(id),
+    enriched = { ...action, evidence: recommendationEvidence(data.a.filter((r) => r.question === action.question)) };
   detail(
-    action.title.replace(/\.$/, ""),
-    done
-      ? "IMPROVEMENT SHIPPED"
-      : record
-        ? "YOUR GROWTH PLAN"
-        : "CONTENT OPPORTUNITY",
-    workbenchHTML(
-      { ...action, evidence: recommendationEvidence(data.a.filter((r) => r.question === action.question)) },
+    done ? "Review the improvement" : "Work with Mentionloom",
+    done ? "IMPROVEMENT SHIPPED" : "AI WORK SESSION",
+    growthChatHTML(
+      enriched,
       record,
       done,
       record?.baseline || baselineFor(action, data, state),
       QUESTIONS.find((q) => q.id === action.question),
     ),
     replace,
+    "chat",
   );
 }
 function saveGrowth(next) {
@@ -743,16 +744,20 @@ function openGrowthReview(id) {
       "Measure the change",
       "GROWTH REVIEW",
       reviewHTML(action, growthWork[id]),
+      false,
+      "drawer",
     );
     return;
   }
   const items = ACTIONS.filter((a) => shipped.includes(a.id));
   detail(
-    "Measure the change",
-    "YOUR GROWTH REVIEW",
+    items.length ? "Measure the change" : "Nothing to measure yet",
+    "GROWTH REVIEW",
     items.length
-      ? `<p>Your changes are recorded. Open one to review its baseline and measurement plan.</p><div class="drawer-list">${items.map((a) => `<button data-growth-review="${a.id}">${icon("circlecheck")}<span>${esc(a.title)}<small>Shipped · awaiting new samples</small></span>${icon("right")}</button>`).join("")}</div><div class="notice">Completion is recorded separately from measured impact.</div>`
-      : `<div class="review-empty">${icon("chart")}<h3>Your first improvement starts the loop.</h3><p>Save a baseline, work through a focused plan, then return here to compare new measurements.</p><button class="button primary" data-action="growth-improve">Find an improvement${icon("right")}</button></div>`,
+      ? `<p>Choose a shipped improvement to compare its saved baseline with new samples.</p><div class="drawer-list">${items.map((a) => `<button data-growth-review="${a.id}">${icon("circlecheck")}<span>${esc(a.title)}<small>Shipped · awaiting new samples</small></span>${icon("right")}</button>`).join("")}</div>`
+      : `<div class="review-quick">${icon("chart")}<div><h3>Ship one improvement first.</h3><p>Mentionloom saves the baseline when you start working, then compares new samples after you ship.</p></div><div class="review-quick-actions"><button class="button primary" data-action="growth-improve">Find an improvement${icon("right")}</button><button class="button ghost" data-action="lost-questions">See recommendation gaps</button></div></div>`,
+    false,
+    items.length ? "drawer" : "modal",
   );
 }
 function renderGrowth() {
@@ -937,10 +942,17 @@ function setup() {
     $("#setup-form select").value = saved.priority;
 }
 function addQuestion() {
+  const presets = [
+    ["Discovery", "What are the best project management tools for a small team?"],
+    ["Comparison", "What is the best alternative to Notion for project tracking?"],
+    ["Decision", "Which project management tool is best for a 20-person team?"],
+  ];
   detail(
-    "What should we listen for?",
-    "TRACK A QUESTION",
-    `<p>Write a question your future customer would ask an AI assistant. Specific questions make the evidence more useful.</p><form id="question-form" novalidate><label class="form-field field">Buyer question<textarea name="question" placeholder="What is the best project management tool for a design agency?" required minlength="10" maxlength="220"></textarea></label><label class="form-field field">Topic<select name="topic" aria-label="Topic">${TOPICS.map((t) => `<option>${t}</option>`).join("")}</select></label><p class="form-error" id="question-error" role="alert" hidden></p><button class="button primary" type="submit">Add to tracked questions${icon("plus")}</button></form><div class="notice">New questions are saved locally with a pending status. Results require a connected answer-sampling service.</div>`,
+    "Track a buyer question",
+    "QUESTION INTENT",
+    `<p>Start from the buying moment, then adjust the wording if you need to.</p><div class="question-presets">${presets.map(([topic, text]) => `<button type="button" data-question-preset="${esc(text)}" data-question-topic="${topic}"><span>${topic}</span><strong>${esc(text)}</strong>${icon("right")}</button>`).join("")}</div><form id="question-form" novalidate><label class="form-field field">Buyer question<textarea name="question" placeholder="Choose a starting point or write your own…" required minlength="10" maxlength="220"></textarea></label><label class="form-field field compact-field">Intent<select name="topic" aria-label="Intent">${TOPICS.map((t) => `<option>${t}</option>`).join("")}</select></label><p class="form-error" id="question-error" role="alert" hidden></p><button class="button primary" type="submit">Track this question${icon("plus")}</button></form><p class="form-footnote">Demo mode saves this as pending until answer sampling is connected.</p>`,
+    false,
+    "modal",
   );
 }
 function search() {
