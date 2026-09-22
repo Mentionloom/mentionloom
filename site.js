@@ -519,8 +519,7 @@ function render(initialReport, animateChart = false) {
 function setStory(next) {
   if (next === story) return;
 
-  const previousStory = story;
-  const outgoing = $(`#story-panel-${previousStory}`);
+  const outgoing = document.querySelector(".story-panel:not([hidden])");
   const incoming = $(`#story-panel-${next}`);
   story = next;
 
