@@ -1,7 +1,7 @@
 import { select } from "./app/lib/model.js";
 import { ACTIONS, ENGINES, QUESTIONS } from "./app/lib/data.js";
 import { initializeOrbit, enhance, number, animate, openDialog, closeDialog } from "./app/lib/ui.js";
-import { mountGlobe } from "./assets/globe.js?v=20260922-3";
+import { mountGlobe } from "./assets/globe.js?v=20260922-4";
 
 const $ = (s) => document.querySelector(s);
 const icon = (name) =>
@@ -662,20 +662,20 @@ function showActionSuccess(visual) {
   motionAnimate(
     success,
     [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }],
-    900,
+    240,
     { fill: "backwards" },
   );
-  motionEnter(success.querySelector(".action-success-kicker"), 180, 4, 640, 1);
-  motionEnter(success.querySelector(":scope > strong"), 300, 6, 780, 1);
-  [...success.querySelectorAll(".success-brand")].forEach((brand, index) =>
+  motionEnter(success.querySelector(".action-success-kicker"), 40, 4, 240, 1);
+  motionEnter(success.querySelector(":scope > strong"), 90, 6, 240, 1);
+  [...success.querySelectorAll(".success-brand img")].forEach((brand, index) =>
     motionAnimate(
       brand,
       [
-        { opacity: 0, transform: "translateY(6px) scale(.9)" },
+        { opacity: 0, transform: "translateY(6px) scale(.96)" },
         { opacity: 1, transform: "translateY(0) scale(1)" },
       ],
-      820,
-      { delay: 420 + index * 130, fill: "backwards" },
+      240,
+      { delay: 140 + index * 50, fill: "backwards" },
     ),
   );
   motionEnter(success.querySelector(":scope > p"), 980, 4, 640, 1);
@@ -693,7 +693,10 @@ function syncActionChecklist({ animateResolution = true } = {}) {
   );
 
   const bar = $("#brief-bar");
-  if (bar) bar.style.width = `${inputs.length ? (n / inputs.length) * 100 : 0}%`;
+  if (bar) {
+    bar.style.width = "100%";
+    bar.style.transform = `scaleX(${inputs.length ? n / inputs.length : 0})`;
+  }
 
   const resolved = n === inputs.length && inputs.length > 0;
   visual.classList.toggle("gap-resolved", resolved);
@@ -706,7 +709,7 @@ function syncActionChecklist({ animateResolution = true } = {}) {
   }
 
   if (animateResolution) {
-    visual._successTimer = setTimeout(() => showActionSuccess(visual), 520);
+    visual._successTimer = setTimeout(() => showActionSuccess(visual), paused || reduced.matches ? 0 : 300);
   } else {
     visual.classList.remove("show-success");
   }
@@ -882,6 +885,7 @@ function animateMetricText(el, value, duration = 3000, delay = 0) {
     el.setAttribute("role", "img");
     el.setAttribute("aria-label", formatted);
 
+    const rolls = [];
     [...formatted].forEach((character, index) => {
       if (!/\d/.test(character)) {
         const punctuation = document.createElement("span");
@@ -907,7 +911,7 @@ function animateMetricText(el, value, duration = 3000, delay = 0) {
       digit.append(track);
       el.append(digit);
 
-      animate(
+      const animation = animate(
         track,
         [
           { transform: "translateY(0)" },
@@ -920,7 +924,15 @@ function animateMetricText(el, value, duration = 3000, delay = 0) {
           fill: "forwards",
         },
       );
+      if (animation) rolls.push(animation.finished);
     });
+    Promise.all(rolls).then(() => {
+      // Return to the same large, plain-text value once every digit has landed.
+      el.textContent = formatted;
+      el.classList.remove("rolling-number");
+      el.removeAttribute("role");
+      el.removeAttribute("aria-label");
+    }).catch(() => {});
   }, delay);
 }
 
@@ -1068,8 +1080,9 @@ function runActionChecklistDemo(visual) {
   syncActionChecklist({ animateResolution: false });
 
   let cancelled = false;
-  let x = Math.max(18, visual.clientWidth - 42);
-  let y = Math.max(18, visual.clientHeight - 48);
+  const cursorHost = cursor.offsetParent;
+  let x = Math.max(0, cursorHost.clientWidth - 26);
+  let y = Math.max(0, cursorHost.clientHeight - 26);
   cursor.style.opacity = "1";
   cursor.style.transform = `translate(${x}px,${y}px)`;
 
@@ -1079,15 +1092,16 @@ function runActionChecklistDemo(visual) {
     motionAnimate(cursor, [{ opacity: 1 }, { opacity: 0 }], 120, { fill: "forwards" });
   };
   visual.addEventListener("pointerdown", cancel, { once: true });
+  visual.addEventListener("keydown", cancel, { once: true });
 
   choices.forEach((choice, index) => {
     const moveAt = 620 + index * 680;
     setTimeout(() => {
       if (cancelled || !visual.isConnected) return;
-      const vr = visual.getBoundingClientRect();
-      const cr = choice.getBoundingClientRect();
-      const nextX = cr.left - vr.left + 5;
-      const nextY = cr.top - vr.top + Math.min(17, cr.height / 2);
+      const vr = cursorHost.getBoundingClientRect();
+      const cr = choice.querySelector("input").getBoundingClientRect();
+      const nextX = Math.max(0, Math.min(cursorHost.clientWidth - 22, cr.left - vr.left + cr.width / 2 - 4));
+      const nextY = Math.max(0, Math.min(cursorHost.clientHeight - 22, cr.top - vr.top + cr.height / 2 - 4));
       cursor.getAnimations().forEach((animation) => animation.cancel());
       motionAnimate(
         cursor,
@@ -1126,14 +1140,16 @@ function runActionChecklistDemo(visual) {
 
   setTimeout(() => {
     if (!cancelled) motionAnimate(cursor, [{ opacity: 1 }, { opacity: 0 }], 170, { fill: "forwards" });
-  }, 620 + choices.length * 680 + 100);
+    visual.removeEventListener("pointerdown", cancel);
+    visual.removeEventListener("keydown", cancel);
+  }, 620 + (choices.length - 1) * 680 + 630);
 }
 
 function playActionCard(card) {
   const visual = card.querySelector(".action-visual");
   motionEnter(card.querySelector(".action-card-heading"), 250, 5, 360, 1);
   motionEnter(card.querySelector(".action-visual h4"), 330, 8, 440, 0.997);
-  motionEnter(card.querySelector(".action-visual > p"), 410, 5, 360, 1);
+  motionEnter(card.querySelector(".action-task > p"), 410, 5, 240, 1);
   motionEnterMany(card.querySelectorAll(".action-checks .choice"), 500, 90, {
     distance: 5,
     duration: 360,
@@ -1438,11 +1454,7 @@ try {
     ".announcement,h1,.hero-copy,.hero-detail,.hero-actions .button,.hero-note",
     { step: 60 },
   );
-  registerReveal(
-    ".discovery-scene",
-    ".globe-pin,.question-float .card-label,.question-float>p,.question-tags>span,.answer-float .card-label,.answer-float>p,.answer-float .citation-pill,.signal-float>.icon,.signal-float strong,.signal-float span,.provider-node",
-    { step: 32, scale: 0.97 },
-  );
+  // The globe owns its reveal; cards appear only after its selected pin settles.
   registerReveal(".provider-strip", ".provider-group>span", {
     step: 28,
     scale: 0.96,
@@ -1550,15 +1562,9 @@ function selectScene(index, animate = true) {
    b.setAttribute('aria-label', `${sceneQuestions[Number(b.dataset.globeQuestion)]?.country || 'Country'} question${active ? ', selected' : ''}`);
  });
  document.dispatchEvent(new CustomEvent("mentionloom:scene", {detail:{index,item,animate}}));
- if (!animate || $(".discovery-scene").classList.contains("connected-scene")) return;
- const pin = $(`[data-globe-question="${index}"]`).getBoundingClientRect();
- for (const [i, card] of [...document.querySelectorAll('.question-float,.answer-float')].entries()) {
-   const rect = card.getBoundingClientRect();
-   card.getAnimations().forEach(a=>a.cancel());
-   card.animate(reduced.matches || document.body.classList.contains('reduce-motion') ? [{opacity:.4},{opacity:1}] : [{opacity:0,transform:`translate(${pin.x-rect.x-rect.width/2}px,${pin.y-rect.y-rect.height/2}px) scale(.25)`},{opacity:1,transform:'translate(0,0) scale(1)'}], {duration:reduced.matches || document.body.classList.contains('reduce-motion') ? 150 : 650,fill:'backwards',delay:reduced.matches || document.body.classList.contains('reduce-motion') ? 0 : i*420,easing:'cubic-bezier(.22,1,.36,1)'});
- }
 }
 function openScene() {
+ if (!$('.discovery-scene').classList.contains('scene-ready')) return;
  const item = sceneQuestions[sceneIndex];
  const provider = ENGINES.find((entry) => entry.id === item.engine)?.name || item.engine;
  $('#scene-detail-content').innerHTML=`
@@ -1606,12 +1612,14 @@ function openScene() {
 }
 let sceneManualUntil = 0;
 document.querySelectorAll('[data-globe-question]').forEach((b) => b.addEventListener('click', () => {
+  if (!$('.discovery-scene').classList.contains('scene-ready')) return;
   const index = Number(b.dataset.globeQuestion);
   sceneManualUntil = performance.now() + 12000;
   trackKobbe("globe_country_click", { country: sceneQuestions[index]?.country || index });
   selectScene(index);
 }));
 $('.globe-explore').addEventListener('click',()=> {
+  if (!$('.discovery-scene').classList.contains('scene-ready')) return;
   sceneManualUntil = performance.now() + 12000;
   selectScene((sceneIndex+1)%sceneQuestions.length);
 });
@@ -1626,7 +1634,7 @@ const discoveryScene = $('.discovery-scene');
 let sceneVisible = false, sceneTimer;
 function scheduleScene() {
  clearTimeout(sceneTimer);
- if (!sceneVisible || document.hidden || paused || reduced.matches || performance.now() < sceneManualUntil || $('#scene-detail').open || discoveryScene.matches(':hover') || discoveryScene.contains(document.activeElement) || discoveryScene.querySelector('.globe-wrap')?.classList.contains('is-dragging')) return;
+ if (!discoveryScene.classList.contains('scene-ready') || !sceneVisible || document.hidden || paused || reduced.matches || performance.now() < sceneManualUntil || $('#scene-detail').open || discoveryScene.matches(':hover') || discoveryScene.contains(document.activeElement) || discoveryScene.querySelector('.globe-wrap')?.classList.contains('is-dragging')) return;
  sceneTimer = setTimeout(() => {
    selectScene((sceneIndex + 1) % sceneQuestions.length);
    scheduleScene();
@@ -1637,6 +1645,7 @@ const sceneObserver = new IntersectionObserver(([entry]) => {
  scheduleScene();
 }, {threshold:.25});
 sceneObserver.observe(discoveryScene);
+discoveryScene.addEventListener('mentionloom:globe-settled', scheduleScene);
 ['pointerenter','pointerleave','focusin'].forEach(event => discoveryScene.addEventListener(event, scheduleScene));
 discoveryScene.addEventListener('focusout', () => setTimeout(scheduleScene, 0));
 discoveryScene.addEventListener('mentionloom:globe-drag-end', scheduleScene);

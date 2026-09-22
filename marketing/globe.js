@@ -2,6 +2,8 @@ import { COUNTRY_LOCATIONS, locationVector, projectVector } from "./globe-coordi
 
 export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   const wrap = canvas.parentElement;
+  const scene = canvas.closest(".discovery-scene");
+  const cards = [...scene.querySelectorAll(".question-float,.answer-float")];
   const dragSurface = wrap.querySelector(".globe-explore") || canvas;
   const cssGlobe = wrap.querySelector(".css-globe");
   const pins = [...wrap.querySelectorAll("[data-globe-question]")];
@@ -36,10 +38,9 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   let pointerX = 0;
   let pointerY = 0;
   let dragMoved = false;
-  let holdUntil = 0;
-  let resumeTimer;
-  let focusFrame = 0;
   let firstReveal = true;
+  let activeIndex = 0;
+  let turn = null;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -221,16 +222,59 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     frame = 0;
     if (!visible || disposed || document.hidden || isPaused()) return;
 
-    // Hold the active probe in view. Rotation is driven by focusLocation()
-    // when the buyer-question context changes or by direct user dragging.
+    if (turn) {
+      turn.elapsed += last ? Math.max(0, now - last) : 0;
+      const t = Math.min(1, turn.elapsed / turn.duration);
+      // A deliberate opening revolution, followed by shorter country-to-country turns.
+      const eased = turn.intro ? t * t * (3 - 2 * t) : 1 - Math.pow(1 - t, 3);
+      phi = turn.phi + turn.delta * eased;
+      theta = turn.theta + (turn.targetTheta - turn.theta) * eased;
+      if (t === 1) turn = null;
+    }
     last = now;
     draw();
+    if (turn) frame = requestAnimationFrame(tick);
+    else if (!dragging) revealCards();
+  }
+
+  function hideCards() {
+    scene.classList.add("scene-pending");
+    scene.classList.remove("scene-ready");
+    cards.forEach((card) => {
+      card.inert = true;
+      card.getAnimations().forEach((animation) => animation.cancel());
+    });
+  }
+
+  function revealCards() {
+    if (firstReveal || scene.classList.contains("scene-ready")) return;
+    scene.classList.remove("scene-pending");
+    scene.classList.add("scene-ready");
+    cards.forEach((card, index) => {
+      card.inert = false;
+      if (!reduced.matches && !isPaused()) {
+        card.animate([
+          { opacity: 0, transform: "translateY(8px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ], { duration: 240, delay: index * 60, fill: "backwards", easing: "cubic-bezier(.16,1,.3,1)" });
+      }
+    });
+    wrap.dispatchEvent(new CustomEvent("mentionloom:globe-settled", {
+      bubbles: true, detail: { index: activeIndex },
+    }));
   }
 
   function sync() {
     cancelAnimationFrame(frame);
     frame = 0;
     last = 0;
+    if (turn && (reduced.matches || isPaused())) {
+      phi = turn.phi + turn.delta;
+      theta = turn.targetTheta;
+      turn = null;
+      draw();
+      revealCards();
+    }
     if (
       visible &&
       !disposed &&
@@ -255,59 +299,44 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     return delta;
   }
 
-  function focusLocation(index, smooth = true) {
+  function focusLocation(index, smooth = true, intro = false) {
     const vector = vectors[index];
     if (!vector || disposed) return;
 
-    cancelAnimationFrame(focusFrame);
-    focusFrame = 0;
     cancelAnimationFrame(frame);
     frame = 0;
+    last = 0;
+    hideCards();
 
     const startPhi = phi;
     const targetPhi = focusPhi(vector);
-    const delta = shortestTurn(startPhi, targetPhi);
+    const delta = intro ? Math.PI * 2 : shortestTurn(startPhi, targetPhi);
     const targetTheta = clamp(vector[1] * 0.34, -0.28, 0.34);
     const startTheta = theta;
 
-    if (!smooth || reduced.matches) {
+    if (!smooth || reduced.matches || isPaused()) {
+      turn = null;
       phi = startPhi + delta;
       theta = targetTheta;
-      holdUntil = performance.now() + 3200;
       draw();
-      sync();
+      revealCards();
       return;
     }
 
-    holdUntil = Infinity;
-    const started = performance.now();
-    const duration = 1500;
-    const step = (now) => {
-      const t = Math.min(1, (now - started) / duration);
-      const eased = 1 - Math.pow(1 - t, 4);
-      phi = startPhi + delta * eased;
-      theta = startTheta + (targetTheta - startTheta) * eased;
-      draw();
-
-      if (t < 1) {
-        focusFrame = requestAnimationFrame(step);
-      } else {
-        focusFrame = 0;
-        holdUntil = performance.now() + 2800;
-        sync();
-      }
-    };
-    focusFrame = requestAnimationFrame(step);
+    turn = { phi: startPhi, theta: startTheta, delta, targetTheta,
+      elapsed: 0, duration: intro ? 2600 : 900, intro };
+    sync();
   }
 
   function onPointerDown(event) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (firstReveal || turn) return;
     dragging = true;
     dragMoved = false;
     pointerId = event.pointerId;
     pointerX = event.clientX;
     pointerY = event.clientY;
-    holdUntil = Infinity;
+    hideCards();
     wrap.classList.add("is-dragging");
     try {
       dragSurface.setPointerCapture(pointerId);
@@ -334,9 +363,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       dragSurface.releasePointerCapture(pointerId);
     } catch {}
     pointerId = null;
-    holdUntil = performance.now() + 1400;
-    clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(sync, 1450);
+    focusLocation(activeIndex, dragMoved);
     wrap.dispatchEvent(
       new CustomEvent("mentionloom:globe-drag-end", { bubbles: true }),
     );
@@ -367,12 +394,11 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     canvas.closest(".discovery-scene")?.classList.toggle("scene-visible", visible);
 
     if (visible && firstReveal) {
-      // Start with the selected San Francisco probe facing the user instead of
-      // letting the first active dot initialize on the back edge of the globe.
+      // Start and end on the selected country after exactly one full revolution.
       firstReveal = false;
-      phi = initialPhi;
-      theta = 0.22;
-      focusLocation(0, false);
+      phi = focusPhi(vectors[activeIndex]);
+      theta = clamp(vectors[activeIndex][1] * 0.34, -0.28, 0.34);
+      focusLocation(activeIndex, true, true);
     }
 
     sync();
@@ -381,7 +407,12 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
 
   function onSceneChange(event) {
     const index = Number(event?.detail?.index);
-    if (Number.isFinite(index)) focusLocation(index, event?.detail?.animate !== false);
+    // Site initialization may announce the initial question while the intro is running.
+    if (turn?.intro) return;
+    if (Number.isInteger(index) && vectors[index]) {
+      activeIndex = index;
+      if (!firstReveal) focusLocation(index, event?.detail?.animate !== false);
+    }
     else draw();
   }
 
@@ -390,6 +421,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   reduced.addEventListener("change", sync);
 
   sizeCanvas();
+  hideCards();
   wrap.classList.add("globe-ready");
   draw();
   void loadLand();
@@ -399,9 +431,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     sync,
     destroy() {
       disposed = true;
-      clearTimeout(resumeTimer);
       cancelAnimationFrame(frame);
-      cancelAnimationFrame(focusFrame);
       observer.disconnect();
       resize.disconnect();
       document.removeEventListener("mentionloom:scene", onSceneChange);
