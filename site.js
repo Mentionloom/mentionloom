@@ -652,6 +652,13 @@ function render(initialReport, animateChart = false) {
 function setStory(next) {
   if (next === story) return;
 
+  const stage = $(".product-stage");
+  if (stage && !stage.classList.contains("story-stage-locked")) {
+    // Preserve the initial Visibility composition as the fixed frame for all tabs.
+    stage.style.height = `${stage.getBoundingClientRect().height}px`;
+    stage.classList.add("story-stage-locked");
+  }
+
   const outgoing = document.querySelector(".story-panel:not([hidden])");
   const incoming = $(`#story-panel-${next}`);
   story = next;
@@ -826,10 +833,13 @@ function syncActionChecklist({ animateResolution = true } = {}) {
   );
 
   const bar = $("#brief-bar");
+  const progress = bar?.closest(".brief-progress");
+  const percent = inputs.length ? Math.round((n / inputs.length) * 100) : 0;
   if (bar) {
     bar.style.width = "100%";
-    bar.style.transform = `scaleX(${inputs.length ? n / inputs.length : 0})`;
+    bar.style.transform = `scaleX(${percent / 100})`;
   }
+  progress?.setAttribute("aria-valuenow", String(percent));
 
   const resolved = n === inputs.length && inputs.length > 0;
   visual.classList.toggle("gap-resolved", resolved);
@@ -1632,7 +1642,7 @@ try {
 
   registerReveal(
     ".hero",
-    ".announcement,h1,.hero-copy,.hero-detail,.hero-actions .button,.hero-note",
+    ".announcement,h1,.hero-copy,.hero-actions .button,.hero-note",
     { step: 60 },
   );
   // The globe owns its reveal; cards appear only after its selected pin settles.

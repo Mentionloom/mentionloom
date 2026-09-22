@@ -180,12 +180,6 @@
   margin: 24px auto 0;
   color: var(--text);
 }
-.marketing-app .hero-detail {
-  font-size: 16px;
-  line-height: 1.65;
-  color: var(--muted);
-  margin-top: 10px;
-}
 .marketing-app .hero-actions {
   display: flex;
   justify-content: center;
@@ -1941,9 +1935,6 @@
     font-size: 18px;
     margin-top: 23px;
   }
-  .marketing-app .hero-detail {
-    font-size: var(--text-sm);
-  }
   .marketing-app .hero-note {
     font-size: 11px;
   }
@@ -2662,7 +2653,6 @@
 .marketing-app .hero h1 { max-width:760px; margin-inline:auto; font-size:clamp(36px,4.4vw,60px); line-height:1.08; letter-spacing:-.05em; }
 .marketing-app .hero .announcement { margin-bottom:20px; min-height:32px; }
 .marketing-app .hero-copy { max-width:620px; font-size:16px; line-height:1.6; margin-top:20px; }
-.marketing-app .hero-detail { font-size:14px; margin-top:8px; }
 .marketing-app .hero .hero-actions { margin-top:20px; }
 .marketing-app .hero .hero-actions .button { min-height:44px; padding:10px 18px; font-size:13px; }
 .marketing-app .hero-note { font-size:11px; margin-top:12px; }
@@ -2675,7 +2665,6 @@
  .marketing-app .hero.wrap { width:calc(100% - 40px); padding-top:32px; }
  .marketing-app .hero h1 { font-size:clamp(34px,8.8vw,48px); }
  .marketing-app .hero-copy { font-size:14px; max-width:440px; }
- .marketing-app .hero-detail { font-size:13px; }
 }
 
 /* Geographic positions are written by the globe’s shared rotation loop. */
@@ -5436,6 +5425,7 @@
   overflow:hidden;
   border-radius:999px;
   background:var(--bg-a2);
+  transform:translateY(20px);
 }
 .marketing-app #approach .company-progress > span {
   border-radius:999px;
@@ -5466,7 +5456,50 @@
   }
   .marketing-app #approach .company-intel-row { min-height:36px; }
   .marketing-app #approach .company-visual { padding-bottom:20px; }
-  .marketing-app #approach .company-progress { margin-inline:10px; margin-bottom:6px; }
+  .marketing-app #approach .company-progress { margin-inline:10px; margin-bottom:6px; transform:none; }
+}
+
+/* Keep the Visibility tab's first-rendered stage height across story tabs.
+   Longer panels scroll within the same frame rather than shifting the page. */
+.marketing-app .product-stage.story-stage-locked {
+  display:flex;
+  flex-direction:column;
+  box-sizing:border-box;
+}
+.marketing-app .story-stage-locked > :is(.stage-toolbar,.engine-controls,.stage-bottom) {
+  flex:0 0 auto;
+}
+.marketing-app .story-stage-locked > .story-panel {
+  flex:1 1 0;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+
+/* A shared, full-width completion bar stays visible through the opportunity
+   animation so the resolved state retains the same progress cue. */
+.marketing-app #insights .action-visual > .brief-progress {
+  position:absolute;
+  z-index:5;
+  right:24px;
+  bottom:18px;
+  left:24px;
+  display:block;
+  margin:0;
+  padding:0;
+  border:0;
+  pointer-events:none;
+}
+.marketing-app #insights .action-visual > .brief-progress > div {
+  width:100%;
+  max-width:none;
+  height:8px;
+  overflow:hidden;
+  border-radius:999px;
+  background:var(--bg-a2);
+}
+.marketing-app #insights .action-visual > .brief-progress > div > span {
+  border-radius:inherit;
 }
 
 @media(prefers-reduced-motion:reduce) {
