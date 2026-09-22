@@ -356,7 +356,7 @@ body:has(.demo-tour:not([hidden])) main { padding-bottom: 360px; }
 
 /* Shared shell edges; page content aligns with navigation labels and workspace mark. */
 .discovery-app:not(.marketing-app) { --page-gutter:24px; --page-inset:12px; }
-.discovery-app:not(.marketing-app) :is(.header-inner,.page-nav-inner,main#main) {
+.discovery-app:not(.marketing-app) :is(.early-access-strip-inner,.header-inner,.page-nav-inner,main#main) {
   box-sizing:border-box;
   width:calc(100% - var(--page-gutter) * 2);
   max-width:var(--content-width);
@@ -364,6 +364,7 @@ body:has(.demo-tour:not([hidden])) main { padding-bottom: 360px; }
 }
 .discovery-app:not(.marketing-app) main#main { padding-inline:var(--page-inset); }
 .discovery-app:not(.marketing-app) .page-nav-inner { padding-inline:0; }
+.discovery-app:not(.marketing-app) .early-access-strip-inner { padding-inline:var(--page-inset); }
 .discovery-app:not(.marketing-app) .page-nav-inner > a,
 .discovery-app:not(.marketing-app) .header-inner .workspace { padding-inline:var(--page-inset); }
 @media(max-width:600px) {
