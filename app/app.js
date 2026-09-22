@@ -949,8 +949,10 @@ function setup() {
     "WORKSPACE SETUP · PREVIEW",
     `<p>Start with your website and the question you want to answer first. We’ll save a setup plan for this browser.</p><form id="setup-form" novalidate><label class="form-field field">Website URL<input name="website" type="url" placeholder="https://yourcompany.com" value="${esc(typeof saved.website === "string" ? saved.website : "")}" required maxlength="250"></label><label class="form-field field">What do you want to understand?<select name="priority" aria-label="What do you want to understand?"><option value="visibility">Where AI recommends my brand</option><option value="traffic">Which AI engines send visitors</option><option value="conversions">Which visits turn into customers</option></select></label><p class="form-error" id="setup-error" role="alert" hidden></p><button class="button primary" type="submit">Save my setup plan${icon("right")}</button></form><div class="notice">This saves locally in the demo. No tracking code is installed and no external account is connected.</div>`,
   );
-  if (["visibility", "traffic", "conversions"].includes(saved.priority))
-    $("#setup-form select").value = saved.priority;
+  if (["visibility", "traffic", "conversions"].includes(saved.priority)) {
+    const choice = $("#setup-form").querySelector(`input[name="priority"][value="${saved.priority}"]`);
+    if (choice) choice.checked = true;
+  }
 }
 function addQuestion() {
   const presets = [
@@ -1104,14 +1106,16 @@ function openMilestone(id) {
 function metricBreakdownHTML(series, key, label, valueFormatter = fmt) {
   const rows = series.map((row) => ({ date: row.date, value: Number(row[key] || 0) }));
   const max = Math.max(1, ...rows.map((row) => row.value));
+  const min = Math.min(...rows.map((row) => row.value));
   const total = rows.reduce((sum, row) => sum + row.value, 0);
   const average = rows.length ? total / rows.length : 0;
   const peak = rows.slice().sort((a, b) => b.value - a.value)[0] || { date: "", value: 0 };
   const top = rows.slice().sort((a, b) => b.value - a.value).slice(0, 5);
+  const rate = key === "visibility";
   return `<div class="analytics-snapshot">
     <div class="analytics-kpis">
-      <div><span>Total</span><strong>${valueFormatter(total)}</strong></div>
-      <div><span>Daily average</span><strong>${valueFormatter(average)}</strong></div>
+      <div><span>${rate ? "Average" : "Total"}</span><strong>${valueFormatter(rate ? average : total)}</strong></div>
+      <div><span>${rate ? "Lowest day" : "Daily average"}</span><strong>${valueFormatter(rate ? min : average)}</strong></div>
       <div><span>Peak day</span><strong>${valueFormatter(peak.value)}</strong><small>${peak.date ? date(peak.date) : "—"}</small></div>
     </div>
     <div class="analytics-bars" role="img" aria-label="${esc(label)} by day">
@@ -1119,7 +1123,7 @@ function metricBreakdownHTML(series, key, label, valueFormatter = fmt) {
     </div>
     <div class="analytics-top">
       <div class="analytics-top-head"><strong>Top days</strong><span>${esc(label)}</span></div>
-      ${top.map((row) => `<button data-context-start="${row.date}" data-context-end="${row.date}"><span>${date(row.date)}</span><strong>${valueFormatter(row.value)}</strong>${icon("right")}</button>`).join("")}
+      ${top.map((row) => `<button data-breakdown-date="${row.date}"><span>${date(row.date)}</span><strong>${valueFormatter(row.value)}</strong>${icon("right")}</button>`).join("")}
     </div>
   </div>`;
 }
@@ -1274,6 +1278,11 @@ document.addEventListener("click", (event) => {
     if (choice === "close" || choice === "finish") {
       endTour(choice === "finish" ? "complete" : "dismissed");
     } else showTour(choice === "start" ? 0 : tourStep + (choice === "back" ? -1 : 1));
+    return;
+  }
+  if (b.dataset.breakdownDate) {
+    if (currentView === "traffic") openTrafficDay(b.dataset.breakdownDate);
+    else openDay(b.dataset.breakdownDate, b.dataset.breakdownDate, state.metric);
     return;
   }
   if (b.dataset.contextStart) {
@@ -1843,23 +1852,10 @@ addEventListener("resize", () => {
   }, 160);
 });
 
-// The waitlist invitation stays put until it is dismissed, then stays gone.
+// Early access now lives in the app topbar; keep it visible for the demo session.
 {
   const cta = document.querySelector("#waitlist-cta");
-  const key = "mentionloom-app-cta";
-  if (cta) {
-    let dismissed = false;
-    try {
-      dismissed = sessionStorage.getItem(key) === "dismissed";
-    } catch {}
-    if (dismissed) cta.hidden = true;
-    document.querySelector("#waitlist-cta-close")?.addEventListener("click", () => {
-      cta.hidden = true;
-      try {
-        sessionStorage.setItem(key, "dismissed");
-      } catch {}
-    });
-  }
+  if (cta) cta.hidden = false;
 }
 
 
