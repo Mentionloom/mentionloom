@@ -84,3 +84,86 @@ test('reduced motion skips the score and interruption completes company rows', (
     assert.equal(f.timers.size, 0);
   }
 });
+
+test('Acme climbs one rank at a time from fourth place before settling at number one', () => {
+  let now = 0;
+  let timerId = 0;
+  const timers = new Map();
+  const rows = [
+    ['Acme', 3, 45.4, 72.8, true],
+    ['Asana', 0, 65.4, 63.1, false],
+    ['Notion', 1, 58.2, 55.8, false],
+    ['ClickUp', 2, 51.7, 48.6, false],
+    ['Monday', 4, 39.4, 42.8, false],
+  ].map(([name, startPosition, startShare, targetShare, self], index) => {
+    const fill = { style: {} };
+    const value = { textContent: `${targetShare}%` };
+    const rank = { textContent: '#1' };
+    return {
+      name,
+      dataset: { startPosition: String(startPosition), startShare: String(startShare), targetShare: String(targetShare) },
+      offsetTop: index * 50,
+      style: {},
+      classList: { contains: name => name === 'self' && self },
+      querySelector: selector => selector === '.mini-rank-fill' ? fill : selector === '.mini-rank-value' ? value : selector === '.rank-leader' ? rank : null,
+      fill,
+      value,
+      rank,
+    };
+  });
+  const list = {
+    dataset: {},
+    querySelectorAll: selector => selector === '.mini-rank-row' ? rows : [],
+  };
+  const step = { querySelector: selector => selector === '.mini-rank-list' ? list : null };
+  const reduced = Object.assign(new EventTarget(), { matches: false });
+  const document = Object.assign(new EventTarget(), { hidden: false });
+  const context = {
+    APPROACH_SCORE: { start: 400, beat: 850, work: 750, settle: 280 },
+    reduced,
+    document,
+    paused: false,
+    window: { OrbitMotion: {} },
+    storyAnimate() {},
+    number: (el, value) => { el.textContent = value; },
+    setTimeout: (callback, delay) => {
+      const id = ++timerId;
+      timers.set(id, { callback, at: now + delay });
+      return id;
+    },
+    clearTimeout: id => timers.delete(id),
+  };
+  runInNewContext(score + '\nthis.playRanking = playOpportunityRanking;', context);
+  const advance = duration => {
+    const until = now + duration;
+    while (true) {
+      const due = [...timers.entries()].filter(([, timer]) => timer.at <= until).sort((a, b) => a[1].at - b[1].at)[0];
+      if (!due) break;
+      const [id, timer] = due;
+      timers.delete(id);
+      now = timer.at;
+      timer.callback();
+    }
+    now = until;
+  };
+
+  context.playRanking(step);
+  const acme = rows[0];
+  assert.equal(acme.rank.textContent, '#4');
+  advance(4550);
+  assert.equal(acme.style.transform, 'translateY(100px)', 'the first pass moves Acme into third');
+  advance(750);
+  assert.equal(acme.rank.textContent, '#3');
+  advance(280);
+  assert.equal(acme.style.transform, 'translateY(50px)', 'the second pass moves Acme into second');
+  advance(750);
+  assert.equal(acme.rank.textContent, '#2');
+  advance(280);
+  assert.equal(acme.style.transform, 'translateY(0px)', 'the final pass moves Acme into first');
+  advance(750);
+  assert.equal(acme.rank.textContent, '#1');
+  advance(280);
+  assert.equal(list.dataset.motionStarted, 'false');
+  assert.equal(acme.value.textContent, '72.8%');
+  assert.equal(rows[4].name, 'Monday', 'the added competitor remains in the lower ranking');
+});

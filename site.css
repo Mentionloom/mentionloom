@@ -3674,6 +3674,18 @@
   width:17px;
   height:17px;
 }
+.marketing-app .mini-rank-monogram {
+  display:grid;
+  place-items:center;
+  flex:0 0 17px;
+  width:17px;
+  height:17px;
+  border-radius:5px;
+  background:var(--sky-1);
+  color:var(--accent-text);
+  font-size:9px;
+  font-weight:700;
+}
 .marketing-app .mini-rank-row small {
   color:var(--muted);
   font-size:7px;
@@ -5022,10 +5034,6 @@
   font-weight:600;
   line-height:1.2;
 }
-.marketing-app #approach .mini-rank-list[data-motion-started="true"] .rank-leader {
-  opacity:0;
-  transition:opacity 180ms ease-out;
-}
 .marketing-app #approach .mini-rank-list[data-motion-started="false"] .rank-leader {
   opacity:1;
   transition:opacity 220ms ease-out;
@@ -5475,6 +5483,13 @@
   overflow-y:auto;
   overscroll-behavior:contain;
 }
+@media(min-width:761px) {
+  .marketing-app .story-stage-locked .opportunity-intro {
+    position:sticky;
+    top:24px;
+    align-self:start;
+  }
+}
 
 /* A shared, full-width completion bar stays visible through the opportunity
    animation so the resolved state retains the same progress cue. */
@@ -5488,7 +5503,17 @@
   margin:0;
   padding:0;
   border:0;
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+  transition:opacity 180ms ease,transform 180ms var(--ease-out),visibility 0s;
   pointer-events:none;
+}
+.marketing-app #insights .action-visual.show-success > .brief-progress {
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(6px);
+  transition:opacity 180ms ease,transform 180ms ease,visibility 0s linear 180ms;
 }
 .marketing-app #insights .action-visual > .brief-progress > div {
   width:100%;
@@ -5500,6 +5525,12 @@
 }
 .marketing-app #insights .action-visual > .brief-progress > div > span {
   border-radius:inherit;
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app #insights .action-visual > .brief-progress {
+    transition:none;
+  }
 }
 
 @media(prefers-reduced-motion:reduce) {

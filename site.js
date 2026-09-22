@@ -1479,6 +1479,13 @@ function playOpportunityRanking(step) {
   const initialRows = [...rows].sort(
     (a, b) => Number(a.dataset.startPosition) - Number(b.dataset.startPosition),
   );
+  const self = rows.find((row) => row.classList.contains("self"));
+  const selfFinalPosition = rows.indexOf(self);
+  const selfStartPosition = Number(self?.dataset.startPosition);
+  const climbs = Math.max(0, selfStartPosition - selfFinalPosition);
+  const positions = new Map(rows.map((row) => [row, Number(row.dataset.startPosition)]));
+  const rank = self?.querySelector(".rank-leader");
+  const maxShare = Math.max(...rows.map((row) => Number(row.dataset.targetShare)));
   const targets = new Map();
 
   rows.forEach((row, finalPosition) => {
@@ -1488,12 +1495,14 @@ function playOpportunityRanking(step) {
     const fill = row.querySelector(".mini-rank-fill");
     const value = row.querySelector(".mini-rank-value");
     const startingOffset = (startPosition - finalPosition) * rowPitch;
-    targets.set(row, { targetShare, fill, value });
+    targets.set(row, { startShare, targetShare, finalPosition, fill, value });
     row.style.transform = `translateY(${startingOffset}px)`;
-    if (fill) fill.style.width = `${startShare / 72.8 * 100}%`;
+    if (fill) fill.style.width = `${startShare / maxShare * 100}%`;
     if (value) value.textContent = `${startShare.toFixed(1)}%`;
   });
 
+  if (!self || !rank || climbs < 1) return;
+  rank.textContent = `#${selfStartPosition + 1}`;
   list.dataset.motionStarted = "true";
   initialRows.forEach((row, index) => approachReveal(row, approachBeat(index)));
 
@@ -1504,15 +1513,16 @@ function playOpportunityRanking(step) {
     active = false;
     timers.forEach(clearTimeout);
     rows.forEach((row) => {
-      const { targetShare, fill, value } = targets.get(row);
+      const { targetShare, finalPosition, fill, value } = targets.get(row);
       row.style.transition = "none";
-      row.style.transform = "none";
+      row.style.transform = `translateY(${(finalPosition - finalPosition) * rowPitch}px)`;
       if (fill) {
         fill.style.transition = "none";
         fill.style.width = "";
       }
       if (value) value.textContent = `${targetShare.toFixed(1)}%`;
     });
+    rank.textContent = `#${selfFinalPosition + 1}`;
     list.dataset.motionStarted = "false";
     reduced.removeEventListener("change", onPreferenceChange);
     document.removeEventListener("visibilitychange", onVisibilityChange);
@@ -1522,24 +1532,45 @@ function playOpportunityRanking(step) {
   reduced.addEventListener("change", onPreferenceChange);
   document.addEventListener("visibilitychange", onVisibilityChange);
 
+  const climb = (climbIndex) => {
+    if (!active) return;
+    const selfPosition = positions.get(self);
+    const nextPosition = selfPosition - 1;
+    const passed = rows.find(
+      (row) => row !== self && positions.get(row) === nextPosition,
+    );
+    if (!passed) return finish();
+
+    positions.set(self, nextPosition);
+    positions.set(passed, selfPosition);
+    const progress = climbIndex / climbs;
+    rows.forEach((row) => {
+      const { startShare, targetShare, finalPosition, fill, value } = targets.get(row);
+      const share = startShare + (targetShare - startShare) * progress;
+      row.style.transition = `transform ${APPROACH_SCORE.work}ms cubic-bezier(.25,1,.5,1)`;
+      row.style.transform = `translateY(${(positions.get(row) - finalPosition) * rowPitch}px)`;
+      if (fill) {
+        fill.style.transition = `width ${APPROACH_SCORE.work}ms cubic-bezier(.25,1,.5,1)`;
+        fill.style.width = `${share / maxShare * 100}%`;
+      }
+      if (value) number(value, `${share.toFixed(1)}%`);
+    });
+
+    timers.push(setTimeout(() => {
+      if (!active) return;
+      rank.textContent = `#${nextPosition + 1}`;
+      if (climbIndex < climbs) {
+        timers.push(setTimeout(() => climb(climbIndex + 1), APPROACH_SCORE.settle));
+      } else {
+        timers.push(setTimeout(finish, APPROACH_SCORE.settle));
+      }
+    }, APPROACH_SCORE.work));
+  };
+
   timers.push(setTimeout(() => {
     if (reduced.matches || paused || document.hidden) return finish();
-    rows.forEach((row) => {
-      const { targetShare, fill, value } = targets.get(row);
-      row.style.transition = `transform ${APPROACH_SCORE.work}ms cubic-bezier(.25,1,.5,1)`;
-      if (fill) fill.style.transition = `width ${APPROACH_SCORE.work}ms cubic-bezier(.25,1,.5,1)`;
-      if (value) number(value, `${targetShare.toFixed(1)}%`);
-    });
-    requestAnimationFrame(() => {
-      if (!active) return;
-      rows.forEach((row) => {
-        const { targetShare, fill } = targets.get(row);
-        row.style.transform = "translateY(0px)";
-        if (fill) fill.style.width = `${targetShare / 72.8 * 100}%`;
-      });
-    });
-    timers.push(setTimeout(finish, APPROACH_SCORE.work + 80));
-  }, approachComplete(3)));
+    climb(1);
+  }, approachComplete(initialRows.length - 1)));
 }
 
 function playApproachCardMotion(step) {
