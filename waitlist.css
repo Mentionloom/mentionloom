@@ -119,3 +119,129 @@
 .discovery-app:not(.marketing-app) #join-dialog .waitlist-saved {
   font-size: var(--text-xs);
 }
+
+
+/* App early-access dialog — intent-first */
+.discovery-app:not(.marketing-app) #join-dialog {
+  width: min(560px, calc(100vw - 28px));
+  padding: 32px 34px 28px;
+  border: 1px solid color-mix(in srgb,var(--border) 82%,#8fb8f4 18%);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(219,233,255,.38), transparent 45%),
+    var(--surface);
+  box-shadow: 0 28px 80px rgba(30,49,80,.18), 0 3px 12px rgba(30,49,80,.08);
+}
+.discovery-app:not(.marketing-app) #join-dialog::backdrop {
+  background: rgba(16,24,40,.24);
+  backdrop-filter: blur(7px);
+}
+.discovery-app:not(.marketing-app) #join-dialog .dialog-close {
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255,255,255,.72);
+}
+.discovery-app:not(.marketing-app) #join-dialog > .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 9px;
+  border: 1px solid color-mix(in srgb,var(--accent-text) 14%,var(--border));
+  border-radius: 999px;
+  background: rgba(247,250,255,.82);
+  color: var(--accent-text);
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+.discovery-app:not(.marketing-app) #join-dialog h2 {
+  margin: 18px 0 10px;
+  font-size: 36px;
+  line-height: 1.08;
+  letter-spacing: -1.45px;
+}
+.discovery-app:not(.marketing-app) #join-dialog > p {
+  max-width: 430px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.discovery-app:not(.marketing-app) .waitlist-value-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 20px 0 18px;
+}
+.discovery-app:not(.marketing-app) .waitlist-value-row span {
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255,255,255,.72);
+  color: var(--muted);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.discovery-app:not(.marketing-app) #join-form {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+.discovery-app:not(.marketing-app) #join-form > label[for="email"] {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text);
+  font-size: 11px;
+}
+.discovery-app:not(.marketing-app) #join-form > input[type="email"] {
+  grid-column: 1;
+  min-height: 48px;
+  margin: 0;
+  border-radius: 11px;
+}
+.discovery-app:not(.marketing-app) #join-form > .button {
+  grid-column: 2;
+  min-height: 48px;
+  margin: 0;
+  padding-inline: 17px;
+  border-radius: 999px;
+}
+.discovery-app:not(.marketing-app) #join-form > .consent-label,
+.discovery-app:not(.marketing-app) #join-form > .waitlist-error {
+  grid-column: 1 / -1;
+}
+.discovery-app:not(.marketing-app) #join-dialog .consent-label {
+  min-height: 30px;
+  margin: 6px 0 0;
+  padding: 0;
+  align-items: center;
+  color: var(--muted);
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-privacy {
+  margin-top: 18px;
+  padding-top: 12px;
+}
+.discovery-app:not(.marketing-app) #join-dialog .waitlist-privacy p {
+  font-size: 9px;
+}
+@media (max-width: 560px) {
+  .discovery-app:not(.marketing-app) #join-dialog {
+    padding: 28px 22px 22px;
+  }
+  .discovery-app:not(.marketing-app) #join-dialog h2 {
+    font-size: 32px;
+  }
+  .discovery-app:not(.marketing-app) #join-form {
+    grid-template-columns: 1fr;
+  }
+  .discovery-app:not(.marketing-app) #join-form > input[type="email"],
+  .discovery-app:not(.marketing-app) #join-form > .button {
+    grid-column: 1;
+    width: 100%;
+  }
+}
