@@ -42,6 +42,9 @@ const files = [
   "app/app.js",
   "app/tokens.css",
   "app/foundation.css",
+  "app/onboarding/index.html",
+  "app/onboarding/onboarding.css",
+  "app/onboarding/onboarding.js",
   "app/lib/data.js",
   "app/lib/model.js",
   "app/lib/traffic.js",
@@ -100,6 +103,7 @@ await rm(output, { recursive: true, force: true });
 await mkdir(new URL("assets/brands/", output), { recursive: true });
 await mkdir(new URL("assets/flags/", output), { recursive: true });
 await mkdir(new URL("app/lib/", output), { recursive: true });
+await mkdir(new URL("app/onboarding/", output), { recursive: true });
 await Promise.all(
   files.map((file) =>
     copyFile(new URL(file, import.meta.url), new URL(file, output)),
