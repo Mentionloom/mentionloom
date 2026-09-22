@@ -799,3 +799,10 @@
     animation:none;
   }
 }
+
+
+[data-addon-product="brief-studio"] { --addon-accent:#5e56c9; --addon-fluid-a:#ddd9ff; --addon-fluid-b:#edf0ff; }
+[data-addon-product="competitor-watch"] { --addon-accent:#247f94; --addon-fluid-a:#d5f1f4; --addon-fluid-b:#e5edf9; }
+[data-addon-product="weekly-brief"] { --addon-accent:#33785f; --addon-fluid-a:#d8eee5; --addon-fluid-b:#eef4df; }
+[data-addon-product="crawler-guard"] { --addon-accent:#8b6337; --addon-fluid-a:#f5e5ca; --addon-fluid-b:#e8edf8; }
+[data-addon-product="revenue-match"] { --addon-accent:#2f66c8; --addon-fluid-a:#d7e5ff; --addon-fluid-b:#e4f0f6; }
