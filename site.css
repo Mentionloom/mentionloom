@@ -4766,7 +4766,8 @@
   min-height:260px;
   margin:30px 24px 24px;
   padding:22px 23px;
-  justify-content:stretch;
+  align-items:stretch;
+  justify-content:flex-start;
   background:var(--story-visual-bg) !important;
   border:1px solid var(--story-border);
   border-radius:var(--story-visual-radius);
