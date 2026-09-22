@@ -239,51 +239,257 @@ function answerForEngine(q, record, engineId) {
   return variants[engineId] || base;
 }
 
-function renderQuestions() {
+const valueAnimationFrames = new WeakMap();
+
+function animateNumericLabel(el, next, { duration = 720, decimals = 1, suffix = "%" } = {}) {
+  if (!el) return;
+  const target = Number(next);
+  if (!Number.isFinite(target)) return;
+
+  const previous = Number(el.dataset.numericValue ?? String(el.textContent || "").replace(/[^\d.-]/g, ""));
+  el.dataset.numericValue = String(target);
+
+  const renderValue = (value) => {
+    el.textContent = `${value.toFixed(decimals)}${suffix}`;
+  };
+
+  const existing = valueAnimationFrames.get(el);
+  if (existing) cancelAnimationFrame(existing);
+
+  if (!ready || paused || reduced.matches || !Number.isFinite(previous) || Math.abs(previous - target) < 0.01) {
+    renderValue(target);
+    return;
+  }
+
+  const started = performance.now();
+  const step = (now) => {
+    const progress = Math.min(1, (now - started) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    renderValue(previous + (target - previous) * eased);
+    if (progress < 1) {
+      valueAnimationFrames.set(el, requestAnimationFrame(step));
+    } else {
+      valueAnimationFrames.delete(el);
+      renderValue(target);
+    }
+  };
+  valueAnimationFrames.set(el, requestAnimationFrame(step));
+}
+
+function animateListReorder(container, nodes, previousRects, duration = 640) {
+  nodes.forEach((node) => container.append(node));
+  if (!ready || paused || reduced.matches) return;
+
+  nodes.forEach((node) => {
+    const before = previousRects.get(node.dataset.key || node.dataset.question || node.dataset.opportunity || node.dataset.competitor);
+    if (!before) return;
+    const after = node.getBoundingClientRect();
+    const dx = before.left - after.left;
+    const dy = before.top - after.top;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+
+    node.getAnimations().forEach((animation) => animation.cancel());
+    animate(
+      node,
+      [
+        { transform: `translate(${dx}px, ${dy}px)` },
+        { transform: "translate(0, 0)" },
+      ],
+      duration,
+      { easing: LANDING_EASE, fill: "both" },
+    );
+  });
+}
+
+function updateSampleAnswer(q, record, engineRecord, animateUpdate = false) {
+  const host = $("#sample-answer");
+  if (!host || !q) return;
+
+  const providerId = engineRecord?.id || record?.engine || "chatgpt";
+  const providerName = engineRecord?.name || "ChatGPT";
+  const answer = answerForEngine(q, record, providerId);
+  const html =
+    `<div class="card-label">${logo(providerId)}<span>${providerName} · Answer</span></div><p>${record?.mention ? "<mark>Acme</mark> " : ""}${answer}</p><div class="citation-pill">${icon("link")} ${record?.cited ? "acme.work" + q.page : record?.external || "External source"}</div><span class="badge ${record?.mention ? "green" : "neutral"}">${record?.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record?.date || report.end} · Monitored prompt response.</p>`;
+
+  if (!animateUpdate || paused || reduced.matches || !ready) {
+    host.innerHTML = html;
+    return;
+  }
+
+  const transitionId = Number(host.dataset.transitionId || 0) + 1;
+  host.dataset.transitionId = String(transitionId);
+  host.getAnimations().forEach((animation) => animation.cancel());
+
+  const out = animate(host, [{ opacity: 1 }, { opacity: 0.35 }], 150, {
+    easing: "ease-out",
+    fill: "forwards",
+  });
+  Promise.resolve(out?.finished)
+    .catch(() => {})
+    .then(() => {
+      if (Number(host.dataset.transitionId) !== transitionId) return;
+      host.innerHTML = html;
+      animate(host, [{ opacity: 0.35 }, { opacity: 1 }], 280, {
+        easing: LANDING_EASE,
+        fill: "forwards",
+      });
+    });
+}
+
+function renderQuestions({ animateReorder = false, animateAnswer = false } = {}) {
+  const container = $("#question-rows");
   const candidates = report.questions
     .filter((q) => BUYER_QUESTION_IDS.includes(q.id))
     .sort((a, b) => a.visibility - b.visibility)
     .slice(0, 4);
 
   if (!candidates.some((q) => q.id === question)) question = candidates[0]?.id || report.questions[0]?.id;
+  if (!container) return;
 
-  $("#question-rows").innerHTML = candidates
-    .map(
-      (q) =>
-        `<button class="question-row" data-question="${q.id}" aria-pressed="${q.id === question}" aria-controls="sample-answer"><span>${q.text}</span><span>${q.visibility.toFixed(0)}%</span></button>`,
-    )
-    .join("");
+  const previousRects = new Map(
+    [...container.querySelectorAll(".question-row")].map((node) => [
+      node.dataset.question,
+      node.getBoundingClientRect(),
+    ]),
+  );
+  const existing = new Map(
+    [...container.querySelectorAll(".question-row")].map((node) => [node.dataset.question, node]),
+  );
+
+  const nodes = candidates.map((q) => {
+    let button = existing.get(q.id);
+    if (!button) {
+      button = document.createElement("button");
+      button.className = "question-row";
+      button.type = "button";
+      button.dataset.question = q.id;
+      button.dataset.key = q.id;
+      button.setAttribute("aria-controls", "sample-answer");
+      button.innerHTML = "<span></span><span></span>";
+      button.addEventListener("click", () => {
+        if (question === button.dataset.question) return;
+        question = button.dataset.question;
+        trackKobbe("product_question_click", { question, engine: engine || "all" });
+        renderQuestions({ animateReorder: false, animateAnswer: true });
+        button.focus({ preventScroll: true });
+      });
+    }
+    existing.delete(q.id);
+    button.setAttribute("aria-pressed", String(q.id === question));
+    button.querySelector(":scope > span:first-child").textContent = q.text;
+    button.querySelector(":scope > span:last-child").textContent = `${q.visibility.toFixed(0)}%`;
+    return button;
+  });
+
+  existing.forEach((node) => node.remove());
+  animateListReorder(container, nodes, animateReorder ? previousRects : new Map(), 620);
 
   const q = report.questions.find((entry) => entry.id === question) || candidates[0];
   if (!q) return;
-
   const activeEngine = engine || "chatgpt";
   const record = q.rows.filter((row) => row.engine === activeEngine).at(-1) || q.rows.at(-1);
-  const e = ENGINES.find((entry) => entry.id === (record?.engine || activeEngine));
-  const answer = answerForEngine(q, record, e?.id || activeEngine);
-
-  $("#sample-answer").innerHTML =
-    `<div class="card-label">${logo(e?.id || "chatgpt")}<span>${e?.name || "ChatGPT"} · Answer</span></div><p>${record?.mention ? "<mark>Acme</mark> " : ""}${answer}</p><div class="citation-pill">${icon("link")} ${record?.cited ? "acme.work" + q.page : record?.external || "External source"}</div><span class="badge ${record?.mention ? "green" : "neutral"}">${record?.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record?.date || report.end} · Monitored prompt response.</p>`;
-
-  $("#question-rows")
-    .querySelectorAll("button")
-    .forEach((button) =>
-      button.addEventListener("click", () => {
-        question = button.dataset.question;
-        trackKobbe("product_question_click", { question, engine: engine || "all" });
-        renderQuestions();
-        $(`[data-question="${question}"]`)?.focus({ preventScroll: true });
-        motion($("#sample-answer"));
-      }),
-    );
-
-  if (ready && story === "questions" && !paused && !reduced.matches) {
-    microRevealMany($("#question-rows").querySelectorAll(".question-row"), 0, 90, {
-      duration: 420,
-      opacity: 0.35,
-    });
-  }
+  const provider = ENGINES.find((entry) => entry.id === (record?.engine || activeEngine));
+  updateSampleAnswer(q, record, provider, animateAnswer);
 }
+
+function renderOpportunities({ animateReorder = false } = {}) {
+  const container = $("#opportunity-rows");
+  if (!container) return;
+
+  const items = ACTIONS.map((action) => ({
+    action,
+    question: report.questions.find((q) => q.id === action.question),
+  }))
+    .filter((item) => item.question)
+    .sort((a, b) => a.question.visibility - b.question.visibility);
+
+  const previousRects = new Map(
+    [...container.querySelectorAll(".opportunity-item")].map((node) => [
+      node.dataset.opportunity,
+      node.getBoundingClientRect(),
+    ]),
+  );
+  const existing = new Map(
+    [...container.querySelectorAll(".opportunity-item")].map((node) => [node.dataset.opportunity, node]),
+  );
+
+  const nodes = items.map(({ action, question: buyerQuestion }) => {
+    let details = existing.get(action.id);
+    if (!details) {
+      details = document.createElement("details");
+      details.className = "opportunity-item";
+      details.dataset.opportunity = action.id;
+      details.dataset.key = action.id;
+      details.innerHTML = `<summary><div><span></span><strong></strong><small></small></div>${icon("plus")}</summary><p></p>`;
+      details.addEventListener("toggle", () => {
+        trackKobbe(details.open ? "product_opportunity_open" : "product_opportunity_close", {
+          opportunity: details.dataset.opportunity,
+          engine: engine || "all",
+        });
+      });
+    }
+    existing.delete(action.id);
+    details.querySelector("summary span").textContent =
+      `${action.label} · ${buyerQuestion.visibility.toFixed(0)}% visibility`;
+    details.querySelector("summary strong").textContent = action.title;
+    details.querySelector("summary small").textContent = buyerQuestion.text;
+    details.querySelector(":scope > p").textContent = action.body;
+    return details;
+  });
+
+  existing.forEach((node) => node.remove());
+  animateListReorder(container, nodes, animateReorder ? previousRects : new Map(), 620);
+}
+
+function updateCompetitorRows({ animateReorder = false } = {}) {
+  const container = $("#competitor-rows");
+  if (!container) return;
+
+  const competitors = report.competitors.filter((item) => item.name !== "Monday");
+  const previousRects = new Map(
+    [...container.querySelectorAll(".competitor-row")].map((node) => [
+      node.dataset.competitor,
+      node.getBoundingClientRect(),
+    ]),
+  );
+  const existing = new Map(
+    [...container.querySelectorAll(".competitor-row")].map((node) => [node.dataset.competitor, node]),
+  );
+
+  const nodes = competitors.map((competitor) => {
+    let row = existing.get(competitor.name);
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "competitor-row";
+      row.dataset.competitor = competitor.name;
+      row.dataset.key = competitor.name;
+      row.innerHTML = "<span></span><b></b>";
+    }
+    existing.delete(competitor.name);
+
+    row.classList.toggle("self", Boolean(competitor.self));
+    row.dataset.share = `${competitor.share.toFixed(1)}%`;
+    const label = row.querySelector(":scope > span");
+    if (competitor.self) {
+      label.innerHTML =
+        '<span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span><span class="competitor-name">Acme <small>you</small></span>';
+    } else {
+      label.innerHTML = `${logo(competitor.name.toLowerCase())}<span class="competitor-name">${competitor.name}</span>`;
+    }
+
+    const value = row.querySelector(":scope > b");
+    animateNumericLabel(value, competitor.share, { duration: 720, decimals: 1, suffix: "%" });
+
+    requestAnimationFrame(() => {
+      row.style.setProperty("--share", `${competitor.share.toFixed(1)}%`);
+    });
+    return row;
+  });
+
+  existing.forEach((node) => node.remove());
+  animateListReorder(container, nodes, animateReorder ? previousRects : new Map(), 700);
+}
+
 function render(initialReport, animateChart = false) {
   report = initialReport || select({ days: 30, engine, topic: "" });
   const delta = report.current.visibility - report.previous.visibility;
@@ -296,68 +502,19 @@ function render(initialReport, animateChart = false) {
   );
   $("#visibility-delta").classList.toggle("negative", delta < 0);
   chart(animateChart);
-  $("#competitor-rows").innerHTML = report.competitors
-    .filter((c) => c.name !== "Monday")
-    .map(
-      (c) =>
-        `<div class="competitor-row ${c.self ? "self" : ""}" data-share="${c.share.toFixed(1)}%" style="--share:${animateChart ? "0%" : c.share.toFixed(1) + "%"}"><span>${c.self ? '<span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>' : logo(c.name.toLowerCase())}${c.name}${c.self ? " <small>you</small>" : ""}</span><b>${c.share.toFixed(1)}%</b></div>`,
-    )
-    .join("");
-  if (animateChart && ready && !paused && !reduced.matches) {
-    const rows = [...$("#competitor-rows").querySelectorAll(".competitor-row")];
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() =>
-        rows.forEach((row, index) => {
-          const delay = 95 + index * 62;
-          row.style.setProperty("--share", row.dataset.share);
-          microReveal(row.querySelector(":scope > span"), delay, 250, 0.975, 0.5);
-          microReveal(row.querySelector(":scope > b"), delay + 32, 220, 0.96, 0.45);
-          microReveal(row.querySelector("img,.acme-mark"), delay + 12, 230, 0.88, 0.5);
-          setTimeout(() => {
-            const value = row.querySelector(":scope > b");
-            if (value && ready && !paused) number(value, row.dataset.share);
-          }, delay);
-        }),
-      ),
-    );
-  }
-  renderQuestions();
-  const opportunityItems = ACTIONS.map((action) => ({
-    action,
-    question: report.questions.find((q) => q.id === action.question),
-  }))
-    .filter((item) => item.question)
-    .sort((a, b) => a.question.visibility - b.question.visibility);
-
-  $("#opportunity-rows").innerHTML = opportunityItems
-    .map(
-      ({ action, question }) =>
-        `<details class="opportunity-item" data-opportunity="${action.id}"><summary><div><span>${action.label} · ${question.visibility.toFixed(0)}% visibility</span><strong>${action.title}</strong><small>${question.text}</small></div>${icon("plus")}</summary><p>${action.body}</p></details>`,
-    )
-    .join("");
-
-  $("#opportunity-rows").querySelectorAll("details").forEach((details) => {
-    details.addEventListener("toggle", () => {
-      trackKobbe(details.open ? "product_opportunity_open" : "product_opportunity_close", {
-        opportunity: details.dataset.opportunity,
-        engine: engine || "all",
-      });
-    });
+  updateCompetitorRows({ animateReorder: animateChart });
+  renderQuestions({
+    animateReorder: animateChart && story === "questions",
+    animateAnswer: animateChart && story === "questions",
   });
+  renderOpportunities({ animateReorder: animateChart && story === "opportunities" });
 
-  if (ready && story === "opportunities" && !paused && !reduced.matches) {
-    microRevealMany($("#opportunity-rows").querySelectorAll(".opportunity-item"), 0, 95, {
-      duration: 440,
-      opacity: 0.35,
-    });
-  }
   const scopeStatus = $("#scope-status");
   if (scopeStatus)
     scopeStatus.textContent =
       `12 monitored questions · ${engine ? ENGINES.find((e) => e.id === engine).name : `${ENGINES.length} engines`} · ${format(report.a.length)} answers`;
   $("#scoped-demo").href =
     `/app/?days=30${engine ? "&engine=" + engine : ""}${story === "questions" ? "#questions" : story === "opportunities" ? "#actions" : ""}`;
-  if (ready) void enhance($("#opportunity-rows"));
 }
 function setStory(next) {
   story = next;
