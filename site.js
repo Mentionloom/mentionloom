@@ -1285,13 +1285,32 @@ function playInsightCardMotion(card) {
   else if (card.classList.contains("audience-card")) playCompetitiveCard(card);
 }
 
+function playCompanyLoading(step) {
+  const rows = [...step.querySelectorAll(".company-intel-row")];
+  const timers = [];
+  const finish = () => {
+    timers.forEach(clearTimeout);
+    rows.forEach((row) => { row.dataset.state = "complete"; });
+    reduced.removeEventListener("change", onPreferenceChange);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+  };
+  const onPreferenceChange = () => { if (reduced.matches) finish(); };
+  const onVisibilityChange = () => { if (document.hidden) finish(); };
+  reduced.addEventListener("change", onPreferenceChange);
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  rows.forEach((row, index) => {
+    row.dataset.state = "pending";
+    timers.push(setTimeout(() => { row.dataset.state = "loading"; }, 400 + index * 850));
+    timers.push(setTimeout(() => { row.dataset.state = "complete"; }, 1150 + index * 850));
+  });
+  timers.push(setTimeout(finish, 1150 + (rows.length - 1) * 850));
+}
+
 function playApproachCardMotion(step) {
   if (!step || approachMotionPlayed.has(step)) return;
   approachMotionPlayed.add(step);
 
   if (reduced.matches || paused || !window.OrbitMotion) {
-    const statusLabel = step.querySelector("[data-company-status] span");
-    if (statusLabel) statusLabel.textContent = "Ready";
     return;
   }
 
@@ -1302,31 +1321,8 @@ function playApproachCardMotion(step) {
   motionEnter(step.querySelector(":scope > p"), 170, 5, 360, 1);
 
   if (step.classList.contains("clearer-step-company")) {
-    motionEnter(step.querySelector(".mini-product-heading"), 260, 4, 340, 1);
-
-    const progress = step.querySelector(".company-progress > span");
-    if (progress) {
-      progress.style.transformOrigin = "left center";
-      motionAnimate(
-        progress,
-        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-        1300,
-        { delay: 320, fill: "backwards" },
-      );
-    }
-
-    const rows = [...step.querySelectorAll(".company-intel-row")];
-    rows.forEach((row, index) =>
-      motionEnter(row, 390 + index * 90, 5, 380, 1),
-    );
-
-    setTimeout(() => {
-      const label = step.querySelector("[data-company-status] span");
-      if (label) window.OrbitMotion.feedback(label, "Ready");
-    }, 1180);
+    playCompanyLoading(step);
   } else if (step.classList.contains("clearer-step-questions")) {
-    motionEnter(step.querySelector(".question-generator-head"), 260, 4, 340, 1);
-
     const rows = [...step.querySelectorAll(".generated-question")];
     rows.forEach((row, index) =>
       motionEnter(row, 390 + index * 105, 5, 400, 1),
@@ -1652,6 +1648,9 @@ discoveryScene.addEventListener('focusout', () => setTimeout(scheduleScene, 0));
 discoveryScene.addEventListener('mentionloom:globe-drag-end', scheduleScene);
 $('#scene-detail').addEventListener('close', scheduleScene);
 document.addEventListener('visibilitychange', scheduleScene);
+const syncAmbientMotion = () => { document.body.dataset.pageHidden = String(document.hidden); };
+document.addEventListener('visibilitychange', syncAmbientMotion);
+syncAmbientMotion();
 reduced.addEventListener('change', scheduleScene);
 window.addEventListener('pagehide', () => clearTimeout(sceneTimer));
 

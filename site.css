@@ -1608,6 +1608,57 @@
   0%,100% { transform:translateX(-50%) scale(.985); opacity:.4; }
   50% { transform:translateX(-50%) scale(1.025); opacity:.85; }
 }
+/* The same thinking sheen as the app invitation, tuned for a blue button. */
+.marketing-app .thinking-cta {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+.marketing-app .thinking-cta > * { position:relative; z-index:1; }
+.marketing-app .thinking-cta::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:linear-gradient(105deg,transparent 30%,rgb(141 181 255 / .12) 43%,rgb(255 255 255 / .32) 51%,rgb(127 170 255 / .12) 59%,transparent 72%);
+  transform:translateX(-100%);
+  opacity:0;
+}
+@media(prefers-reduced-motion:no-preference) {
+  .marketing-app .thinking-cta > span {
+    background:linear-gradient(105deg,#fff 0%,#fff 34%,#c6d8ff 48%,#fff 52%,#c6d8ff 57%,#fff 70%,#fff 100%);
+    background-size:240% 100%;
+    background-position:120% 50%;
+    background-clip:text;
+    -webkit-background-clip:text;
+    color:transparent;
+    animation:waitlist-thinking-text 3.4s ease-in-out infinite paused;
+  }
+  .marketing-app .thinking-cta::after {
+    animation:waitlist-thinking-glass 3.4s ease-in-out infinite paused;
+  }
+  .marketing-app #early-access[data-in-view="true"] .thinking-cta > span,
+  .marketing-app #early-access[data-in-view="true"] .thinking-cta::after {
+    animation-play-state:running;
+  }
+}
+.marketing-app.reduce-motion .thinking-cta > span { background:none; color:#fff; }
+.marketing-app[data-page-hidden="true"] #early-access .thinking-cta > span,
+.marketing-app[data-page-hidden="true"] #early-access .thinking-cta::after,
+.marketing-app[data-page-hidden="true"] #early-access .early-decoration span {
+  animation-play-state:paused;
+}
+@keyframes waitlist-thinking-text {
+  0%,18% { background-position:120% 50%; }
+  68%,100% { background-position:-120% 50%; }
+}
+@keyframes waitlist-thinking-glass {
+  0%,18% { transform:translateX(-100%); opacity:0; }
+  28% { opacity:.8; }
+  68% { transform:translateX(100%); opacity:.8; }
+  80%,100% { transform:translateX(100%); opacity:0; }
+}
 .marketing-app .offer-notes {
   display: flex;
   justify-content: center;
@@ -4827,10 +4878,47 @@
   gap:4px;
 }
 .marketing-app #approach .company-intel-row {
-  min-height:43px;
+  min-height:57px;
   padding:7px 8px;
   border-radius:var(--story-row-radius);
 }
+.marketing-app #approach .company-intel-row small,
+.marketing-app #approach .company-row-status .icon {
+  transition:opacity 280ms ease-out;
+}
+.marketing-app #approach .company-row-status {
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  color:var(--accent-text);
+}
+.marketing-app #approach .company-row-status .icon { width:14px; height:14px; }
+.marketing-app #approach .company-intel-row:is([data-state="pending"],[data-state="loading"]) small,
+.marketing-app #approach .company-intel-row:is([data-state="pending"],[data-state="loading"]) .company-row-status .icon {
+  opacity:0;
+}
+.marketing-app #approach .company-intel-row[data-state="pending"] small,
+.marketing-app #approach .company-intel-row[data-state="pending"] .company-row-status .icon {
+  transition:none;
+}
+.marketing-app #approach .company-intel-row[data-state="pending"] .mini-row-icon,
+.marketing-app #approach .company-intel-row[data-state="pending"] b { opacity:.5; }
+.marketing-app #approach .company-intel-row[data-state="loading"]::before { opacity:.55; }
+.marketing-app #approach .company-intel-row[data-state="loading"] .company-row-status::before {
+  content:"";
+  position:absolute;
+  width:14px;
+  height:14px;
+  border:1.5px solid var(--accent-soft);
+  border-top-color:var(--accent-text);
+  border-radius:50%;
+  animation:company-row-loading 750ms linear 1;
+}
+.marketing-app #approach .clearer-step[data-in-view="false"] .company-row-status::before {
+  animation-play-state:paused;
+}
+@keyframes company-row-loading { to { transform:rotate(360deg); } }
 .marketing-app #approach .company-intel-row::before {
   border-radius:inherit;
 }
