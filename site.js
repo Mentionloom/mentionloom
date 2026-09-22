@@ -226,16 +226,16 @@ function answerForEngine(q, record, engineId) {
       ? `Acme ${base}`
       : base,
     claude: record?.mention
-      ? `Acme is worth considering here. ${base}`
+      ? `is worth considering here. ${base}`
       : `For this question, the strongest answer would compare the trade-offs explicitly. ${base}`,
     perplexity: record?.mention
-      ? `The available sources support Acme as an option. ${base}`
+      ? `is supported by the available sources as an option. ${base}`
       : `The cited evidence currently points elsewhere. ${base}`,
     gemini: record?.mention
-      ? `For teams evaluating this workflow, Acme can fit. ${base}`
+      ? `can fit teams evaluating this workflow. ${base}`
       : `A practical comparison should focus on setup, fit, and cost. ${base}`,
     grok: record?.mention
-      ? `Acme makes the cut for this use case. ${base}`
+      ? `makes the cut for this use case. ${base}`
       : `Acme is not making this shortlist yet. ${base}`,
   };
   return variants[engineId] || base;
@@ -446,49 +446,66 @@ document.querySelector("[data-menu-toggle]")?.addEventListener("click", (event) 
   });
 });
 
+function showActionSuccess(visual) {
+  if (!visual || visual.classList.contains("show-success")) return;
+  visual.classList.add("show-success");
+  const success = visual.querySelector(".action-success");
+  if (!success || paused || reduced.matches) return;
+
+  motionAnimate(
+    success,
+    [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }],
+    900,
+    { fill: "backwards" },
+  );
+  motionEnter(success.querySelector(".action-success-kicker"), 180, 4, 640, 1);
+  motionEnter(success.querySelector(":scope > strong"), 300, 6, 780, 1);
+  [...success.querySelectorAll(".success-brand")].forEach((brand, index) =>
+    motionAnimate(
+      brand,
+      [
+        { opacity: 0, transform: "translateY(6px) scale(.9)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      820,
+      { delay: 420 + index * 130, fill: "backwards" },
+    ),
+  );
+  motionEnter(success.querySelector(":scope > p"), 980, 4, 640, 1);
+}
+
 function syncActionChecklist({ animateResolution = true } = {}) {
   const checks = $(".action-checks");
   const visual = $(".action-visual");
   if (!checks || !visual) return;
+
   const inputs = [...checks.querySelectorAll("input")];
   const n = inputs.filter((input) => input.checked).length;
   inputs.forEach((input) =>
     input.closest(".choice")?.classList.toggle("is-complete", input.checked),
   );
-  $("#brief-count").textContent = `${n} of ${inputs.length} brief items ready`;
-  $("#brief-bar").style.width = `${inputs.length ? (n / inputs.length) * 100 : 0}%`;
 
-  const wasResolved = visual.classList.contains("gap-resolved");
+  const bar = $("#brief-bar");
+  if (bar) bar.style.width = `${inputs.length ? (n / inputs.length) * 100 : 0}%`;
+
   const resolved = n === inputs.length && inputs.length > 0;
   visual.classList.toggle("gap-resolved", resolved);
-  if (resolved && !wasResolved && animateResolution && !paused && !reduced.matches) {
-    const resolution = visual.querySelector(".gap-resolution");
-    if (resolution) {
-      motionAnimate(
-        resolution,
-        [
-          { opacity: 0, transform: "translateY(3px)" },
-          { opacity: 1, transform: "translateY(0)" },
-        ],
-        440,
-        { fill: "backwards" },
-      );
-      [...resolution.querySelectorAll(".gap-brand")].forEach((brand, index) =>
-        motionAnimate(
-          brand,
-          [
-            { opacity: 0, transform: `translateX(${index ? -5 : 5}px) scale(.92)` },
-            { opacity: 1, transform: "translateX(0) scale(1)" },
-          ],
-          460,
-          { delay: 80 + index * 90, fill: "backwards" },
-        ),
-      );
-    }
+
+  clearTimeout(visual._successTimer);
+  if (!resolved) {
+    visual.classList.remove("show-success");
+    return;
+  }
+
+  if (animateResolution) {
+    visual._successTimer = setTimeout(() => showActionSuccess(visual), 520);
+  } else {
+    visual.classList.remove("show-success");
   }
 }
 $(".action-checks").addEventListener("change", () => syncActionChecklist());
 syncActionChecklist({ animateResolution: false });
+
 // These supporting examples always describe the complete, explicitly labeled sample period.
 $("#source-rows").innerHTML = base.pages
   .slice(0, 4)
@@ -645,6 +662,29 @@ function rollInitial(el, delay = 0) {
   }, delay);
 }
 
+function animateMetricText(el, value, duration = 3000, delay = 0) {
+  if (!el) return;
+  const target = Number(value);
+  if (!Number.isFinite(target)) return;
+  el.classList.remove("rolling-number");
+  el.removeAttribute("role");
+  el.removeAttribute("aria-label");
+  setTimeout(() => {
+    if (!el.isConnected) return;
+    const start = performance.now();
+    const tick = (now) => {
+      if (!el.isConnected) return;
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = format(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = format(target);
+    };
+    el.textContent = "0";
+    requestAnimationFrame(tick);
+  }, delay);
+}
+
 function playSourceCard(card) {
   const visual = card.querySelector(".source-visual");
   const loading = card.querySelector("[data-source-loading]");
@@ -755,24 +795,25 @@ function playSourceCard(card) {
 }
 
 function playTrafficCard(card) {
-  motionEnterMany(card.querySelectorAll(".funnel-stats > div"), 280, 115, {
-    distance: 6,
-    duration: 380,
-    scale: 0.996,
+  motionEnterMany(card.querySelectorAll(".funnel-stats > div"), 240, 140, {
+    distance: 5,
+    duration: 640,
+    scale: 1,
   });
-  rollInitial(card.querySelector("#referral-number"), 340);
-  rollInitial(card.querySelector("#lead-number"), 470);
+
+  animateMetricText(card.querySelector("#referral-number"), base.current.referrals, 3000, 300);
+  animateMetricText(card.querySelector("#lead-number"), base.current.leads, 3000, 440);
 
   const steps = [...card.querySelectorAll(".marketing-funnel-step")];
-  motionEnterMany(steps, 560, 125, { distance: 6, duration: 380, scale: 0.997 });
+  motionEnterMany(steps, 620, 180, { distance: 5, duration: 620, scale: 1 });
   steps.forEach((step, index) => {
     const bar = step.querySelector(".marketing-funnel-track > span");
     if (!bar) return;
     motionAnimate(
       bar,
       [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-      820,
-      { delay: 640 + index * 140, fill: "backwards" },
+      3000,
+      { delay: 720 + index * 180, fill: "backwards" },
     );
   });
 }
@@ -993,51 +1034,61 @@ function playInsightCardMotion(card) {
 function playApproachCardMotion(step) {
   if (!step || approachMotionPlayed.has(step)) return;
   approachMotionPlayed.add(step);
+
   if (reduced.matches || paused || !window.OrbitMotion) {
     const statusLabel = step.querySelector("[data-company-status] span");
     if (statusLabel) statusLabel.textContent = "Ready";
     return;
   }
 
-  motionEnter(step.querySelector(".step-number"), 85, 4, 220, 1);
-  motionEnter(step.querySelector("h3"), 125, 6, 285, 0.997);
-  motionEnter(step.querySelector(":scope > p"), 170, 4, 245, 1);
+  motionEnter(step.querySelector(".step-number"), 80, 4, 620, 1);
+  motionEnter(step.querySelector("h3"), 180, 6, 760, 1);
+  motionEnter(step.querySelector(":scope > p"), 320, 4, 720, 1);
 
   if (step.classList.contains("clearer-step-company")) {
-    motionEnter(step.querySelector(".mini-product-heading"), 145, 4, 235, 1);
+    motionEnter(step.querySelector(".mini-product-heading"), 220, 4, 680, 1);
+
     const progress = step.querySelector(".company-progress > span");
-    progress &&
-      motionAnimate(progress, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 650, {
-        delay: 205,
-        fill: "backwards",
-      });
-    motionEnterMany(step.querySelectorAll(".company-intel-row"), 285, 78, {
-      distance: 6,
-      duration: 275,
-      scale: 0.994,
-    });
-    motionEnter(step.querySelector(".company-ready"), 650, 4, 245, 1);
+    if (progress) {
+      motionAnimate(
+        progress,
+        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
+        2800,
+        { delay: 260, fill: "backwards" },
+      );
+    }
+
+    const rows = [...step.querySelectorAll(".company-intel-row")];
+    rows.forEach((row, index) =>
+      motionEnter(row, 420 + index * 560, 6, 820, 1),
+    );
+
     setTimeout(() => {
       const label = step.querySelector("[data-company-status] span");
       if (label) window.OrbitMotion.feedback(label, "Ready");
-    }, 760);
+    }, 3000);
   } else if (step.classList.contains("clearer-step-questions")) {
-    motionEnter(step.querySelector(".question-generator-head"), 145, 4, 235, 1);
-    motionEnter(step.querySelector(".generated-questions"), 205, 7, 320, 0.996);
+    motionEnter(step.querySelector(".question-generator-head"), 220, 4, 680, 1);
+    motionEnter(step.querySelector(".generated-questions"), 360, 6, 760, 1);
+
     const rows = [...step.querySelectorAll(".generated-question")];
-    motionEnterMany(rows, 280, 82, { distance: 5, duration: 260, scale: 0.997 });
+    rows.forEach((row, index) =>
+      motionEnter(row, 520 + index * 620, 5, 760, 1),
+    );
+
     [...step.querySelectorAll(".question-check")].forEach((check, index) =>
       motionAnimate(
         check,
         [
-          { opacity: 0.18, transform: "scale(.82)" },
-          { opacity: 1, transform: "scale(1.08)", offset: 0.7 },
+          { opacity: 0.16, transform: "scale(.88)" },
+          { opacity: 1, transform: "scale(1.06)", offset: 0.72 },
           { opacity: 1, transform: "scale(1)" },
         ],
-        300,
-        { delay: 520 + index * 320, fill: "both" },
+        760,
+        { delay: 900 + index * 620, fill: "both" },
       ),
     );
+
     const selection = step.querySelector(".question-selection");
     if (selection && rows.length === 3) {
       const y2 = rows[1].offsetTop - rows[0].offsetTop;
@@ -1045,37 +1096,34 @@ function playApproachCardMotion(step) {
       motionAnimate(
         selection,
         [
-          { transform: "translateY(0) scale(1)", offset: 0 },
-          { transform: `translateY(${y2}px) scale(.995)`, offset: 0.45 },
-          { transform: `translateY(${y3}px) scale(1)`, offset: 1 },
+          { transform: "translateY(0)", offset: 0 },
+          { transform: `translateY(${y2}px)`, offset: 0.5 },
+          { transform: `translateY(${y3}px)`, offset: 1 },
         ],
-        1350,
-        { delay: 570, fill: "both" },
+        3000,
+        { delay: 420, fill: "both" },
       );
     }
-    motionEnterMany(step.querySelectorAll(".question-footer > span"), 800, 45, {
-      distance: 3,
-      duration: 210,
-      scale: 0.98,
-    });
   } else if (step.classList.contains("clearer-step-action")) {
-    motionEnter(step.querySelector(".gap-header"), 145, 4, 235, 1);
-    motionEnterMany(step.querySelectorAll(".mini-rank-row"), 230, 82, {
-      distance: 5,
-      duration: 270,
-      scale: 0.996,
-    });
-    [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
-      motionAnimate(fill, [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], 570, {
-        delay: 300 + index * 95,
-        fill: "backwards",
-      }),
+    motionEnter(step.querySelector(".gap-header"), 260, 4, 720, 1);
+
+    const rankRows = [...step.querySelectorAll(".mini-rank-row")];
+    rankRows.forEach((row, index) =>
+      motionEnter(row, 520 + index * 620, 5, 820, 1),
     );
-    motionEnter(step.querySelector(".brief-build"), 510, 9, 380, 0.992);
-    motionEnter(step.querySelector(".brief-kicker"), 595, 3, 210, 1);
-    motionEnter(step.querySelector(".brief-build > strong"), 645, 5, 260, 0.998);
-    motionEnter(step.querySelector(".brief-build > p"), 695, 4, 230, 1);
-    motionEnter(step.querySelector(".brief-ready"), 745, 3, 220, 1);
+
+    [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
+      motionAnimate(
+        fill,
+        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
+        1800,
+        { delay: 900 + index * 360, fill: "backwards" },
+      ),
+    );
+
+    motionEnter(step.querySelector(".brief-build"), 2200, 8, 900, 1);
+    motionEnter(step.querySelector(".brief-kicker"), 2420, 3, 680, 1);
+    motionEnter(step.querySelector(".brief-build > strong"), 2640, 5, 820, 1);
   }
 }
 
@@ -1182,7 +1230,7 @@ try {
   );
   registerReveal(
     ".brand-footer",
-    ".brand-footer-label,.brand-footer-col a,.brand-footer-note,.brand-footer-meta>*,.brand-footer-logo",
+    ".brand-footer-label,.brand-footer-col a,.brand-footer-note,.brand-footer-meta>*",
     { step: 45, scale: 0.99 },
   );
 
