@@ -185,9 +185,10 @@
   opacity: 0.6;
 }
 .discovery-app .engine-icon img {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   display: block;
+  object-fit: contain;
 }
 .discovery-app .breakdown-grid {
   margin-top: 0;
