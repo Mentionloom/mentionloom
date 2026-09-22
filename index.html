@@ -621,6 +621,7 @@
           <article class="clearer-step clearer-step-company">
             <div class="step-visual company-visual" aria-hidden="true">
               <div class="company-intel-card">
+                <div class="step-visual-heading"><i></i> YOUR STRUCTURE</div>
                 <div class="company-intel-list">
                   <div class="company-intel-row">
                     <span class="mini-row-icon"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-layers" /></svg></span>
@@ -648,10 +649,7 @@
                     <span class="company-row-status"><svg class="icon"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                   </div>
                 </div>
-                <div class="company-progress-footer">
-                  <div class="company-progress-meta"><span>Company profile mapped</span><b class="company-progress-value">100%</b></div>
-                  <div class="company-progress" role="progressbar" aria-label="Company profile mapped" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span></span></div>
-                </div>
+                <div class="company-progress" role="progressbar" aria-label="Company profile progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span></span></div>
               </div>
             </div>
             <span class="step-number">01</span>
@@ -661,6 +659,7 @@
 
           <article class="clearer-step clearer-step-questions">
             <div class="step-visual questions-visual" aria-hidden="true">
+              <div class="step-visual-heading"><i></i> YOUR WINNING QUESTIONS</div>
               <div class="generated-questions">
                 <span class="question-demo-cursor" aria-hidden="true"></span>
                 <div class="question-track"><div class="question-sequence">
@@ -695,7 +694,7 @@
           <article class="clearer-step clearer-step-action">
             <div class="step-visual action-builder-visual" aria-hidden="true">
               <div class="gap-header">
-                <strong><i></i> GET TO #1</strong><span class="gap-target-rank">SAMPLE DATA</span>
+                <strong><i></i> GET TO #1</strong>
               </div>
               <div class="mini-rank-list">
                 <div class="mini-rank-row self" data-start-position="3" data-start-share="45.4" data-target-share="72.8">
@@ -825,74 +824,77 @@
     </main>
     <dialog id="scene-detail" class="scene-detail" aria-labelledby="scene-detail-title"><div class="scene-detail-heading"><span>Answer evidence</span><button class="icon-button" data-scene-close aria-label="Close answer"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-close" /></svg></button></div><div id="scene-detail-content"></div></dialog>
 
-    <section class="early-access-section section-space" id="early-access">
-      <div class="early-access-card wrap">
-        <div class="early-decoration" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-        <span class="eyebrow">GET THERE EARLY</span>
-        <h2>The next answer<br />could include you.</h2>
-        <p>
-          Help shape a better way to understand AI discovery.<br
-            class="desktop-break"
-          />
-          Join the waitlist and get an invitation when access opens.
-        </p>
-        <div class="hero-actions">
-          <button class="button primary thinking-cta" data-join="early-access">
-            <span>Join the waitlist</span>
-            <svg class="icon" aria-hidden="true">
-              <use href="/assets/icons/lucide.svg#i-arrow" />
-            </svg>
-          </button>
-        </div>
-        <div class="offer-notes">
-          <span>
-            <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg>
-            Free to join
-          </span>
-          <span>
-            <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg>
-            No payment details
-          </span>
-          <span>
-            <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg>
-            Just your email
-          </span>
-        </div>
+    <div class="closing-footer">
+      <div class="early-decoration" aria-hidden="true">
+        <canvas class="closing-dot-field"></canvas>
+        <span></span><span></span><span></span>
       </div>
-    </section>
-    <footer class="brand-footer">
-      <div class="brand-footer-shell">
-        <div class="brand-footer-grid">
-          <nav class="brand-footer-col" aria-label="Footer navigation">
-            <span class="brand-footer-label">Navigation</span>
-            <a href="/#product">Product</a>
-            <a href="/#approach">How it works</a>
-            <a href="/methodology.html">Methodology</a>
-            <a href="/#faq">FAQs</a>
-          </nav>
-          <nav class="brand-footer-col" aria-label="Company">
-            <span class="brand-footer-label">Company</span>
-            <a href="/about.html">About</a>
-            <a href="/contact.html">Contact</a>
+      <section class="early-access-section section-space" id="early-access">
+        <div class="early-access-card wrap">
+          <span class="eyebrow">GET THERE EARLY</span>
+          <h2>The next answer<br />could include you.</h2>
+          <p>
+            Help shape a better way to understand AI discovery.<br
+              class="desktop-break"
+            />
+            Join the waitlist and get an invitation when access opens.
+          </p>
+          <div class="hero-actions">
+            <button class="button primary thinking-cta" data-join="early-access">
+              <span>Join the waitlist</span>
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/icons/lucide.svg#i-arrow" />
+              </svg>
+            </button>
+          </div>
+          <div class="offer-notes">
+            <span>
+              <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg>
+              Free to join
+            </span>
+            <span>
+              <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg>
+              No payment details
+            </span>
+            <span>
+              <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg>
+              Just your email
+            </span>
+          </div>
+        </div>
+      </section>
+      <footer class="brand-footer">
+        <div class="brand-footer-shell">
+          <div class="brand-footer-grid">
+            <nav class="brand-footer-col" aria-label="Footer navigation">
+              <span class="brand-footer-label">Navigation</span>
+              <a href="/#product">Product</a>
+              <a href="/#approach">How it works</a>
+              <a href="/methodology.html">Methodology</a>
+              <a href="/#faq">FAQs</a>
+            </nav>
+            <nav class="brand-footer-col" aria-label="Company">
+              <span class="brand-footer-label">Company</span>
+              <a href="/about.html">About</a>
+              <a href="/contact.html">Contact</a>
+              <a href="/privacy.html">Privacy</a>
+            </nav>
+            <nav class="brand-footer-col" aria-label="Follow Mentionloom">
+              <span class="brand-footer-label">Follow</span>
+              <a href="https://x.com/mentionloom" target="_blank" rel="noreferrer">X / Twitter</a>
+            </nav>
+            <p class="brand-footer-note">Get recommended.<br />Win the answer.</p>
+          </div>
+          <div class="brand-footer-meta">
+            <span>© 2026 Mentionloom</span>
             <a href="/privacy.html">Privacy</a>
-          </nav>
-          <nav class="brand-footer-col" aria-label="Follow Mentionloom">
-            <span class="brand-footer-label">Follow</span>
-            <a href="https://x.com/mentionloom" target="_blank" rel="noreferrer">X / Twitter</a>
-          </nav>
-          <p class="brand-footer-note">Get recommended.<br />Win the answer.</p>
+          </div>
+          <a class="brand-footer-logo" href="/" aria-label="Mentionloom home">
+            <img src="/assets/light-ml.svg" alt="Mentionloom" />
+          </a>
         </div>
-        <div class="brand-footer-meta">
-          <span>© 2026 Mentionloom</span>
-          <a href="/privacy.html">Privacy</a>
-        </div>
-        <a class="brand-footer-logo" href="/" aria-label="Mentionloom home">
-          <img src="/assets/light-ml.svg" alt="Mentionloom" />
-        </a>
-      </div>
-    </footer>
+      </footer>
+    </div>
     <dialog
       id="join-dialog"
       aria-labelledby="join-title"

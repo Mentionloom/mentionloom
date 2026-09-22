@@ -34,6 +34,139 @@ const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 
 const globe = mountGlobe($("#discovery-globe"), { isPaused: () => paused });
 
+function initClosingRadar() {
+  const host = $(".closing-footer");
+  const canvas = host?.querySelector(".closing-dot-field");
+  const context = canvas?.getContext("2d", { alpha: true });
+  if (!host || !canvas || !context) return;
+
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const dotGap = 14;
+  const radius = 190;
+  const points = { x: 0, y: 0, targetX: 0, targetY: 0, strength: 0, targetStrength: 0 };
+  let width = 0;
+  let height = 0;
+  let footerStart = 0;
+  let pixelRatio = 1;
+  let frame = 0;
+  let visible = false;
+  let pointerInside = false;
+
+  const paint = () => {
+    frame = 0;
+    if (document.hidden || !visible || reducedMotion.matches || paused) {
+      context.clearRect(0, 0, width, height);
+      return;
+    }
+
+    points.x += (points.targetX - points.x) * 0.17;
+    points.y += (points.targetY - points.y) * 0.17;
+    points.strength += (points.targetStrength - points.strength) * 0.16;
+    context.clearRect(0, 0, width, height);
+
+    if (points.strength > 0.01) {
+      const left = Math.max(0, Math.floor((points.x - radius) / dotGap) * dotGap);
+      const right = Math.min(width, points.x + radius);
+      const top = Math.max(0, Math.floor((points.y - radius) / dotGap) * dotGap);
+      const bottom = Math.min(height, points.y + radius);
+      for (let y = top; y <= bottom; y += dotGap) {
+        for (let x = left; x <= right; x += dotGap) {
+          const dx = points.x - x;
+          const dy = points.y - y;
+          const distance = Math.hypot(dx, dy);
+          if (distance >= radius) continue;
+          const influence = (1 - distance / radius) ** 2 * points.strength;
+          const drift = 3.2 * influence;
+          const offsetX = distance ? (dx / distance) * drift : 0;
+          const offsetY = distance ? (dy / distance) * drift : 0;
+          const alpha = 0.11 + influence * 0.54;
+          context.beginPath();
+          context.arc(x + offsetX, y + offsetY, 0.7 + influence * 0.75, 0, Math.PI * 2);
+          context.fillStyle = y < footerStart
+            ? `rgba(45, 93, 197, ${alpha * 0.76})`
+            : `rgba(166, 187, 255, ${alpha})`;
+          context.fill();
+        }
+      }
+    }
+
+    const stillMoving = Math.abs(points.x - points.targetX) > 0.35
+      || Math.abs(points.y - points.targetY) > 0.35
+      || Math.abs(points.strength - points.targetStrength) > 0.015;
+    if (stillMoving) frame = requestAnimationFrame(paint);
+  };
+
+  const schedule = () => {
+    if (!frame && visible && !document.hidden && !reducedMotion.matches && !paused) {
+      frame = requestAnimationFrame(paint);
+    }
+  };
+
+  const resize = () => {
+    const bounds = host.getBoundingClientRect();
+    width = bounds.width;
+    height = bounds.height;
+    pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(width * pixelRatio);
+    canvas.height = Math.round(height * pixelRatio);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    const footer = host.querySelector(".brand-footer");
+    footerStart = footer ? footer.getBoundingClientRect().top - bounds.top : height * 0.55;
+    schedule();
+  };
+
+  host.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const bounds = host.getBoundingClientRect();
+    pointerInside = true;
+    points.targetX = Math.max(0, Math.min(bounds.width, event.clientX - bounds.left));
+    points.targetY = Math.max(0, Math.min(bounds.height, event.clientY - bounds.top));
+    points.targetStrength = 1;
+    schedule();
+  }, { passive: true });
+  host.addEventListener("pointerleave", () => {
+    pointerInside = false;
+    points.targetStrength = 0;
+    schedule();
+  }, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && frame) cancelAnimationFrame(frame);
+    frame = 0;
+    if (!document.hidden) schedule();
+  });
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches && frame) cancelAnimationFrame(frame);
+    frame = 0;
+    if (reducedMotion.matches) {
+      points.strength = 0;
+      points.targetStrength = 0;
+      context.clearRect(0, 0, width, height);
+    } else if (pointerInside) {
+      points.targetStrength = 1;
+      schedule();
+    }
+  });
+
+  const visibility = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    if (!visible && frame) cancelAnimationFrame(frame);
+    if (!visible) {
+      points.targetStrength = 0;
+      points.strength = 0;
+      context.clearRect(0, 0, width, height);
+    }
+    frame = 0;
+    if (visible) schedule();
+  }, { threshold: 0.01 });
+  visibility.observe(host);
+  if ("ResizeObserver" in window) new ResizeObserver(resize).observe(host);
+  else window.addEventListener("resize", resize, { passive: true });
+  resize();
+}
+initClosingRadar();
+
 function roll(id, value) {
   if (ready && !paused) number($(id), value);
   else $(id).textContent = value;
@@ -1299,11 +1432,9 @@ function approachReveal(el, delay, duration = APPROACH_SCORE.settle) {
 function playCompanyLoading(step) {
   const rows = [...step.querySelectorAll(".company-intel-row")];
   const progress = step.querySelector(".company-progress");
-  const progressValue = step.querySelector(".company-progress-value");
   const updateProgress = (completed) => {
     const percent = rows.length ? Math.round((completed / rows.length) * 100) : 100;
     progress?.setAttribute("aria-valuenow", String(percent));
-    if (progressValue) progressValue.textContent = `${percent}%`;
   };
   updateProgress(0);
   const timers = [];
@@ -1563,7 +1694,7 @@ try {
     { threshold: 0.05 },
   );
   document
-    .querySelectorAll("#product,.product-stage,.provider-strip,.discovery-scene,.early-access-section,#insights .feature-card,#approach .clearer-step,.brand-footer")
+    .querySelectorAll("#product,.product-stage,.provider-strip,.discovery-scene,.early-access-section,.closing-footer,#insights .feature-card,#approach .clearer-step,.brand-footer")
     .forEach((el) => inView.observe(el));
 } catch (error) {
   console.warn(

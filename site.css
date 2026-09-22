@@ -4973,9 +4973,6 @@
   border:1px solid transparent;
   border-radius:var(--story-row-radius);
 }
-.marketing-app #approach .generated-question + .generated-question {
-  border-top-color:var(--border);
-}
 .marketing-app #approach .question-selection {
   border:1px solid var(--border);
   border-radius:var(--story-row-radius);
@@ -5294,35 +5291,6 @@
   line-height:1.2;
 }
 
-/* A separate, inset completion area keeps the five profile rows readable. */
-.marketing-app #approach .company-intel-row { min-height:40px; }
-.marketing-app #approach .company-progress-footer {
-  margin-top:8px;
-  padding-top:8px;
-  border-top:1px solid var(--border);
-}
-.marketing-app #approach .company-progress-meta {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  color:var(--muted);
-  font-size:9px;
-  line-height:1.25;
-}
-.marketing-app #approach .company-progress-meta b {
-  color:var(--fg-3);
-  font-size:9px;
-  font-weight:500;
-  font-variant-numeric:tabular-nums;
-}
-.marketing-app #approach .company-progress {
-  height:4px;
-  margin:7px 0 0;
-  border-radius:var(--radius-pill);
-  background:var(--bg-a2);
-}
-
 /* Scroll the buyer-question stack while a circular cue selects each stage. */
 .marketing-app #approach .question-demo-cursor {
   position:absolute;
@@ -5402,15 +5370,6 @@
   font-size:10px;
   letter-spacing:.045em;
 }
-.marketing-app #approach .gap-target-rank {
-  padding:3px 7px;
-  border-radius:var(--radius-pill);
-  background:var(--sky-1);
-  color:var(--accent-text);
-  font-size:9px;
-  font-weight:600;
-  line-height:1.2;
-}
 .marketing-app #approach .mini-rank-list {
   gap:7px;
   margin:0;
@@ -5443,7 +5402,6 @@
 @media(max-width:760px) {
   .marketing-app #approach .company-intel-row { min-height:38px; }
   .marketing-app #approach .company-progress { margin-inline:0; }
-  .marketing-app #approach .company-progress-footer { margin-top:5px; padding-top:5px; }
   .marketing-app #approach .mini-rank-list { gap:6px; margin:0; }
   .marketing-app #approach .mini-rank-row { min-height:40px; padding:6px 8px; }
   .marketing-app .scene-coverage-float { bottom:10px; }
@@ -5453,4 +5411,145 @@
   .marketing-app .brief-progress #brief-bar {
     transition:none;
   }
+}
+
+/* Keep the closing radar underneath both the invitation and footer. */
+.marketing-app .closing-footer {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(125deg,#faf9ff,#eaf1ff);
+}
+.marketing-app .closing-footer > .early-decoration {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  mask-image:none;
+  animation:none !important;
+  transform:none;
+  opacity:1;
+}
+.marketing-app .closing-footer .closing-dot-field {
+  position:absolute;
+  inset:0;
+  display:block;
+  pointer-events:none;
+}
+.marketing-app .closing-footer > #early-access,
+.marketing-app .closing-footer > .brand-footer {
+  position:relative;
+  z-index:1;
+}
+.marketing-app .closing-footer #early-access {
+  overflow:visible;
+  padding-bottom:24px;
+  background:transparent;
+}
+.marketing-app .closing-footer .early-access-card {
+  background:transparent;
+}
+.marketing-app .closing-footer .brand-footer {
+  margin:12px 12px 0;
+  border-radius:26px 26px 0 0;
+  background:transparent;
+}
+.marketing-app .closing-footer .brand-footer-shell {
+  background:rgba(0,0,54,.88);
+  backdrop-filter:blur(2px);
+}
+.marketing-app .closing-footer .early-decoration::before {
+  background-image:radial-gradient(circle,rgba(80,103,151,.18) .8px,transparent 1px);
+  background-size:14px 14px;
+}
+.marketing-app .closing-footer .early-decoration > span {
+  border-color:rgba(111,139,201,.25);
+}
+
+/* Shared quiet labels make each illustration read as a distinct step. */
+.marketing-app #approach .step-visual-heading,
+.marketing-app #approach .gap-header {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  min-height:0;
+  margin:0 0 11px;
+  padding:0 0 9px;
+  border-bottom:1px solid var(--border);
+  color:var(--accent-text);
+  font-size:10px;
+  font-weight:500;
+  line-height:1.2;
+  letter-spacing:.055em;
+}
+.marketing-app #approach .step-visual-heading > i,
+.marketing-app #approach .gap-header strong > i {
+  display:block;
+  flex:0 0 6px;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--accent-text);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
+.marketing-app #approach .gap-header strong {
+  gap:8px;
+  color:var(--accent-text);
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:inherit;
+}
+.marketing-app #approach .company-intel-card {
+  display:flex;
+  flex-direction:column;
+}
+.marketing-app #approach .company-intel-card > .step-visual-heading {
+  flex:0 0 auto;
+}
+.marketing-app #approach .company-intel-list {
+  gap:3px;
+}
+.marketing-app #approach .company-intel-row {
+  min-height:37px;
+}
+.marketing-app #approach .company-progress {
+  flex:0 0 auto;
+  height:8px;
+  margin:12px 14px 0;
+  overflow:hidden;
+  border-radius:var(--radius-pill);
+  background:var(--bg-a2);
+}
+.marketing-app #approach .company-progress > span {
+  border-radius:inherit;
+}
+.marketing-app #approach .questions-visual > .step-visual-heading {
+  position:absolute;
+  top:18px;
+  right:18px;
+  left:18px;
+  margin:0;
+}
+.marketing-app #approach .questions-visual .generated-questions {
+  inset:52px 18px 18px;
+}
+.marketing-app #approach .question-sequence { gap:5px; }
+.marketing-app #approach .question-sequence .generated-question {
+  min-height:58px;
+  border-top-color:transparent;
+}
+
+@media(max-width:760px) {
+  .marketing-app .closing-footer .brand-footer {
+    margin:8px 8px 0;
+    border-radius:20px 20px 0 0;
+  }
+  .marketing-app #approach .company-intel-row { min-height:36px; }
+  .marketing-app #approach .company-progress { margin:10px 10px 0; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app .closing-footer .closing-dot-field { display:none; }
 }

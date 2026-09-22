@@ -18,12 +18,11 @@ function fixture(reduce = false) {
   const fills = Array.from({ length: 2 }, node);
   const questionViewport = node();
   const progress = node();
-  const progressValue = node();
   const lists = { '.company-intel-row': company, '.generated-question': questions, '.question-check': checks, '.mini-rank-row': ranks, '.mini-rank-fill': fills };
   const steps = ['company', 'questions', 'action'].map(kind => ({
     classList: { contains: name => name === `clearer-step-${kind}` },
     querySelectorAll: selector => lists[selector] || [],
-    querySelector: selector => selector === '.generated-questions' ? questionViewport : selector === '.company-progress' ? progress : selector === '.company-progress-value' ? progressValue : selector === '.mini-rank-list' ? null : node(),
+    querySelector: selector => selector === '.generated-questions' ? questionViewport : selector === '.company-progress' ? progress : selector === '.mini-rank-list' ? null : node(),
   }));
   const reduced = Object.assign(new EventTarget(), { matches: reduce });
   const document = Object.assign(new EventTarget(), { hidden: false });
@@ -41,7 +40,7 @@ function fixture(reduce = false) {
       if (timer.at <= time && timers.has(id)) { timers.delete(id); timer.cb(); }
     }
   };
-  return { animations, timers, company, checks, progress, progressValue, questionViewport, play, advance, reduced, document };
+  return { animations, timers, company, checks, progress, questionViewport, play, advance, reduced, document };
 }
 
 test('profile completion advances by row while question viewport enters without displacing its list', () => {
@@ -49,21 +48,17 @@ test('profile completion advances by row while question viewport enters without 
   f.play();
   assert.ok(f.company.every(row => row.dataset.state === 'pending'));
   assert.equal(f.progress['aria-valuenow'], '0');
-  assert.equal(f.progressValue.textContent, '0%');
   f.advance(400);
   assert.equal(f.company[0].dataset.state, 'loading');
   f.advance(1150);
   assert.equal(f.company[0].dataset.state, 'complete');
-  assert.equal(f.progressValue.textContent, '20%');
   f.advance(3699);
   assert.equal(f.company[3].dataset.state, 'loading');
   f.advance(3700);
   assert.equal(f.company[3].dataset.state, 'complete');
-  assert.equal(f.progressValue.textContent, '80%');
   f.advance(4550);
   assert.ok(f.company.every(row => row.dataset.state === 'complete'));
   assert.equal(f.progress['aria-valuenow'], '100');
-  assert.equal(f.progressValue.textContent, '100%');
   const questions = f.animations.find(item => item.el === f.questionViewport);
   assert.equal(questions.delay, 400);
   assert.equal(questions.duration, 280);
@@ -85,7 +80,7 @@ test('reduced motion skips the score and interruption completes company rows', (
     if (kind === 'reduced') { f.reduced.matches = true; f.reduced.dispatchEvent(new Event('change')); }
     else { f.document.hidden = true; f.document.dispatchEvent(new Event('visibilitychange')); }
     assert.ok(f.company.every(row => row.dataset.state === 'complete'));
-    assert.equal(f.progressValue.textContent, '100%');
+    assert.equal(f.progress['aria-valuenow'], '100');
     assert.equal(f.timers.size, 0);
   }
 });
