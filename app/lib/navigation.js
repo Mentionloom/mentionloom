@@ -4,11 +4,10 @@ export const VIEWS = {
   traffic: "Traffic",
   questions: "Questions",
   opportunities: "Opportunities",
-  addons: "Add-ons",
 };
 export function resolveView({ pathname = "/app/", hash = "", search = "" }) {
   if (/^\/app\/sources\/?$/.test(pathname) || hash === "#sources") return "overview";
-  if (/^\/app\/addons\/[^/]+\/?$/.test(pathname)) return "addons";
+  if (/^\/app\/addons(?:\/.*)?$/.test(pathname)) return "overview";
   const page = pathname.match(/^\/app\/([^/]+)\/?$/)?.[1];
   if (Object.hasOwn(VIEWS, page)) return page;
   const legacy = {
