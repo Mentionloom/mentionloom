@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { authRequest, InfraError } from '../lib/supabase.js';
+import { authRequest, configureSupabaseEnv, InfraError } from '../lib/supabase.js';
 import { createWorkspace, listWorkspaces, requireWorkspaceMember } from '../lib/workspaces.js';
 import { monthlyCost } from '../lib/cost-ledger.js';
 import { claimJobs, completeJob, failOrRetryJob } from '../lib/queue.js';
-import { providerConfiguration } from '../lib/provider-secrets.js';
+import { configureProviderEnv, providerConfiguration } from '../lib/provider-secrets.js';
 
 const ACCESS_COOKIE = 'ml_access';
 const REFRESH_COOKIE = 'ml_refresh';
@@ -12,6 +12,11 @@ const JSON_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
   'X-Content-Type-Options': 'nosniff',
 };
+
+function configureRuntime(env) {
+  configureSupabaseEnv(env);
+  configureProviderEnv(env);
+}
 
 function json(body, status = 200, headers = {}, cookies = []) {
   const responseHeaders = new Headers({ ...JSON_HEADERS, ...headers });
@@ -404,6 +409,7 @@ async function handleApi(request, env) {
 
 export default {
   async fetch(request, env) {
+    configureRuntime(env);
     const path = new URL(request.url).pathname;
 
     try {
@@ -416,6 +422,7 @@ export default {
   },
 
   async scheduled(_controller, env, ctx) {
+    configureRuntime(env);
     if (!env.SUPABASE_URL || !(env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)) return;
     ctx.waitUntil(
       processQueue().catch((error) => {
