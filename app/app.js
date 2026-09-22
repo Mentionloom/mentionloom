@@ -4,6 +4,7 @@ import { usageHTML, funnelHTML, sourcesHTML, locationsHTML, devicesHTML, pagesHT
 import { END, answers, ENGINES, QUESTIONS, TOPICS, ACTIONS, CRAWLERS } from "./lib/data.js";
 import { select, parseState, fmt, pct, csv, dates } from "./lib/model.js";
 import { recommendationEvidence } from "./lib/intelligence.js";
+import { mountFluidOrb } from "./lib/fluid-orb.js";
 import {
   icon,
   engineIcon,
@@ -85,6 +86,7 @@ pending = pending
 let growthWork = normalizeWork(load("growth-work", {}));
 let addonState = normalizeAddons(load("addons", {}));
 let detailHistory = [];
+let activeAgentOrb = null;
 const date = (d) =>
   new Date(d + "T12:00:00Z").toLocaleDateString("en-US", {
     month: "short",
@@ -770,7 +772,9 @@ function renderGrowth() {
   $("#overview-next").disabled = false;
   $("#overview-next").innerHTML =
     `${next ? (growthWork[next.id] ? "Continue plan" : "Your next move") : items.length ? "Review results" : "Explore questions"}${icon("right")}`;
+  activeAgentOrb?.destroy();
   $("#next-move").innerHTML = nextMoveHTML(items, growthWork);
+  activeAgentOrb = mountFluidOrb($("#next-move [data-fluid-orb]"));
   $("#growth-path").innerHTML = journeyHTML(items, context, growthWork);
   const losses = recommendationEvidence(data.a);
   $("#overview-competitors").innerHTML = losses.competitors.length
@@ -1762,3 +1766,8 @@ addEventListener("resize", () => {
     });
   }
 }
+
+
+window.addEventListener("pagehide", (event) => {
+  if (!event.persisted) activeAgentOrb?.destroy();
+});
