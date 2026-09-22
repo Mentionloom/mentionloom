@@ -54,8 +54,13 @@ body.discovery-app {
   touch-action: manipulation;
 }
 .discovery-app :focus-visible {
-  outline: var(--focus-width) solid var(--focus-color);
-  outline-offset: var(--focus-offset);
+  outline: 1px solid color-mix(in srgb, var(--text) 34%, transparent);
+  outline-offset: 2px;
+}
+.discovery-app :is(.rank-row,.benchmark-question,.question-row,.gap-row,.traffic-list-row,.traffic-journey,.growth-path > button,.recommendation-stats .stat):focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 24%, transparent);
+  background: color-mix(in srgb, var(--text) 4%, var(--surface));
 }
 .discovery-app :focus {
   scroll-margin-top: 6rem;
