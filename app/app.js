@@ -4,7 +4,7 @@ import { usageHTML, funnelHTML, sourcesHTML, locationsHTML, devicesHTML, pagesHT
 import { END, answers, ENGINES, QUESTIONS, TOPICS, ACTIONS, CRAWLERS } from "./lib/data.js";
 import { select, parseState, fmt, pct, csv, dates } from "./lib/model.js";
 import { recommendationEvidence } from "./lib/intelligence.js";
-import { mountFluidOrb } from "./lib/fluid-orb.js";
+import { mountFluidOrb } from "./lib/fluid-orb.js?v=20260922-3";
 import {
   icon,
   engineIcon,
@@ -39,7 +39,7 @@ import {
   competitorHTML,
   workbenchHTML,
   reviewHTML,
-} from "./lib/growth-view.js";
+} from "./lib/growth-view.js?v=20260922-3";
 import {
   ADDONS,
   normalizeAddons,
