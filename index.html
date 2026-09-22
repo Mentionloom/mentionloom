@@ -183,6 +183,10 @@
               ><span>Review team-size evidence on your product page.</span>
             </div>
           </div>
+          <div class="scene-coverage-float">
+            <span class="scene-coverage-dot" aria-hidden="true"></span>
+            <span><strong>Sample activity</strong><small>8 buyer-question markets · no live visitor data</small></span>
+          </div>
           <div class="provider-node node-claude">
             <img
               src="/assets/brands/claude.svg"
@@ -526,9 +530,7 @@
                     pages</label
                   >
                 </div>
-                <span class="demo-cursor" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 3.5 18.5 13l-5.6 1.15-2.55 5.1L5 3.5Z" fill="white" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>
-                </span>
+                <span class="demo-cursor" aria-hidden="true"></span>
                 <div class="brief-progress" aria-label="Brief completion">
                   <div><span id="brief-bar" style="width: 0%"></span></div>
                 </div>
@@ -646,7 +648,10 @@
                     <span class="company-row-status"><svg class="icon"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                   </div>
                 </div>
-                <div class="company-progress" role="progressbar" aria-label="Company profile mapped" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span></span></div>
+                <div class="company-progress-footer">
+                  <div class="company-progress-meta"><span>Company profile mapped</span><b class="company-progress-value">100%</b></div>
+                  <div class="company-progress" role="progressbar" aria-label="Company profile mapped" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span></span></div>
+                </div>
               </div>
             </div>
             <span class="step-number">01</span>
@@ -657,6 +662,7 @@
           <article class="clearer-step clearer-step-questions">
             <div class="step-visual questions-visual" aria-hidden="true">
               <div class="generated-questions">
+                <span class="question-demo-cursor" aria-hidden="true"></span>
                 <div class="question-track"><div class="question-sequence">
                 <span class="generated-question">
                   <span class="generated-copy"><b>Best tools for a small team?</b><small><img src="/assets/brands/chatgpt.svg" alt="" /> Discovery</small></span>
@@ -666,10 +672,9 @@
                   <span class="generated-copy"><b>Alternatives to Monday?</b><small><img src="/assets/brands/claude.svg" alt="" /> Comparison</small></span>
                   <span class="question-check"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
                 </span>
-                <span class="generated-question is-selected">
+                <span class="generated-question">
                   <span class="generated-copy"><b>Which tool fits our budget?</b><small><img src="/assets/brands/gemini.svg" alt="" /> Decision</small></span>
                   <span class="question-check"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-check" /></svg></span>
-                  <span class="question-demo-pointer" aria-hidden="true"><svg viewBox="0 0 20 24" focusable="false"><path d="M3 2.5v15l4.1-3.7 2.5 6.3 2.7-1.1-2.6-6.1 5.8-.4L3 2.5Z" /></svg></span>
                 </span>
                 <span class="generated-question">
                   <span class="generated-copy"><b>What works for remote teams?</b><small><img src="/assets/brands/chatgpt.svg" alt="" /> Discovery</small></span>
@@ -690,7 +695,7 @@
           <article class="clearer-step clearer-step-action">
             <div class="step-visual action-builder-visual" aria-hidden="true">
               <div class="gap-header">
-                <strong><i></i> Illustrative follow-up</strong>
+                <strong><i></i> GET TO #1</strong><span class="gap-target-rank">SAMPLE DATA</span>
               </div>
               <div class="mini-rank-list">
                 <div class="mini-rank-row self" data-start-position="3" data-start-share="45.4" data-target-share="72.8">
@@ -710,10 +715,6 @@
                   <i class="mini-rank-fill" style="--share:67%"></i>
                   <span><img src="/assets/brands/clickup.svg" alt="" />ClickUp</span><b class="mini-rank-value">48.6%</b>
                 </div>
-              </div>
-              <div class="brief-build">
-                <span class="brief-kicker"><svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-spark" /></svg> RE-MEASURED</span>
-                <strong>Acme rises to #1.</strong>
               </div>
             </div>
             <span class="step-number">03</span>

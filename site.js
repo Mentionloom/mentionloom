@@ -1108,8 +1108,8 @@ function runActionChecklistDemo(visual) {
       if (cancelled || !visual.isConnected) return;
       const vr = cursorHost.getBoundingClientRect();
       const cr = choice.querySelector("input").getBoundingClientRect();
-      const nextX = Math.max(0, Math.min(cursorHost.clientWidth - 22, cr.left - vr.left + cr.width / 2 - 4));
-      const nextY = Math.max(0, Math.min(cursorHost.clientHeight - 22, cr.top - vr.top + cr.height / 2 - 4));
+      const nextX = Math.max(0, Math.min(cursorHost.clientWidth - 22, cr.left - vr.left + cr.width / 2 - 11));
+      const nextY = Math.max(0, Math.min(cursorHost.clientHeight - 22, cr.top - vr.top + cr.height / 2 - 11));
       cursor.getAnimations().forEach((animation) => animation.cancel());
       storyAnimate(
         cursor,
@@ -1298,10 +1298,19 @@ function approachReveal(el, delay, duration = APPROACH_SCORE.settle) {
 
 function playCompanyLoading(step) {
   const rows = [...step.querySelectorAll(".company-intel-row")];
+  const progress = step.querySelector(".company-progress");
+  const progressValue = step.querySelector(".company-progress-value");
+  const updateProgress = (completed) => {
+    const percent = rows.length ? Math.round((completed / rows.length) * 100) : 100;
+    progress?.setAttribute("aria-valuenow", String(percent));
+    if (progressValue) progressValue.textContent = `${percent}%`;
+  };
+  updateProgress(0);
   const timers = [];
   const finish = () => {
     timers.forEach(clearTimeout);
     rows.forEach((row) => { row.dataset.state = "complete"; });
+    updateProgress(rows.length);
     reduced.removeEventListener("change", onPreferenceChange);
     document.removeEventListener("visibilitychange", onVisibilityChange);
   };
@@ -1312,7 +1321,10 @@ function playCompanyLoading(step) {
   rows.forEach((row, index) => {
     row.dataset.state = "pending";
     timers.push(setTimeout(() => { row.dataset.state = "loading"; }, approachBeat(index)));
-    timers.push(setTimeout(() => { row.dataset.state = "complete"; }, approachComplete(index)));
+    timers.push(setTimeout(() => {
+      row.dataset.state = "complete";
+      updateProgress(index + 1);
+    }, approachComplete(index)));
   });
   timers.push(setTimeout(finish, approachComplete(rows.length - 1)));
 }
@@ -1411,9 +1423,6 @@ function playApproachCardMotion(step) {
   } else if (step.classList.contains("clearer-step-action")) {
     approachReveal(step.querySelector(".gap-header"), approachBeat(0));
     playOpportunityRanking(step);
-    approachReveal(step.querySelector(".brief-build"), approachBeat(4), APPROACH_SCORE.work);
-    approachReveal(step.querySelector(".brief-kicker"), approachBeat(4), APPROACH_SCORE.work);
-    approachReveal(step.querySelector(".brief-build > strong"), approachComplete(4));
   }
 }
 

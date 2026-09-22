@@ -5028,63 +5028,12 @@
   line-height:1.45;
   overflow-wrap:anywhere;
 }
-.marketing-app #approach .generated-question.is-selected {
-  border-color:color-mix(in srgb,var(--sky-3) 36%,var(--border));
-  background:var(--sky-1);
-  box-shadow:var(--shadow-soft);
-}
-.marketing-app #approach .question-demo-pointer {
-  position:absolute;
-  z-index:2;
-  top:22px;
-  right:34px;
-  display:block;
-  width:15px;
-  height:19px;
-  color:var(--text);
-  opacity:0;
-  pointer-events:none;
-  filter:drop-shadow(0 1px 1px #18192532);
-}
-.marketing-app #approach .question-demo-pointer svg {
-  display:block;
-  width:100%;
-  height:100%;
-  overflow:visible;
-  fill:var(--surface);
-  stroke:currentColor;
-  stroke-width:1.5;
-  stroke-linejoin:round;
-}
-@media(prefers-reduced-motion:no-preference) {
-  .marketing-app #approach .card-visible .question-track {
-    animation:buyer-question-reveal 2600ms var(--ease-out) 250ms both;
-  }
-  .marketing-app #approach .card-visible .question-demo-pointer {
-    animation:question-pointer-hover 650ms var(--ease-out) 250ms both;
-  }
-  .marketing-app #approach .card-visible .generated-question.is-selected {
-    animation:question-card-hover 420ms var(--ease-out) 700ms both;
-  }
-}
-@keyframes buyer-question-reveal {
-  to { transform:translateY(-20%); }
-}
-@keyframes question-pointer-hover {
-  from { opacity:0; transform:translate(16px,-12px); }
-  to { opacity:1; transform:translate(0,0); }
-}
-@keyframes question-card-hover {
-  from { transform:translate(0,0); }
-  to { transform:translate(4px,-2px); }
-}
 .marketing-app.reduce-motion #approach .generated-questions {
   overflow:hidden;
   mask-image:none;
 }
 @media(prefers-reduced-motion:reduce) {
   .marketing-app #approach .generated-questions { overflow:hidden; mask-image:none; }
-  .marketing-app #approach .question-demo-pointer { display:none; }
 }
 
 /* Opportunity ranking reuses the same row, accent and inset-card language. */
@@ -5300,6 +5249,204 @@
 }
 .marketing-app .discovery-scene .signal-float[hidden] {
   display:none;
+}
+
+/* The globe shows sample question coverage, never live visitor locations. */
+.marketing-app .scene-coverage-float {
+  position:absolute;
+  z-index:3;
+  left:50%;
+  bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:max-content;
+  max-width:calc(100% - 24px);
+  padding:9px 13px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-pill);
+  background:#ffffffed;
+  box-shadow:var(--shadow-card);
+  transform:translateX(-50%);
+  backdrop-filter:blur(12px);
+}
+.marketing-app .scene-coverage-dot {
+  width:8px;
+  height:8px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:var(--accent-text);
+  box-shadow:0 0 0 4px var(--sky-1);
+}
+.marketing-app .scene-coverage-float > span:last-child { min-width:0; }
+.marketing-app .scene-coverage-float strong,
+.marketing-app .scene-coverage-float small { display:block; }
+.marketing-app .scene-coverage-float strong {
+  color:var(--text);
+  font-size:11px;
+  font-weight:500;
+  line-height:1.2;
+}
+.marketing-app .scene-coverage-float small {
+  margin-top:3px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.2;
+}
+
+/* A separate, inset completion area keeps the five profile rows readable. */
+.marketing-app #approach .company-intel-row { min-height:40px; }
+.marketing-app #approach .company-progress-footer {
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid var(--border);
+}
+.marketing-app #approach .company-progress-meta {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.25;
+}
+.marketing-app #approach .company-progress-meta b {
+  color:var(--fg-3);
+  font-size:9px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+.marketing-app #approach .company-progress {
+  height:4px;
+  margin:7px 0 0;
+  border-radius:var(--radius-pill);
+  background:var(--bg-a2);
+}
+
+/* Scroll the buyer-question stack while a circular cue selects each stage. */
+.marketing-app #approach .question-demo-cursor {
+  position:absolute;
+  z-index:3;
+  top:18px;
+  right:15px;
+  display:block;
+  width:28px;
+  height:28px;
+  border:1px solid color-mix(in srgb,var(--accent-text) 38%,transparent);
+  border-radius:50%;
+  background:color-mix(in srgb,var(--surface) 82%,transparent);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--sky-1) 85%,transparent),var(--shadow-soft);
+  opacity:0;
+  pointer-events:none;
+}
+.marketing-app #approach .question-demo-cursor::after {
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:50%;
+  background:var(--accent-text);
+}
+.marketing-app #approach .generated-question:nth-child(-n+4) {
+  background:transparent;
+  border-color:transparent;
+}
+@media(prefers-reduced-motion:no-preference) {
+  .marketing-app #approach .card-visible .question-track {
+    animation:buyer-question-reveal 3400ms ease-in-out 250ms both;
+  }
+  .marketing-app #approach .card-visible .question-demo-cursor {
+    animation:question-cursor-tour 3400ms ease-in-out 250ms both;
+  }
+  .marketing-app #approach .card-visible .generated-question:nth-child(1) {
+    animation:question-card-select 850ms ease-out 250ms both;
+  }
+  .marketing-app #approach .card-visible .generated-question:nth-child(2) {
+    animation:question-card-select 850ms ease-out 950ms both;
+  }
+  .marketing-app #approach .card-visible .generated-question:nth-child(3) {
+    animation:question-card-select 850ms ease-out 1650ms both;
+  }
+  .marketing-app #approach .card-visible .generated-question:nth-child(4) {
+    animation:question-card-select 850ms ease-out 2350ms both;
+  }
+}
+@keyframes buyer-question-reveal { to { transform:translateY(-20%); } }
+@keyframes question-cursor-tour {
+  0% { top:18px; opacity:0; }
+  8%,20% { top:18px; opacity:1; }
+  30%,42% { top:58px; opacity:1; }
+  52%,64% { top:112px; opacity:1; }
+  76%,92% { top:158px; opacity:1; }
+  100% { top:158px; opacity:0; }
+}
+@keyframes question-card-select {
+  0%,100% { border-color:transparent; background:transparent; transform:none; }
+  14%,76% {
+    border-color:color-mix(in srgb,var(--sky-3) 44%,var(--border));
+    background:var(--sky-1);
+    transform:translateX(3px);
+  }
+}
+
+/* Give the competition ranking room to resolve into the #1 position. */
+.marketing-app #approach .gap-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:0;
+  margin:0 0 15px;
+  padding:0 0 10px;
+  border-bottom:1px solid var(--border);
+}
+.marketing-app #approach .gap-header strong {
+  font-size:10px;
+  letter-spacing:.045em;
+}
+.marketing-app #approach .gap-target-rank {
+  padding:3px 7px;
+  border-radius:var(--radius-pill);
+  background:var(--sky-1);
+  color:var(--accent-text);
+  font-size:9px;
+  font-weight:600;
+  line-height:1.2;
+}
+.marketing-app #approach .mini-rank-list {
+  gap:7px;
+  margin:0;
+}
+.marketing-app #approach .mini-rank-row { min-height:42px; padding:7px 9px; }
+
+/* The content-opportunity demo uses a circular selection cue too. */
+.marketing-app .demo-cursor {
+  width:22px;
+  height:22px;
+  border:2px solid var(--accent-text);
+  border-radius:50%;
+  background:var(--surface);
+  box-shadow:0 0 0 4px var(--sky-1),0 2px 5px #182c5030;
+  filter:none;
+  transform-origin:center;
+}
+.marketing-app .demo-cursor::after {
+  content:"";
+  position:absolute;
+  inset:5px;
+  border-radius:50%;
+  background:var(--accent-text);
+}
+.marketing-app .demo-cursor svg { display:none; }
+
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app #approach .question-demo-cursor { display:none; }
+}
+@media(max-width:760px) {
+  .marketing-app #approach .company-intel-row { min-height:38px; }
+  .marketing-app #approach .company-progress { margin-inline:0; }
+  .marketing-app #approach .company-progress-footer { margin-top:5px; padding-top:5px; }
+  .marketing-app #approach .mini-rank-list { gap:6px; margin:0; }
+  .marketing-app #approach .mini-rank-row { min-height:40px; padding:6px 8px; }
+  .marketing-app .scene-coverage-float { bottom:10px; }
 }
 @media(prefers-reduced-motion:reduce) {
   .marketing-app .action-task,

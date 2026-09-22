@@ -10,19 +10,20 @@ function fixture(reduce = false) {
   const animations = [];
   const timers = new Map();
   let timerId = 0;
-  const node = () => ({ style: {}, dataset: {} });
-  const company = Array.from({ length: 4 }, node);
+  const node = () => ({ style: {}, dataset: {}, setAttribute(name, value) { this[name] = value; } });
+  const company = Array.from({ length: 5 }, node);
   const questions = Array.from({ length: 3 }, (_, index) => ({ ...node(), offsetTop: index * 61 }));
   const checks = Array.from({ length: 3 }, node);
   const ranks = Array.from({ length: 2 }, node);
   const fills = Array.from({ length: 2 }, node);
   const questionViewport = node();
-  const brief = node();
+  const progress = node();
+  const progressValue = node();
   const lists = { '.company-intel-row': company, '.generated-question': questions, '.question-check': checks, '.mini-rank-row': ranks, '.mini-rank-fill': fills };
   const steps = ['company', 'questions', 'action'].map(kind => ({
     classList: { contains: name => name === `clearer-step-${kind}` },
     querySelectorAll: selector => lists[selector] || [],
-    querySelector: selector => selector === '.generated-questions' ? questionViewport : selector === '.brief-build > strong' ? brief : node(),
+    querySelector: selector => selector === '.generated-questions' ? questionViewport : selector === '.company-progress' ? progress : selector === '.company-progress-value' ? progressValue : selector === '.mini-rank-list' ? null : node(),
   }));
   const reduced = Object.assign(new EventTarget(), { matches: reduce });
   const document = Object.assign(new EventTarget(), { hidden: false });
@@ -40,25 +41,29 @@ function fixture(reduce = false) {
       if (timer.at <= time && timers.has(id)) { timers.delete(id); timer.cb(); }
     }
   };
-  return { animations, timers, company, checks, brief, questionViewport, play, advance, reduced, document };
+  return { animations, timers, company, checks, progress, progressValue, questionViewport, play, advance, reduced, document };
 }
 
-test('onboarding shares an opening beat while company and action finish together', () => {
+test('profile completion advances by row while question viewport enters without displacing its list', () => {
   const f = fixture();
   f.play();
   assert.ok(f.company.every(row => row.dataset.state === 'pending'));
+  assert.equal(f.progress['aria-valuenow'], '0');
+  assert.equal(f.progressValue.textContent, '0%');
   f.advance(400);
   assert.equal(f.company[0].dataset.state, 'loading');
+  f.advance(1150);
+  assert.equal(f.company[0].dataset.state, 'complete');
+  assert.equal(f.progressValue.textContent, '20%');
   f.advance(3699);
   assert.equal(f.company[3].dataset.state, 'loading');
   f.advance(3700);
+  assert.equal(f.company[3].dataset.state, 'complete');
+  assert.equal(f.progressValue.textContent, '80%');
+  f.advance(4550);
   assert.ok(f.company.every(row => row.dataset.state === 'complete'));
-  for (const el of [f.brief]) {
-    const animation = f.animations.find(item => item.el === el);
-    assert.equal(animation.delay, 3700);
-    assert.equal(animation.duration, 280);
-    assert.equal(animation.easing, 'ease-out');
-  }
+  assert.equal(f.progress['aria-valuenow'], '100');
+  assert.equal(f.progressValue.textContent, '100%');
   const questions = f.animations.find(item => item.el === f.questionViewport);
   assert.equal(questions.delay, 400);
   assert.equal(questions.duration, 280);
@@ -80,6 +85,7 @@ test('reduced motion skips the score and interruption completes company rows', (
     if (kind === 'reduced') { f.reduced.matches = true; f.reduced.dispatchEvent(new Event('change')); }
     else { f.document.hidden = true; f.document.dispatchEvent(new Event('visibilitychange')); }
     assert.ok(f.company.every(row => row.dataset.state === 'complete'));
+    assert.equal(f.progressValue.textContent, '100%');
     assert.equal(f.timers.size, 0);
   }
 });
