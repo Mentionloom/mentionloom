@@ -55,7 +55,7 @@ import {
   resolveView,
   metricForView,
   pageURL,
-} from "./lib/navigation.js";
+} from "./lib/navigation.js?v=20260922-1";
 
 const $ = (s) => document.querySelector(s);
 const state = { ...parseState(location.search), ...parseTrafficState(location.search) };
@@ -1005,13 +1005,6 @@ function renderSearch(term) {
       title: a.title,
       meta: "Next move · " + a.effort,
       i: "bolt",
-    })),
-    ...ADDONS.map((addon) => ({
-      kind: "addon",
-      id: addon.id,
-      title: addon.name,
-      meta: "Add-on · " + addon.watches,
-      i: addon.icon,
     })),
     ...data.pages.map((p) => ({
       kind: "source-page",
