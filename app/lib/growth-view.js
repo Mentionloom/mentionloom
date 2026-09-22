@@ -10,24 +10,91 @@ export function nextMoveHTML(items, work) {
     const done = items.length > 0 && items.every((a) => a.completed);
     return `<div class="focus-label">${icon(done ? "circlecheck" : "search")} ${done ? "Ready to measure" : "Explore your coverage"}</div><h2>${done ? "You’ve shipped the work." : "Find your next opening."}</h2><p>${done ? "Look for a change in new answer samples." : "Explore questions or broaden your filters."}</p><button class="button" data-action="${done ? "growth-review" : "growth-gaps"}">${done ? "Review results" : "Explore questions"}${icon("right")}</button>`;
   }
+
   const record = work[next.id],
     count = record?.checked.length || 0,
     q = next.questionData,
     missingRate = (next.missing / q.samples) * 100,
     evidence = recommendationEvidence(q.rows),
-    leader = evidence.competitors[0],
-    brand = { Asana: "asana", Notion: "notion", ClickUp: "clickup" }[leader?.name];
+    leader = evidence.competitors[0];
+
   return `<div class="agent-header">
       <div class="agent-identity"><span class="agent-orb" data-fluid-orb data-color="#8FB8F4" aria-hidden="true"><canvas></canvas></span><strong>Mentionloom AI</strong><span class="badge neutral">Preview</span></div>
-      <span class="agent-status">${icon(record ? "list-todo" : "circlecheck")}${record ? `${count} / ${next.steps.length} steps complete` : "Plan ready"}</span>
+      <span class="agent-status">${record ? `${count} / ${next.steps.length} in progress` : "Suggested next move"}</span>
     </div>
-    <div class="agent-heading card-heading"><h2>${esc(next.title.replace(/\.$/, ""))}</h2><button class="button" data-growth-start="${next.id}">${record ? "Continue plan" : "Start plan"}${icon("right")}</button></div>
-    <div class="agent-reasoning">
-      <button class="agent-insight agent-question" data-question="${q.id}"><span class="agent-label">Buyer question</span><span class="agent-insight-body"><strong>${esc(q.text)}</strong>${icon("right")}</span></button>
-      <button class="agent-insight agent-competitor" data-recommendation-question="${q.id}"><span class="agent-label">Appears instead</span><span class="agent-insight-body"><span class="agent-brand">${brand ? `<img src="/assets/brands/${brand}.svg" width="28" height="28" alt="">` : ""}<strong>${esc(leader?.name || "No competitor")}</strong></span>${icon("right")}</span><span class="agent-support">${leader ? `${fmt(leader.count)} answers without Acme` : "In this sample"}</span></button>
-      <button class="agent-insight agent-position" data-recommendation-question="${q.id}"><span class="agent-label">Your visibility gap</span><span class="agent-insight-body"><strong class="agent-number">${Math.round(missingRate)}%</strong>${icon("right")}</span><span class="agent-support">of answers miss Acme</span></button>
-      <div class="agent-plan"><span class="agent-label">Suggested plan</span><ol>${next.steps.map((step, i) => `<li class="${record?.checked.includes(i) ? "is-complete" : ""}"><span class="agent-step" aria-hidden="true">${record?.checked.includes(i) ? icon("check") : i + 1}</span><span>${esc(next.stepLabels?.[i] || step)}</span>${record?.checked.includes(i) ? '<span class="sr-only">Completed</span>' : ""}</li>`).join("")}</ol></div>
+    <div class="agent-native">
+      <div class="agent-heading">
+        <div><span class="agent-kicker">What</span><h2>${esc(next.title.replace(/\.$/, ""))}</h2></div>
+        <button class="button" data-growth-start="${next.id}">${record ? "Continue with Mentionloom" : "Work with Mentionloom"}${icon("right")}</button>
+      </div>
+      <div class="agent-summary-grid">
+        <div><span>Why</span><strong>${leader ? `${fmt(leader.count)} answers choose ${esc(leader.name)} without Acme` : "Acme is missing from this buyer question"}</strong></div>
+        <div><span>Why it matters</span><strong>${Math.round(missingRate)}% of sampled answers miss Acme</strong></div>
+      </div>
+      <button class="agent-evidence-link" data-recommendation-question="${q.id}">See the evidence${icon("right")}</button>
     </div>`;
+}
+
+export function growthChatHTML(action, record, done, baseline, question) {
+  const count = done ? action.steps.length : record?.checked.length || 0;
+  const evidence = action.evidence || { lostAnswers: 0, samples: 0, competitors: [] };
+  const leader = evidence.competitors?.[0];
+  const rate = baseline?.samples ? pct(baseline.visibility) : "—";
+  const checked = record?.checked || [];
+  const nextIndex = action.steps.findIndex((_, index) => !checked.includes(index));
+  const allDone = done || count === action.steps.length;
+
+  return `<div class="copilot-thread">
+    <div class="copilot-message assistant">
+      <span class="copilot-avatar">${icon("spark")}</span>
+      <div><span class="copilot-label">Mentionloom</span><p><strong>Here’s what I’d work on next.</strong><br>${esc(action.title.replace(/\.$/, ""))}</p></div>
+    </div>
+
+    <div class="copilot-facts">
+      <div><span>Why</span><strong>${evidence.lostAnswers ? `${fmt(evidence.lostAnswers)} of ${fmt(evidence.samples)} answers miss Acme` : "This question has a visible recommendation gap"}</strong></div>
+      <div><span>Why it matters</span><strong>${esc(question.text)}</strong></div>
+    </div>
+
+    <div class="copilot-message assistant">
+      <span class="copilot-avatar">${icon("chat")}</span>
+      <div><span class="copilot-label">Working together</span><p>Pick an action. I’ll keep the plan focused and update progress as you go.</p></div>
+    </div>
+
+    <div class="copilot-quick-actions">
+      <button class="button" data-recommendation-question="${action.question}">${icon("search")}Show evidence</button>
+      <button class="button" data-chat-draft="${action.id}">${icon("file")}Draft the page angle</button>
+      <button class="button" data-question="${action.question}">${icon("chat")}Open buyer question</button>
+    </div>
+
+    <div class="copilot-draft" data-chat-draft-panel hidden>
+      <span class="copilot-label">Draft angle</span>
+      <strong>${esc(action.title.replace(/\.$/, ""))}</strong>
+      <p>Lead with who Acme is for, compare the workflow buyers care about, then link the supporting proof. Keep every claim verifiable.</p>
+    </div>
+
+    <div class="copilot-working-set">
+      <div class="copilot-working-head"><div><span class="copilot-label">Working set</span><strong>${count} / ${action.steps.length} complete</strong></div><span class="copilot-baseline">Baseline ${rate}</span></div>
+      <div class="copilot-step-list">
+        ${action.steps.map((step, index) => {
+          const complete = done || checked.includes(index);
+          return `<button class="copilot-step ${complete ? "is-complete" : ""}" data-chat-step="${index}" data-work-action="${action.id}" aria-pressed="${complete}"><span class="copilot-step-state">${complete ? icon("check") : index + 1}</span><span><strong>${esc(action.stepLabels?.[index] || `Step ${index + 1}`)}</strong><small>${esc(step)}</small></span>${icon("right")}</button>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <div class="copilot-target">
+      <span>${icon("file")}Update</span>
+      <strong>acme.work${esc(action.path)}</strong>
+      <span>${esc(action.effort)}</span>
+    </div>
+
+    <div class="copilot-footer">
+      ${allDone
+        ? `<button class="button primary" data-ship="${action.id}">${done ? "Reopen improvement" : "Mark as shipped"}${icon("right")}</button>`
+        : `<button class="button primary" data-chat-step="${Math.max(0, nextIndex)}" data-work-action="${action.id}">Complete next action${icon("right")}</button>`}
+      <span>Progress stays in this demo workspace.</span>
+    </div>
+  </div>`;
 }
 
 export function journeyHTML(items, context, work) {
