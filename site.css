@@ -4366,21 +4366,21 @@
   height:28px;
 }
 .marketing-app .success-asana {
-  left:8px;
-  opacity:.3;
+  left:46px;
+  opacity:.28;
   filter:blur(2px);
   transform:translateY(-50%) scale(.92);
 }
 .marketing-app .success-notion {
-  left:55px;
-  opacity:.24;
-  filter:blur(2.4px);
+  left:82px;
+  opacity:.22;
+  filter:blur(2.5px);
   transform:translateY(-50%) scale(.88);
 }
 .marketing-app .success-clickup {
-  right:18px;
-  opacity:.28;
-  filter:blur(2.1px);
+  right:46px;
+  opacity:.26;
+  filter:blur(2.2px);
   transform:translateY(-50%) scale(.9);
 }
 .marketing-app .success-acme {
@@ -4461,5 +4461,4 @@
 .marketing-app .brand-footer-logo img {
   opacity:1 !important;
   animation:none !important;
-  transform:none !important;
 }
