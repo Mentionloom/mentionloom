@@ -4684,3 +4684,297 @@
     font-size:40px;
   }
 }
+
+
+/* 2026-09-22 story-system cohesion pass */
+/*
+  Insights + A clearer start now share one visual grammar:
+  quiet outer shell -> editorial copy -> inset data surface.
+  All values resolve to Syntari/Orbit foundations instead of section-specific
+  radii, shadows or ad-hoc spacing.
+*/
+.marketing-app #insights,
+.marketing-app #approach {
+  --story-shell-radius:var(--radius-card);
+  --story-visual-radius:var(--radius-6);
+  --story-row-radius:var(--radius-row);
+  --story-shell-bg:var(--background-subtle);
+  --story-visual-bg:var(--surface);
+  --story-border:var(--border);
+  --story-shadow:var(--shadow-card);
+  --story-shell-pad:var(--space-6);
+  --story-visual-pad:var(--space-5);
+  --story-copy-gap:var(--space-4);
+}
+
+/* Same outer card material in both narrative sections. */
+.marketing-app #insights .feature-card,
+.marketing-app #approach .clearer-step {
+  background:var(--story-shell-bg);
+  border:1px solid var(--story-border);
+  border-radius:var(--story-shell-radius);
+  box-shadow:none;
+  overflow:hidden;
+}
+
+/* Turn the 3 onboarding steps into the same label/title/body/visual grammar. */
+.marketing-app #approach .clearer-start-grid {
+  gap:20px;
+  align-items:stretch;
+}
+.marketing-app #approach .clearer-step {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:530px;
+}
+.marketing-app #approach .clearer-step .step-number {
+  order:1;
+  display:flex;
+  align-items:center;
+  min-height:16px;
+  margin:0;
+  padding:34px 34px 0;
+  color:var(--accent-text);
+  font-size:11px;
+  font-weight:500;
+  line-height:1;
+  letter-spacing:.06em;
+}
+.marketing-app #approach .clearer-step h3 {
+  order:2;
+  margin:16px 34px 0;
+  color:var(--text);
+  font-size:24px;
+  font-weight:500;
+  line-height:1.2;
+  letter-spacing:-.75px;
+}
+.marketing-app #approach .clearer-step > p {
+  order:3;
+  min-height:3.6em;
+  max-width:320px;
+  margin:14px 34px 0;
+  color:var(--muted);
+  font-size:var(--text-sm);
+  line-height:1.8;
+}
+.marketing-app #approach .clearer-step .step-visual {
+  order:4;
+  width:auto;
+  height:260px;
+  min-height:260px;
+  margin:30px 24px 24px;
+  padding:22px 23px;
+  justify-content:stretch;
+  background:var(--story-visual-bg) !important;
+  border:1px solid var(--story-border);
+  border-radius:var(--story-visual-radius);
+  box-shadow:var(--story-shadow);
+  overflow:hidden;
+  transform:none !important;
+}
+.marketing-app #approach .clearer-step:hover .step-visual,
+.marketing-app #approach[data-motion-state="running"] .clearer-step .step-visual {
+  transform:none !important;
+  box-shadow:var(--story-shadow);
+}
+
+/* The company card no longer creates a third material layer. */
+.marketing-app #approach .company-intel-card {
+  height:100%;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.marketing-app #approach .company-progress {
+  margin:14px -23px 10px;
+  background:var(--bg-a2);
+}
+.marketing-app #approach .company-intel-list {
+  gap:4px;
+}
+.marketing-app #approach .company-intel-row {
+  min-height:43px;
+  padding:7px 8px;
+  border-radius:var(--story-row-radius);
+}
+.marketing-app #approach .company-intel-row::before {
+  border-radius:inherit;
+}
+.marketing-app #approach .mini-row-icon {
+  width:30px;
+  height:30px;
+  border-radius:var(--story-row-radius);
+  box-shadow:none;
+}
+
+/* Questions use the same white data surface and row treatment as cited content. */
+.marketing-app #approach .questions-visual,
+.marketing-app #approach .action-builder-visual {
+  background:var(--story-visual-bg) !important;
+}
+.marketing-app #approach .question-generator-head {
+  min-height:24px;
+  margin-bottom:12px;
+}
+.marketing-app #approach .question-generator-head > span {
+  color:var(--muted);
+  font-size:11px;
+}
+.marketing-app #approach .question-generator-head > strong {
+  padding:5px 8px;
+  border-radius:var(--radius-badge);
+  background:var(--accent-soft);
+  color:var(--accent-text);
+  font-size:10px;
+  font-weight:500;
+}
+.marketing-app #approach .generated-questions {
+  gap:4px;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.marketing-app #approach .generated-question {
+  min-height:57px;
+  padding:10px 12px;
+  border:1px solid transparent;
+  border-radius:var(--story-row-radius);
+}
+.marketing-app #approach .generated-question + .generated-question {
+  border-top-color:var(--border);
+}
+.marketing-app #approach .question-selection {
+  border:1px solid var(--border);
+  border-radius:var(--story-row-radius);
+  background:var(--background-subtle);
+  box-shadow:var(--shadow-soft);
+}
+.marketing-app #approach .generated-copy b {
+  font-size:11px;
+  font-weight:500;
+}
+.marketing-app #approach .generated-copy small {
+  margin-top:4px;
+  color:var(--muted);
+  font-size:9px;
+}
+.marketing-app #approach .question-check {
+  width:24px;
+  height:24px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  box-shadow:var(--shadow-soft);
+}
+
+/* Opportunity ranking reuses the same row, accent and inset-card language. */
+.marketing-app #approach .gap-header {
+  min-height:24px;
+  justify-content:flex-start;
+}
+.marketing-app #approach .gap-header strong {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:var(--accent-text);
+  font-size:10px;
+  font-weight:500;
+}
+.marketing-app #approach .mini-rank-list {
+  gap:6px;
+  margin:14px 0 12px;
+}
+.marketing-app #approach .mini-rank-row {
+  min-height:42px;
+  padding:8px 10px;
+  border:1px solid transparent;
+  border-radius:var(--story-row-radius);
+  font-size:10px;
+}
+.marketing-app #approach .mini-rank-row.self {
+  border-color:color-mix(in srgb,var(--sky-3) 28%,transparent);
+}
+.marketing-app #approach .mini-rank-row > b {
+  font-size:10px;
+}
+.marketing-app #approach .brief-build {
+  min-height:92px;
+  padding:16px;
+  border:1px solid var(--story-border);
+  border-radius:var(--story-visual-radius);
+  background:var(--surface);
+  box-shadow:var(--shadow-soft);
+}
+.marketing-app #approach .brief-kicker {
+  color:var(--accent-text);
+  font-size:9px;
+  letter-spacing:.06em;
+}
+.marketing-app #approach .brief-build > strong {
+  margin-top:8px;
+  font-size:20px;
+  line-height:1.2;
+  letter-spacing:-.5px;
+}
+
+/* One row/label rhythm across both sections. */
+.marketing-app #insights .feature-label,
+.marketing-app #approach .step-number {
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.06em;
+}
+.marketing-app #insights .source-row,
+.marketing-app #insights .marketing-funnel-step,
+.marketing-app #approach .company-intel-row,
+.marketing-app #approach .generated-question,
+.marketing-app #approach .mini-rank-row {
+  border-radius:var(--story-row-radius);
+}
+
+/* Motion never changes shell geometry. */
+.marketing-app #insights .feature-card,
+.marketing-app #approach .clearer-step,
+.marketing-app #insights :is(.source-visual,.funnel-visual,.action-visual,.shortlist-visual),
+.marketing-app #approach .step-visual {
+  backface-visibility:hidden;
+}
+.marketing-app #insights .feature-card,
+.marketing-app #approach .clearer-step {
+  transform:none !important;
+}
+
+/* Same responsive collapse and inset margins. */
+@media(max-width:760px) {
+  .marketing-app #approach .clearer-start-grid {
+    gap:20px;
+  }
+  .marketing-app #approach .clearer-step {
+    min-height:0;
+  }
+  .marketing-app #approach .clearer-step .step-number {
+    padding:26px 24px 0;
+  }
+  .marketing-app #approach .clearer-step h3 {
+    margin:14px 24px 0;
+    font-size:22px;
+  }
+  .marketing-app #approach .clearer-step > p {
+    min-height:0;
+    max-width:none;
+    margin:12px 24px 0;
+  }
+  .marketing-app #approach .clearer-step .step-visual {
+    height:260px;
+    min-height:260px;
+    margin:25px 16px 16px;
+    padding:20px;
+  }
+  .marketing-app #approach .company-progress {
+    margin-inline:-20px;
+  }
+}
