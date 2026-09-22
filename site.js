@@ -1317,6 +1317,78 @@ function playCompanyLoading(step) {
   timers.push(setTimeout(finish, approachComplete(rows.length - 1)));
 }
 
+function playOpportunityRanking(step) {
+  const list = step.querySelector(".mini-rank-list");
+  const rows = [...(list?.querySelectorAll(".mini-rank-row") || [])];
+  if (!list || !rows.length) return;
+
+  const rowPitch = rows[1] ? rows[1].offsetTop - rows[0].offsetTop : 0;
+  const initialRows = [...rows].sort(
+    (a, b) => Number(a.dataset.startPosition) - Number(b.dataset.startPosition),
+  );
+  const targets = new Map();
+
+  rows.forEach((row, finalPosition) => {
+    const startPosition = Number(row.dataset.startPosition);
+    const startShare = Number(row.dataset.startShare);
+    const targetShare = Number(row.dataset.targetShare);
+    const fill = row.querySelector(".mini-rank-fill");
+    const value = row.querySelector(".mini-rank-value");
+    const startingOffset = (startPosition - finalPosition) * rowPitch;
+    targets.set(row, { targetShare, fill, value });
+    row.style.transform = `translateY(${startingOffset}px)`;
+    if (fill) fill.style.width = `${startShare / 72.8 * 100}%`;
+    if (value) value.textContent = `${startShare.toFixed(1)}%`;
+  });
+
+  list.dataset.motionStarted = "true";
+  initialRows.forEach((row, index) => approachReveal(row, approachBeat(index)));
+
+  let active = true;
+  const timers = [];
+  const finish = () => {
+    if (!active) return;
+    active = false;
+    timers.forEach(clearTimeout);
+    rows.forEach((row) => {
+      const { targetShare, fill, value } = targets.get(row);
+      row.style.transition = "none";
+      row.style.transform = "none";
+      if (fill) {
+        fill.style.transition = "none";
+        fill.style.width = "";
+      }
+      if (value) value.textContent = `${targetShare.toFixed(1)}%`;
+    });
+    list.dataset.motionStarted = "false";
+    reduced.removeEventListener("change", onPreferenceChange);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+  };
+  const onPreferenceChange = () => { if (reduced.matches) finish(); };
+  const onVisibilityChange = () => { if (document.hidden) finish(); };
+  reduced.addEventListener("change", onPreferenceChange);
+  document.addEventListener("visibilitychange", onVisibilityChange);
+
+  timers.push(setTimeout(() => {
+    if (reduced.matches || paused || document.hidden) return finish();
+    rows.forEach((row) => {
+      const { targetShare, fill, value } = targets.get(row);
+      row.style.transition = `transform ${APPROACH_SCORE.work}ms cubic-bezier(.25,1,.5,1)`;
+      if (fill) fill.style.transition = `width ${APPROACH_SCORE.work}ms cubic-bezier(.25,1,.5,1)`;
+      if (value) number(value, `${targetShare.toFixed(1)}%`);
+    });
+    requestAnimationFrame(() => {
+      if (!active) return;
+      rows.forEach((row) => {
+        const { targetShare, fill } = targets.get(row);
+        row.style.transform = "translateY(0px)";
+        if (fill) fill.style.width = `${targetShare / 72.8 * 100}%`;
+      });
+    });
+    timers.push(setTimeout(finish, APPROACH_SCORE.work + 80));
+  }, approachComplete(3)));
+}
+
 function playApproachCardMotion(step) {
   if (!step || approachMotionPlayed.has(step)) return;
   approachMotionPlayed.add(step);
@@ -1338,38 +1410,14 @@ function playApproachCardMotion(step) {
     approachReveal(step.querySelector(".generated-questions"), approachBeat(0));
   } else if (step.classList.contains("clearer-step-action")) {
     approachReveal(step.querySelector(".gap-header"), approachBeat(0));
-
-    const rankRows = [...step.querySelectorAll(".mini-rank-row")];
-    rankRows.forEach((row, index) =>
-      approachReveal(row, approachBeat(index)),
-    );
-
-    [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) => {
-      fill.style.transformOrigin = "left center";
-      storyAnimate(
-        fill,
-        [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-        APPROACH_SCORE.work,
-        { delay: approachComplete(index), fill: "backwards" },
-      );
-    });
-
-    approachReveal(step.querySelector(".brief-build"), approachBeat(3), APPROACH_SCORE.work);
-    approachReveal(step.querySelector(".brief-kicker"), approachBeat(3), APPROACH_SCORE.work);
-    approachReveal(step.querySelector(".brief-build > strong"), approachComplete(3));
+    playOpportunityRanking(step);
+    approachReveal(step.querySelector(".brief-build"), approachBeat(4), APPROACH_SCORE.work);
+    approachReveal(step.querySelector(".brief-kicker"), approachBeat(4), APPROACH_SCORE.work);
+    approachReveal(step.querySelector(".brief-build > strong"), approachComplete(4));
   }
 }
 
-// Product structures stay rendered at all times. Viewport observers below only animate their internal content.
-document.querySelectorAll(".question-track").forEach((track) => {
-  const sequence = track.querySelector(".question-sequence");
-  if (!sequence || track.dataset.loopReady) return;
-  const duplicate = sequence.cloneNode(true);
-  duplicate.setAttribute("aria-hidden", "true");
-  duplicate.dataset.loopDuplicate = "true";
-  track.append(duplicate);
-  track.dataset.loopReady = "true";
-});
+// Product structures stay rendered at all times. Viewport observers only animate their internal content.
 
 try {
   await initializeOrbit();

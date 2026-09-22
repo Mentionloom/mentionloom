@@ -4871,16 +4871,24 @@
   box-shadow:none;
 }
 .marketing-app #approach .company-progress {
-  margin:7px -23px;
+  height:3px;
+  margin:8px -23px 0;
   background:var(--bg-a2);
 }
 .marketing-app #approach .company-intel-list {
   gap:4px;
 }
 .marketing-app #approach .company-intel-row {
-  min-height:57px;
-  padding:7px 8px;
+  min-height:42px;
+  padding:5px 8px;
   border-radius:var(--story-row-radius);
+}
+.marketing-app #approach .company-intel-row .mini-row-icon,
+.marketing-app #approach .company-row-status {
+  color:var(--fg-3);
+}
+.marketing-app #approach .company-progress > span {
+  transform:scaleX(1);
 }
 .marketing-app #approach .company-intel-row small,
 .marketing-app #approach .company-row-status .icon {
@@ -4992,8 +5000,7 @@
   box-shadow:var(--shadow-soft);
 }
 
-/* An inset window, not a content-sized selection box. Both track copies
-   include their final gap so the -50% seam is identical at every width. */
+/* Keep all three buyer stages visible in the inset window. */
 .marketing-app #approach .questions-visual { position:relative; }
 .marketing-app #approach .questions-visual .generated-questions {
   position:absolute;
@@ -5022,32 +5029,67 @@
   overflow-wrap:anywhere;
 }
 .marketing-app #approach .generated-question.is-selected {
-  border-color:var(--border);
-  background:var(--background-subtle);
+  border-color:color-mix(in srgb,var(--sky-3) 36%,var(--border));
+  background:var(--sky-1);
+  box-shadow:var(--shadow-soft);
+}
+.marketing-app #approach .question-demo-pointer {
+  position:absolute;
+  z-index:2;
+  top:22px;
+  right:34px;
+  display:block;
+  width:15px;
+  height:19px;
+  color:var(--text);
+  opacity:0;
+  pointer-events:none;
+  filter:drop-shadow(0 1px 1px #18192532);
+}
+.marketing-app #approach .question-demo-pointer svg {
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  fill:var(--surface);
+  stroke:currentColor;
+  stroke-width:1.5;
+  stroke-linejoin:round;
 }
 @media(prefers-reduced-motion:no-preference) {
-  .marketing-app #approach .card-visible .question-track[data-loop-ready="true"] {
-    animation:buyer-question-scroll 20s linear 400ms infinite paused;
+  .marketing-app #approach .card-visible .question-track {
+    animation:buyer-question-reveal 2600ms var(--ease-out) 250ms both;
   }
-  .marketing-app #approach .card-visible[data-in-view="true"] .question-track {
-    animation-play-state:running;
+  .marketing-app #approach .card-visible .question-demo-pointer {
+    animation:question-pointer-hover 650ms var(--ease-out) 250ms both;
+  }
+  .marketing-app #approach .card-visible .generated-question.is-selected {
+    animation:question-card-hover 420ms var(--ease-out) 700ms both;
   }
 }
-.marketing-app[data-page-hidden="true"] #approach .card-visible .question-track[data-loop-ready] { animation-play-state:paused; }
-@keyframes buyer-question-scroll { to { transform:translateY(-50%); } }
+@keyframes buyer-question-reveal {
+  to { transform:translateY(-20%); }
+}
+@keyframes question-pointer-hover {
+  from { opacity:0; transform:translate(16px,-12px); }
+  to { opacity:1; transform:translate(0,0); }
+}
+@keyframes question-card-hover {
+  from { transform:translate(0,0); }
+  to { transform:translate(4px,-2px); }
+}
 .marketing-app.reduce-motion #approach .generated-questions {
-  overflow-y:auto;
+  overflow:hidden;
   mask-image:none;
 }
-.marketing-app.reduce-motion #approach .question-sequence[data-loop-duplicate] { display:none; }
 @media(prefers-reduced-motion:reduce) {
-  .marketing-app #approach .generated-questions { overflow-y:auto; mask-image:none; }
-  .marketing-app #approach .question-sequence[data-loop-duplicate] { display:none; }
+  .marketing-app #approach .generated-questions { overflow:hidden; mask-image:none; }
+  .marketing-app #approach .question-demo-pointer { display:none; }
 }
 
 /* Opportunity ranking reuses the same row, accent and inset-card language. */
 .marketing-app #approach .gap-header {
-  min-height:40px;
+  min-height:28px;
   justify-content:flex-start;
 }
 .marketing-app #approach .gap-header strong {
@@ -5059,25 +5101,51 @@
   font-weight:500;
 }
 .marketing-app #approach .mini-rank-list {
-  gap:6px;
-  margin:16px 0 12px;
+  gap:3px;
+  margin:5px 0 6px;
 }
 .marketing-app #approach .mini-rank-row {
-  min-height:42px;
-  padding:8px 10px;
+  min-height:33px;
+  padding:4px 8px;
   border:1px solid transparent;
   border-radius:var(--story-row-radius);
   font-size:10px;
 }
+.marketing-app #approach .mini-rank-result {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex:0 0 auto;
+}
+.marketing-app #approach .rank-leader {
+  padding:2px 5px;
+  border-radius:var(--radius-pill);
+  background:var(--sky-1);
+  color:var(--accent-text);
+  font-size:8px;
+  font-weight:600;
+  line-height:1.2;
+}
+.marketing-app #approach .mini-rank-list[data-motion-started="true"] .rank-leader {
+  opacity:0;
+  transition:opacity 180ms ease-out;
+}
+.marketing-app #approach .mini-rank-list[data-motion-started="false"] .rank-leader {
+  opacity:1;
+  transition:opacity 220ms ease-out;
+}
 .marketing-app #approach .mini-rank-row.self {
+  z-index:2;
   border-color:color-mix(in srgb,var(--sky-3) 28%,transparent);
 }
-.marketing-app #approach .mini-rank-row > b {
+.marketing-app #approach .mini-rank-row .mini-rank-value {
   font-size:10px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
 }
 .marketing-app #approach .brief-build {
-  min-height:92px;
-  padding:16px;
+  min-height:64px;
+  padding:9px 12px;
   border:1px solid var(--story-border);
   border-radius:var(--story-visual-radius);
   background:var(--surface);
@@ -5089,10 +5157,10 @@
   letter-spacing:.06em;
 }
 .marketing-app #approach .brief-build > strong {
-  margin-top:8px;
-  font-size:20px;
+  margin-top:5px;
+  font-size:17px;
   line-height:1.2;
-  letter-spacing:-.5px;
+  letter-spacing:-.4px;
 }
 
 /* One row/label rhythm across both sections. */
@@ -5154,6 +5222,38 @@
   .marketing-app #approach .company-progress {
     margin-inline:-20px;
   }
+}
+
+/* Onboarding motion stays local to each small product illustration. */
+@media(prefers-reduced-motion:no-preference) {
+  .marketing-app #approach .card-visible .company-progress > span {
+    animation:company-profile-progress 4550ms linear both;
+  }
+}
+@keyframes company-profile-progress {
+  from { transform:scaleX(0); }
+  to { transform:scaleX(1); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app #approach .company-progress > span { transform:scaleX(1) !important; }
+}
+@media(max-width:760px) {
+  .marketing-app #approach .mini-rank-list {
+    gap:3px;
+    margin:4px 0 5px;
+  }
+  .marketing-app #approach .mini-rank-row { min-height:32px; }
+  .marketing-app #approach .gap-header { min-height:25px; }
+  .marketing-app #approach .brief-build {
+    min-height:60px;
+    padding:8px 10px;
+  }
+}
+
+/* Keep the profile icons neutral even where the global step icon is accented. */
+.marketing-app #approach .company-intel-row .mini-row-icon .icon,
+.marketing-app #approach .company-row-status .icon {
+  color:var(--fg-3);
 }
 
 
