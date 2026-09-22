@@ -38,6 +38,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
   let dragMoved = false;
   let holdUntil = 0;
   let resumeTimer;
+  let focusFrame = 0;
   let firstReveal = true;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -177,9 +178,9 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       const pixels = mapContext.getImageData(0, 0, 256, 128).data;
       const nextLand = [];
 
-      for (let i = 0; i < 7000; i++) {
+      for (let i = 0; i < 9000; i++) {
         const lat =
-          (Math.asin(1 - (2 * (i + 0.5)) / 7000) * 180) / Math.PI;
+          (Math.asin(1 - (2 * (i + 0.5)) / 9000) * 180) / Math.PI;
         const lon = ((i * 137.50776405) % 360) - 180;
         const x = Math.floor(((lon + 180) / 360) * 256) % 256;
         const y = Math.min(127, Math.floor(((90 - lat) / 180) * 128));
@@ -227,6 +228,62 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     } else {
       draw();
     }
+  }
+
+  function focusPhi(vector) {
+    return Math.atan2(-vector[0], vector[2]);
+  }
+
+  function shortestTurn(from, to) {
+    let delta = (to - from) % (Math.PI * 2);
+    if (delta > Math.PI) delta -= Math.PI * 2;
+    if (delta < -Math.PI) delta += Math.PI * 2;
+    return delta;
+  }
+
+  function focusLocation(index, smooth = true) {
+    const vector = vectors[index];
+    if (!vector || disposed) return;
+
+    cancelAnimationFrame(focusFrame);
+    focusFrame = 0;
+    cancelAnimationFrame(frame);
+    frame = 0;
+
+    const startPhi = phi;
+    const targetPhi = focusPhi(vector);
+    const delta = shortestTurn(startPhi, targetPhi);
+    const targetTheta = clamp(vector[1] * 0.34, -0.28, 0.34);
+    const startTheta = theta;
+
+    if (!smooth || reduced.matches) {
+      phi = startPhi + delta;
+      theta = targetTheta;
+      holdUntil = performance.now() + 3200;
+      draw();
+      sync();
+      return;
+    }
+
+    holdUntil = Infinity;
+    const started = performance.now();
+    const duration = 1500;
+    const step = (now) => {
+      const t = Math.min(1, (now - started) / duration);
+      const eased = 1 - Math.pow(1 - t, 4);
+      phi = startPhi + delta * eased;
+      theta = startTheta + (targetTheta - startTheta) * eased;
+      draw();
+
+      if (t < 1) {
+        focusFrame = requestAnimationFrame(step);
+      } else {
+        focusFrame = 0;
+        holdUntil = performance.now() + 2800;
+        sync();
+      }
+    };
+    focusFrame = requestAnimationFrame(step);
   }
 
   function onPointerDown(event) {
@@ -301,16 +358,17 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       firstReveal = false;
       phi = initialPhi;
       theta = 0.22;
-      holdUntil = performance.now() + 4200;
-      draw();
+      focusLocation(0, false);
     }
 
     sync();
   });
   observer.observe(canvas);
 
-  function onSceneChange() {
-    draw();
+  function onSceneChange(event) {
+    const index = Number(event?.detail?.index);
+    if (Number.isFinite(index)) focusLocation(index, event?.detail?.animate !== false);
+    else draw();
   }
 
   document.addEventListener("mentionloom:scene", onSceneChange);
@@ -329,6 +387,7 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
       disposed = true;
       clearTimeout(resumeTimer);
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(focusFrame);
       observer.disconnect();
       resize.disconnect();
       document.removeEventListener("mentionloom:scene", onSceneChange);
