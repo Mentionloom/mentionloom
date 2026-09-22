@@ -659,23 +659,23 @@ function showActionSuccess(visual) {
   success.setAttribute("aria-hidden", "false");
   if (paused || reduced.matches) return;
 
-  motionAnimate(
+  storyAnimate(
     success,
-    [{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }],
-    240,
+    [{ opacity: 0, transform: "translateY(4px)" }, { opacity: 1, transform: "translateY(0)" }],
+    480,
     { fill: "backwards" },
   );
-  motionEnter(success.querySelector(".action-success-kicker"), 40, 4, 240, 1);
-  motionEnter(success.querySelector(":scope > strong"), 90, 6, 240, 1);
+  motionEnter(success.querySelector(".action-success-kicker"), 80, 4, 360, 1);
+  motionEnter(success.querySelector(":scope > strong"), 160, 4, 400, 1);
   [...success.querySelectorAll(".success-brand img")].forEach((brand, index) =>
-    motionAnimate(
+    storyAnimate(
       brand,
       [
         { opacity: 0, transform: "translateY(6px) scale(.96)" },
         { opacity: 1, transform: "translateY(0) scale(1)" },
       ],
-      240,
-      { delay: 140 + index * 50, fill: "backwards" },
+      480,
+      { delay: 240 + index * 70, fill: "backwards" },
     ),
   );
   motionEnter(success.querySelector(":scope > p"), 980, 4, 640, 1);
@@ -709,7 +709,7 @@ function syncActionChecklist({ animateResolution = true } = {}) {
   }
 
   if (animateResolution) {
-    visual._successTimer = setTimeout(() => showActionSuccess(visual), paused || reduced.matches ? 0 : 300);
+    visual._successTimer = setTimeout(() => showActionSuccess(visual), paused || reduced.matches ? 0 : 450);
   } else {
     visual.classList.remove("show-success");
   }
@@ -759,6 +759,14 @@ const LANDING_EASE =
 function motionAnimate(el, frames, duration = 320, extra = {}) {
   return animate(el, frames, Math.round(duration * 1.25), {
     easing: LANDING_EASE,
+    ...extra,
+  });
+}
+
+// Narrative demos use literal timings so cursor arrivals and state changes stay in sync.
+function storyAnimate(el, frames, duration, extra = {}) {
+  return animate(el, frames, duration, {
+    easing: "cubic-bezier(.25,1,.5,1)",
     ...extra,
   });
 }
@@ -1095,7 +1103,7 @@ function runActionChecklistDemo(visual) {
   visual.addEventListener("keydown", cancel, { once: true });
 
   choices.forEach((choice, index) => {
-    const moveAt = 620 + index * 680;
+    const moveAt = 780 + index * 900;
     setTimeout(() => {
       if (cancelled || !visual.isConnected) return;
       const vr = cursorHost.getBoundingClientRect();
@@ -1103,13 +1111,13 @@ function runActionChecklistDemo(visual) {
       const nextX = Math.max(0, Math.min(cursorHost.clientWidth - 22, cr.left - vr.left + cr.width / 2 - 4));
       const nextY = Math.max(0, Math.min(cursorHost.clientHeight - 22, cr.top - vr.top + cr.height / 2 - 4));
       cursor.getAnimations().forEach((animation) => animation.cancel());
-      motionAnimate(
+      storyAnimate(
         cursor,
         [
           { opacity: 1, transform: `translate(${x}px,${y}px) scale(1)` },
           { opacity: 1, transform: `translate(${nextX}px,${nextY}px) scale(1)` },
         ],
-        420,
+        560,
         { fill: "forwards" },
       );
       x = nextX;
@@ -1119,14 +1127,14 @@ function runActionChecklistDemo(visual) {
 
     setTimeout(() => {
       if (cancelled || !visual.isConnected) return;
-      motionAnimate(
+      storyAnimate(
         cursor,
         [
           { transform: `translate(${x}px,${y}px) scale(1)` },
-          { transform: `translate(${x}px,${y}px) scale(.76)`, offset: 0.45 },
+          { transform: `translate(${x}px,${y}px) scale(.88)`, offset: 0.45 },
           { transform: `translate(${x}px,${y}px) scale(1)` },
         ],
-        190,
+        220,
         { fill: "forwards" },
       );
       const input = choice.querySelector("input");
@@ -1135,21 +1143,21 @@ function runActionChecklistDemo(visual) {
         input.dispatchEvent(new Event("change", { bubbles: true }));
       }
       setTimeout(() => choice.classList.remove("demo-hover"), 240);
-    }, moveAt + 440);
+    }, moveAt + 620);
   });
 
   setTimeout(() => {
     if (!cancelled) motionAnimate(cursor, [{ opacity: 1 }, { opacity: 0 }], 170, { fill: "forwards" });
     visual.removeEventListener("pointerdown", cancel);
     visual.removeEventListener("keydown", cancel);
-  }, 620 + (choices.length - 1) * 680 + 630);
+  }, 780 + (choices.length - 1) * 900 + 850);
 }
 
 function playActionCard(card) {
   const visual = card.querySelector(".action-visual");
   motionEnter(card.querySelector(".action-card-heading"), 250, 5, 360, 1);
   motionEnter(card.querySelector(".action-visual h4"), 330, 8, 440, 0.997);
-  motionEnter(card.querySelector(".action-task > p"), 410, 5, 240, 1);
+  motionEnter(card.querySelector(".action-task > p"), 410, 5, 360, 1);
   motionEnterMany(card.querySelectorAll(".action-checks .choice"), 500, 90, {
     distance: 5,
     duration: 360,
@@ -1196,39 +1204,33 @@ function playCompetitiveCard(card) {
 
       setTimeout(() => {
         if (thinking) {
-          motionAnimate(
+          storyAnimate(
             thinking,
             [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-4px)" }],
-            170,
+            280,
             { fill: "forwards" },
           );
-          setTimeout(() => (thinking.hidden = true), 180);
+          setTimeout(() => (thinking.hidden = true), 300);
         }
 
         if (brandGroup) {
-          motionAnimate(brandGroup, [{ opacity: 0.75 }, { opacity: 1 }], 240, { fill: "backwards" });
+          storyAnimate(brandGroup, [{ opacity: 0.75 }, { opacity: 1 }], 420, { fill: "backwards" });
         }
 
         const order = [brands[0], brands[1], brands[3], brands[2]].filter(Boolean);
         order.forEach((brand, index) => {
-          const self = brand.classList.contains("your-brand");
-          motionAnimate(
+          storyAnimate(
             brand,
             [
-              { opacity: 0, transform: "translateY(6px) scale(.92)" },
-              {
-                opacity: 1,
-                transform: self ? "translateY(0) scale(1)" : "translateY(0) scale(1.02)",
-                offset: 0.76,
-              },
+              { opacity: 0, transform: "translateY(6px) scale(.97)" },
               { opacity: 1, transform: "translateY(0) scale(1)" },
             ],
-            460,
-            { delay: index * 160, fill: "forwards" },
+            520,
+            { delay: index * 180, fill: "forwards" },
           );
         });
 
-        const acmeDelay = Math.max(0, (order.length - 1) * 160 + 420);
+        const acmeDelay = Math.max(0, (order.length - 1) * 180 + 520 + 160);
         setTimeout(() => {
           const acme = brands.find((brand) => brand.classList.contains("your-brand"));
           visual.classList.add("is-acme-highlighted");
@@ -1238,34 +1240,33 @@ function playCompetitiveCard(card) {
             .filter((brand) => brand !== acme)
             .forEach((brand, index) => {
               brand.getAnimations().forEach((animation) => animation.cancel());
-              motionAnimate(
+              storyAnimate(
                 brand,
                 [
                   { opacity: 1, filter: "blur(0px)" },
                   { opacity: 0.34, filter: "blur(2.2px)" },
                 ],
-                720,
+                680,
                 { delay: index * 70, fill: "forwards" },
               );
             });
 
           if (acme) {
             acme.getAnimations().forEach((animation) => animation.cancel());
-            motionAnimate(
+            storyAnimate(
               acme,
               [
-                { transform: "translateY(0) scale(.98)" },
-                { transform: "translateY(-7px) scale(1.055)", offset: 0.7 },
+                { transform: "translateY(0) scale(1)" },
                 { transform: "translateY(-7px) scale(1)" },
               ],
-              560,
+              640,
               { fill: "forwards" },
             );
           }
-          motionEnter(caption, 160, 4, 420, 1);
+          motionEnter(caption, 220, 4, 400, 1);
         }, acmeDelay);
-      }, 900);
-    }, 45);
+      }, 1050);
+    }, 48);
   }, 380);
 }
 
