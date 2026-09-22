@@ -108,12 +108,12 @@
 .discovery-app .next-move {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
   background:
-    radial-gradient(ellipse at 0% 0%, #b6e9ff30, transparent 52%),
-    radial-gradient(ellipse at 100% 8%, #d9c8ff24, transparent 48%),
-    radial-gradient(ellipse at 75% 100%, #ffe3ae24, transparent 48%),
-    var(--surface);
-  border: 1px solid var(--border);
+    radial-gradient(ellipse at 7% 0%, rgba(210,231,255,.48), transparent 54%),
+    radial-gradient(ellipse at 92% 100%, rgba(229,238,255,.38), transparent 52%),
+    linear-gradient(145deg, #ffffff 0%, #fbfdff 58%, #f7faff 100%);
+  border: 1px solid color-mix(in srgb, var(--border) 84%, #8fb8f4 16%);
   border-radius: var(--radius-card);
   padding: var(--space-5);
   display: flex;
@@ -132,29 +132,45 @@
 .discovery-app .agent-identity .badge { font-size: var(--text-sm); }
 .discovery-app .agent-status { font-size: var(--text-base); color: var(--muted); gap: var(--space-2); }
 .discovery-app .agent-status .icon { width: var(--space-4); height: var(--space-4); }
-.discovery-app .agent-orb { width: 32px; height: 32px; flex-shrink: 0; overflow: hidden; border-radius: 50%; position: relative; background:#4037ba; box-shadow:0 0 12px #6868e922; }
-.discovery-app .agent-orb > span {
-  position: absolute; inset: 0; border-radius: inherit;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 2px, #28146438 2.5px, #dcffff60 3px, transparent 4px 5px),
-    radial-gradient(ellipse at 28% 18%, #b7fff2, transparent 42%),
-    radial-gradient(ellipse at 36% 66%, #f3ef73, transparent 32%),
-    radial-gradient(ellipse at 74% 73%, #ff9b49, transparent 34%),
-    radial-gradient(ellipse at 78% 28%, #61ddd1, transparent 40%),
-    linear-gradient(145deg, #5153e9 8%, #479be9 38%, #7864dd 63%, #a947b8 85%, #414bd2);
-  animation: none;
+.discovery-app .agent-orb {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle at 32% 24%, #ffffff 0 22%, #eef5ff 48%, #bfd5f6 100%);
+  box-shadow:
+    inset 1px 1px 2px rgba(255,255,255,.9),
+    inset -2px -3px 8px rgba(88,127,191,.16),
+    0 6px 14px rgba(64,105,168,.10);
 }
-.discovery-app .agent-orb::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit;
-  box-shadow: inset 1px 1px 3px #ddfaffb0, inset -2px -3px 7px #24248580;
-  background: radial-gradient(circle at 32% 22%, #ffffff65, transparent 38%);
+.discovery-app .agent-orb canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.discovery-app .agent-orb.fluid-orb-fallback {
+  background: radial-gradient(circle at 32% 24%, #ffffff 0 22%, #eef5ff 48%, #bfd5f6 100%);
 }
 @property --agent-border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 .discovery-app .next-move::before,
 .discovery-app .agent-heading .button::before {
-  content: ''; position: absolute; inset: -1px; border-radius: inherit;
-  padding: 1px; pointer-events: none; opacity: .7;
-  background: conic-gradient(from var(--agent-border-angle), transparent 0deg 220deg, #8ed9d5 260deg, #a1a6ee 290deg, #e0b785 320deg, transparent 360deg);
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  opacity: .7;
+  background: conic-gradient(
+    from var(--agent-border-angle),
+    transparent 0deg 236deg,
+    rgba(151,188,239,.18) 264deg,
+    rgba(112,158,224,.72) 292deg,
+    rgba(190,215,249,.36) 322deg,
+    transparent 360deg
+  );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -162,23 +178,59 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .discovery-app .next-move::before,
-  .discovery-app .agent-heading .button::before { animation: agent-border-orbit 12s linear infinite; animation-play-state: paused; }
-  .discovery-app .next-move::after { animation: agent-mesh-breathe 9s ease-in-out infinite alternate; animation-play-state: paused; }
+  .discovery-app .agent-heading .button::before {
+    animation: agent-border-orbit 16s linear infinite;
+    animation-play-state: paused;
+  }
+  .discovery-app .next-move::after {
+    animation: agent-mesh-breathe 11s ease-in-out infinite alternate;
+    animation-play-state: paused;
+  }
   .discovery-app .next-move.agent-visible::before,
   .discovery-app .next-move.agent-visible::after,
-  .discovery-app .next-move.agent-visible .agent-heading .button::before { animation-play-state: running; }
+  .discovery-app .next-move.agent-visible .agent-heading .button::before {
+    animation-play-state: running;
+  }
 }
 @keyframes agent-border-orbit {
   from { --agent-border-angle: 0deg; }
   to { --agent-border-angle: 360deg; }
 }
 .discovery-app .next-move::after {
-  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: .35;
-  background: radial-gradient(ellipse at 85% 12%, #bcdffd65, transparent 60%), radial-gradient(ellipse at 10% 90%, #d9c8ff55, transparent 55%), radial-gradient(ellipse at 70% 85%, #ffdbb040, transparent 50%);
+  content: '';
+  position: absolute;
+  inset: -16%;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .26;
+  background:
+    radial-gradient(ellipse at 76% 10%, rgba(173,207,249,.48), transparent 54%),
+    radial-gradient(ellipse at 16% 88%, rgba(214,230,253,.55), transparent 52%);
+  transform: translate3d(0,0,0) scale(1.04);
 }
-@keyframes agent-mesh-breathe { from { opacity: .15; } to { opacity: .8; } }
-.discovery-app .agent-heading .button { position: relative; isolation: isolate; border-color: #a1a6ee66; box-shadow: 0 2px 10px #8b8ae514; background: var(--surface); }
-.discovery-app .agent-heading .button::before { opacity: 1; background: conic-gradient(from var(--agent-border-angle), #b6baf155, #a695e8, #83ccde, #e6bdac, #b6baf155); }
+@keyframes agent-mesh-breathe {
+  from { opacity: .16; transform: translate3d(-1.5%, -1%, 0) scale(1.02); }
+  to { opacity: .42; transform: translate3d(1.5%, 1%, 0) scale(1.07); }
+}
+.discovery-app .agent-heading .button {
+  position: relative;
+  isolation: isolate;
+  border-color: rgba(137,174,227,.42);
+  box-shadow: 0 2px 10px rgba(83,124,186,.08);
+  background: rgba(255,255,255,.88);
+}
+.discovery-app .agent-heading .button::before {
+  opacity: .88;
+  background: conic-gradient(
+    from var(--agent-border-angle),
+    rgba(194,217,248,.24),
+    rgba(125,166,225,.72),
+    rgba(185,210,246,.46),
+    rgba(220,232,250,.22),
+    rgba(194,217,248,.24)
+  );
+}
 .discovery-app .agent-heading { margin: 0; gap: var(--space-5); }
 .discovery-app .next-move .agent-heading h2 { font-size: var(--text-xl); line-height: var(--leading-heading); max-width: 36ch; text-wrap: balance; }
 .discovery-app .agent-heading .button { flex-shrink: 0; min-height: 44px; font-size: var(--text-base); padding-inline: var(--space-5); gap: var(--space-5); }
@@ -220,7 +272,6 @@
   .discovery-app .agent-plan { padding: var(--space-4) 0 0; border-inline-start: 0; border-top: 1px solid var(--border); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .discovery-app .agent-orb > span { animation: none; }
   .discovery-app .agent-insight .icon { transition: none; }
 }
 .discovery-app .focus-label {
