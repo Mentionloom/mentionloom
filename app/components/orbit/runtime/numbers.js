@@ -2,7 +2,7 @@
 (() => {
  const reduced=matchMedia('(prefers-reduced-motion: reduce)'), values=new WeakMap(),visible=new Set(),initialized=new WeakSet();
  const format=(value,kind)=>new Intl.NumberFormat('en-US',kind==='percent'?{style:'percent',minimumFractionDigits:1,maximumFractionDigits:1}:kind==='currency'?{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}:{}).format(value);
- function set(el,value,{kind=el.dataset.format||'number',initial=false}={}) {
+ function set(el,value,{kind=el.dataset.format||'number',initial=false,duration=null}={}) {
   if(!el)return;
   const kindChanged=el.dataset.numberKind&&el.dataset.numberKind!==kind;el.dataset.numberKind=kind;
   const next=format(value,kind),previous=initial?'0':(values.get(el)||el.textContent.trim());
@@ -23,7 +23,8 @@
    if(direction<0)digits.reverse();
    digits.forEach(n=>{const cell=document.createElement('span');cell.textContent=n;track.append(cell)});
    const distance=steps*1.2;track.style.transform=`translateY(${direction>0?-distance:0}em)`;digit.append(track);el.append(digit);
-   OrbitMotion.animate(track,[{transform:`translateY(${direction>0?0:-distance}em)`},{transform:`translateY(${direction>0?-distance:0}em)`}],initial?800:650,{delay:initial?index*18:0});
+   const rollDuration=duration??(initial?800:650);
+   OrbitMotion.animate(track,[{transform:`translateY(${direction>0?0:-distance}em)`},{transform:`translateY(${direction>0?-distance:0}em)`}],rollDuration,{delay:initial?index*24:0});
   });
   el.dataset.previous=value;
   if(kindChanged)OrbitMotion.animate(el,[{opacity:0,translate:'0 5px'},{opacity:1,translate:'0 0'}],150);
