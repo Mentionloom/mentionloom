@@ -128,6 +128,27 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     ctx.arc(size / 2, size / 2, radius, 0, Math.PI * 2);
     ctx.clip();
 
+    ctx.strokeStyle = "rgba(71, 111, 216, .055)";
+    ctx.lineWidth = 0.75;
+    for (const y of [-0.42, 0, 0.42]) {
+      ctx.beginPath();
+      ctx.ellipse(
+        size / 2,
+        size / 2 + radius * y,
+        radius,
+        radius * Math.sqrt(1 - y * y) * 0.34,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      ctx.stroke();
+    }
+    for (const squash of [0.26, 0.52, 0.78]) {
+      ctx.beginPath();
+      ctx.ellipse(size / 2, size / 2, radius * squash, radius, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
     ctx.strokeStyle = "rgba(71, 111, 216, .26)";
     ctx.lineWidth = 1;
     for (const [from, to] of arcs) drawArc(ctx, from, to);
@@ -200,17 +221,10 @@ export function mountGlobe(canvas, { isPaused = () => false } = {}) {
     frame = 0;
     if (!visible || disposed || document.hidden || isPaused()) return;
 
-    if (dragging || now < holdUntil || reduced.matches) {
-      last = now;
-      if (!reduced.matches) frame = requestAnimationFrame(tick);
-      return;
-    }
-
-    const elapsed = Math.min(now - (last || now), 40);
-    phi += elapsed * 0.000085;
+    // Hold the active probe in view. Rotation is driven by focusLocation()
+    // when the buyer-question context changes or by direct user dragging.
     last = now;
     draw();
-    frame = requestAnimationFrame(tick);
   }
 
   function sync() {
