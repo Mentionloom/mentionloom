@@ -1333,41 +1333,9 @@ function playApproachCardMotion(step) {
   if (step.classList.contains("clearer-step-company")) {
     playCompanyLoading(step);
   } else if (step.classList.contains("clearer-step-questions")) {
-    const rows = [...step.querySelectorAll(".generated-question")];
-    rows.forEach((row, index) =>
-      approachReveal(row, approachBeat(index)),
-    );
-
-    [...step.querySelectorAll(".question-check")].forEach((check, index) =>
-      storyAnimate(
-        check,
-        [
-          { opacity: 0 },
-          { opacity: 1 },
-        ],
-        APPROACH_SCORE.settle,
-        { delay: approachComplete(index === 2 ? 3 : index), fill: "both", easing: "ease-out" },
-      ),
-    );
-
-    const selection = step.querySelector(".question-selection");
-    if (selection && rows.length === 3) {
-      const y2 = rows[1].offsetTop - rows[0].offsetTop;
-      const y3 = rows[2].offsetTop - rows[0].offsetTop;
-      const duration = approachComplete(3) - approachBeat(0);
-      storyAnimate(
-        selection,
-        [
-          { transform: "translateY(0)", offset: 0 },
-          { transform: "translateY(0)", offset: (approachBeat(1) - approachBeat(0)) / duration, easing: "cubic-bezier(.25,1,.5,1)" },
-          { transform: `translateY(${y2}px)`, offset: (approachComplete(1) - approachBeat(0)) / duration },
-          { transform: `translateY(${y2}px)`, offset: (approachBeat(3) - approachBeat(0)) / duration, easing: "cubic-bezier(.25,1,.5,1)" },
-          { transform: `translateY(${y3}px)`, offset: 1 },
-        ],
-        duration,
-        { delay: approachBeat(0), fill: "both", easing: "linear" },
-      );
-    }
+    // Reveal the viewport, not the scrolling track: its transform belongs to
+    // the seamless loop, and each highlight travels with its own full row.
+    approachReveal(step.querySelector(".generated-questions"), approachBeat(0));
   } else if (step.classList.contains("clearer-step-action")) {
     approachReveal(step.querySelector(".gap-header"), approachBeat(0));
 
@@ -1393,6 +1361,15 @@ function playApproachCardMotion(step) {
 }
 
 // Product structures stay rendered at all times. Viewport observers below only animate their internal content.
+document.querySelectorAll(".question-track").forEach((track) => {
+  const sequence = track.querySelector(".question-sequence");
+  if (!sequence || track.dataset.loopReady) return;
+  const duplicate = sequence.cloneNode(true);
+  duplicate.setAttribute("aria-hidden", "true");
+  duplicate.dataset.loopDuplicate = "true";
+  track.append(duplicate);
+  track.dataset.loopReady = "true";
+});
 
 try {
   await initializeOrbit();

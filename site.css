@@ -4992,6 +4992,59 @@
   box-shadow:var(--shadow-soft);
 }
 
+/* An inset window, not a content-sized selection box. Both track copies
+   include their final gap so the -50% seam is identical at every width. */
+.marketing-app #approach .questions-visual { position:relative; }
+.marketing-app #approach .questions-visual .generated-questions {
+  position:absolute;
+  inset:18px 18px 26px;
+  display:block;
+  border-radius:0;
+  overflow:hidden;
+  mask-image:linear-gradient(transparent,#000 14px,#000 calc(100% - 20px),transparent);
+}
+.marketing-app #approach .question-track { display:flex; flex-direction:column; }
+.marketing-app #approach .question-sequence {
+  display:grid;
+  gap:6px;
+  padding:0 5px 6px;
+  flex:none;
+}
+.marketing-app #approach .question-sequence .generated-question {
+  min-height:64px;
+  grid-template-columns:minmax(0,1fr) 24px;
+}
+.marketing-app #approach .question-sequence .generated-copy b {
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+.marketing-app #approach .generated-question.is-selected {
+  border-color:var(--border);
+  background:var(--background-subtle);
+}
+@media(prefers-reduced-motion:no-preference) {
+  .marketing-app #approach .card-visible .question-track[data-loop-ready="true"] {
+    animation:buyer-question-scroll 20s linear 400ms infinite paused;
+  }
+  .marketing-app #approach .card-visible[data-in-view="true"] .question-track {
+    animation-play-state:running;
+  }
+}
+.marketing-app[data-page-hidden="true"] #approach .card-visible .question-track[data-loop-ready] { animation-play-state:paused; }
+@keyframes buyer-question-scroll { to { transform:translateY(-50%); } }
+.marketing-app.reduce-motion #approach .generated-questions {
+  overflow-y:auto;
+  mask-image:none;
+}
+.marketing-app.reduce-motion #approach .question-sequence[data-loop-duplicate] { display:none; }
+@media(prefers-reduced-motion:reduce) {
+  .marketing-app #approach .generated-questions { overflow-y:auto; mask-image:none; }
+  .marketing-app #approach .question-sequence[data-loop-duplicate] { display:none; }
+}
+
 /* Opportunity ranking reuses the same row, accent and inset-card language. */
 .marketing-app #approach .gap-header {
   min-height:40px;

@@ -16,13 +16,13 @@ function fixture(reduce = false) {
   const checks = Array.from({ length: 3 }, node);
   const ranks = Array.from({ length: 2 }, node);
   const fills = Array.from({ length: 2 }, node);
-  const selection = node();
+  const questionViewport = node();
   const brief = node();
   const lists = { '.company-intel-row': company, '.generated-question': questions, '.question-check': checks, '.mini-rank-row': ranks, '.mini-rank-fill': fills };
   const steps = ['company', 'questions', 'action'].map(kind => ({
     classList: { contains: name => name === `clearer-step-${kind}` },
     querySelectorAll: selector => lists[selector] || [],
-    querySelector: selector => selector === '.question-selection' ? selection : selector === '.brief-build > strong' ? brief : node(),
+    querySelector: selector => selector === '.generated-questions' ? questionViewport : selector === '.brief-build > strong' ? brief : node(),
   }));
   const reduced = Object.assign(new EventTarget(), { matches: reduce });
   const document = Object.assign(new EventTarget(), { hidden: false });
@@ -40,10 +40,10 @@ function fixture(reduce = false) {
       if (timer.at <= time && timers.has(id)) { timers.delete(id); timer.cb(); }
     }
   };
-  return { animations, timers, company, checks, brief, selection, play, advance, reduced, document };
+  return { animations, timers, company, checks, brief, questionViewport, play, advance, reduced, document };
 }
 
-test('onboarding panels share their opening and final completion beats', () => {
+test('onboarding shares an opening beat while company and action finish together', () => {
   const f = fixture();
   f.play();
   assert.ok(f.company.every(row => row.dataset.state === 'pending'));
@@ -53,16 +53,16 @@ test('onboarding panels share their opening and final completion beats', () => {
   assert.equal(f.company[3].dataset.state, 'loading');
   f.advance(3700);
   assert.ok(f.company.every(row => row.dataset.state === 'complete'));
-  for (const el of [f.checks[2], f.brief]) {
+  for (const el of [f.brief]) {
     const animation = f.animations.find(item => item.el === el);
     assert.equal(animation.delay, 3700);
     assert.equal(animation.duration, 280);
     assert.equal(animation.easing, 'ease-out');
   }
-  assert.equal(f.animations.find(item => item.el === f.checks[2]).fill, 'both');
-  const selection = f.animations.find(item => item.el === f.selection);
-  assert.equal(selection.easing, 'linear');
-  assert.equal(selection.delay + selection.duration, 3700);
+  const questions = f.animations.find(item => item.el === f.questionViewport);
+  assert.equal(questions.delay, 400);
+  assert.equal(questions.duration, 280);
+  assert.ok(questions.frames.every(frame => !('transform' in frame)), 'reveal must not override the scrolling track');
   const count = f.animations.length;
   f.play();
   assert.equal(f.animations.length, count, 'observer callbacks must not replay the score');
