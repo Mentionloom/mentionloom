@@ -4541,3 +4541,95 @@
 .marketing-app .competitor-row .acme-mark {
   box-shadow:0 0 0 3px color-mix(in srgb, var(--sky-2) 72%, transparent);
 }
+
+
+/* 2026-09-22 product preview stability pass */
+.marketing-app .stage-toolbar {
+  padding:16px 24px;
+}
+.marketing-app .engine-controls {
+  padding:10px 24px;
+}
+.marketing-app .visibility-main {
+  padding:18px 24px 22px;
+}
+.marketing-app .competitor-panel {
+  padding:20px 22px 22px;
+}
+.marketing-app .story-panel {
+  min-height:340px;
+}
+
+/* Rankings behave like data, not like replacement cards. */
+.marketing-app #competitor-rows {
+  margin-top:16px;
+  gap:9px;
+}
+.marketing-app .competitor-row {
+  min-height:64px;
+  padding:11px 14px;
+  border:1px solid transparent;
+  border-radius:11px;
+  transition:
+    background-color 420ms cubic-bezier(.16,1,.3,1),
+    border-color 420ms cubic-bezier(.16,1,.3,1),
+    box-shadow 420ms cubic-bezier(.16,1,.3,1);
+  will-change:transform;
+}
+.marketing-app .competitor-row:before {
+  border-radius:10px;
+  transition:width 900ms cubic-bezier(.16,1,.3,1);
+}
+.marketing-app .competitor-row.self {
+  background:color-mix(in srgb, var(--sky-1) 72%, var(--surface));
+  border-color:color-mix(in srgb, var(--sky-3) 38%, transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--sky-2) 20%, transparent);
+}
+.marketing-app .competitor-row.self:before {
+  background:color-mix(in srgb, var(--sky-2) 46%, transparent);
+}
+.marketing-app .competitor-row > span {
+  min-width:0;
+  gap:11px;
+  font-size:14px;
+  font-weight:500;
+}
+.marketing-app .competitor-name {
+  display:inline-flex;
+  align-items:baseline;
+  gap:5px;
+  min-width:0;
+}
+.marketing-app .competitor-row small {
+  color:var(--muted);
+  font-size:10px;
+  font-weight:500;
+}
+.marketing-app .competitor-row b {
+  min-width:4.25ch;
+  color:var(--text);
+  font-family:"Space Grotesk",var(--font-sans);
+  font-size:30px;
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.045em;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.marketing-app .competitor-row.self b {
+  color:var(--accent-text);
+}
+.marketing-app .competitor-row .acme-mark {
+  width:22px;
+  height:22px;
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--sky-2) 70%, transparent);
+}
+
+/* Segmented views keep a stable shell while content crossfades. */
+.marketing-app .story-panel[hidden] {
+  display:none !important;
+}
+.marketing-app .product-context-heading,
+.marketing-app .story-panel {
+  backface-visibility:hidden;
+}
