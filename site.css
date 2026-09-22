@@ -4633,3 +4633,24 @@
 .marketing-app .story-panel {
   backface-visibility:hidden;
 }
+
+
+/* 2026-09-22 AI referrals KPI proportion pass */
+/* Keep the rolling-number choreography, but give the two outcome KPIs the
+   stronger Syntari-style hierarchy shown in the approved reference. */
+.marketing-app #insights .traffic-card .funnel-stats {
+  min-height:64px;
+  gap:54px;
+}
+.marketing-app #insights .traffic-card .funnel-stats strong,
+.marketing-app #insights .traffic-card .funnel-stats strong.rolling-number {
+  min-width:2ch;
+  font-size:52px;
+  line-height:.98;
+  letter-spacing:-1.8px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+.marketing-app #insights .traffic-card .funnel-bars {
+  margin-top:16px;
+}
