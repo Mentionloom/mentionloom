@@ -4493,3 +4493,51 @@
 .marketing-app .action-success-brands {
   isolation:isolate;
 }
+
+
+/* Recommendation ranking — Syntari-style KPI emphasis. */
+.marketing-app #competitor-rows {
+  gap:10px;
+}
+.marketing-app .competitor-row {
+  min-height:58px;
+  padding:11px 14px;
+  border:1px solid transparent;
+  border-radius:10px;
+}
+.marketing-app .competitor-row:before {
+  border-radius:9px;
+}
+.marketing-app .competitor-row.self {
+  background:color-mix(in srgb, var(--sky-1) 66%, var(--surface));
+  border-color:color-mix(in srgb, var(--sky-3) 34%, transparent);
+}
+.marketing-app .competitor-row.self:before {
+  background:color-mix(in srgb, var(--sky-2) 52%, transparent);
+}
+.marketing-app .competitor-row > span {
+  font-size:14px;
+  font-weight:500;
+}
+.marketing-app .competitor-row small {
+  color:var(--muted);
+  font-size:10px;
+  font-weight:500;
+}
+.marketing-app .competitor-row b {
+  min-width:4ch;
+  color:var(--text);
+  font-family:"Space Grotesk",var(--font-sans);
+  font-size:22px;
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.035em;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.marketing-app .competitor-row.self b {
+  color:var(--accent-text);
+}
+.marketing-app .competitor-row .acme-mark {
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--sky-2) 72%, transparent);
+}
