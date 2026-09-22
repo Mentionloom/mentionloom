@@ -647,12 +647,23 @@ function openRecommendationEvidence(id) {
 }
 function recommendationDetails() {
   const e = recommendationEvidence(data.a);
-  detail("Recommendation share", "METRIC DETAILS", `<div class="drawer-stats"><div><span>Shortlisted answers</span><strong>${fmt(e.recommendations)}</strong></div><div><span>Total answers</span><strong>${fmt(e.samples)}</strong></div></div><p>${pct(e.share)} of answers record an Acme shortlist position.</p><details><summary>Definition${icon("down")}</summary><p>Shortlisted answers divided by all answers in the selected period, engines, and topics. Mention rate remains available in Visibility. The demo assigns a position to every mention, so these two rates currently match.</p></details><button class="button" data-action="lost-questions">Explore lost questions${icon("right")}</button>`);
+  detail(
+    "Recommendation share",
+    "RECOMMENDATION INTELLIGENCE",
+    `<div class="drawer-stats"><div><span>Shortlisted answers</span><strong>${fmt(e.recommendations)}</strong></div><div><span>Total answers</span><strong>${fmt(e.samples)}</strong></div></div><p>${pct(e.share)} of sampled answers shortlist or recommend Acme in this demo dataset.</p><div class="drawer-actions"><button class="button" data-action="lost-questions">Explore lost questions${icon("right")}</button><a class="button ghost" href="/app/visibility/" data-route="visibility">Open Visibility${icon("right")}</a></div><details><summary>Definition${icon("down")}</summary><p>Shortlisted answers divided by all answers in the selected period, engines, and topics. Mention rate remains available in Visibility.</p></details>`,
+  );
 }
 function lostQuestions() {
   const e = recommendationEvidence(data.a);
-  const questions = data.questions.map((q) => ({ ...q, losses: recommendationEvidence(q.rows).lostAnswers })).filter((q) => q.losses).sort((a, b) => b.losses - a.losses);
-  detail("Lost questions", "RECOMMENDATION GAPS", `<div class="drawer-stats"><div><span>Questions with losses</span><strong>${e.lostQuestions}<small> / ${e.questions}</small></strong></div><div><span>Lost answers</span><strong>${fmt(e.lostAnswers)}</strong></div></div><div class="benchmark-heading"><h3>Buyer question</h3><span>Lost answers</span></div><div class="benchmark-list">${questions.map((q) => `<button class="benchmark-question" data-question="${q.id}"><span class="benchmark-question-copy"><strong>${esc(q.text)}</strong></span><span class="benchmark-count"><strong>${q.losses}</strong></span>${icon("right")}</button>`).join("") || '<p>No lost questions in this view.</p>'}</div><details><summary>Definition${icon("down")}</summary><p>A lost question has at least one answer naming a competitor without Acme. The same question can also have wins on other dates or engines. Counts follow your current filters; pending questions are excluded.</p></details>`);
+  const questions = data.questions
+    .map((q) => ({ ...q, losses: recommendationEvidence(q.rows).lostAnswers }))
+    .filter((q) => q.losses)
+    .sort((a, b) => b.losses - a.losses);
+  detail(
+    "Lost questions",
+    "RECOMMENDATION GAPS",
+    `<div class="drawer-stats"><div><span>Questions with losses</span><strong>${e.lostQuestions}<small> / ${e.questions}</small></strong></div><div><span>Lost answers</span><strong>${fmt(e.lostAnswers)}</strong></div></div><div class="benchmark-heading"><h3>Buyer question</h3><span>Lost answers</span></div><div class="benchmark-list">${questions.map((q) => `<button class="benchmark-question" data-question="${q.id}"><span class="benchmark-question-copy"><strong>${esc(q.text)}</strong></span><span class="benchmark-count"><strong>${q.losses}</strong></span>${icon("right")}</button>`).join("") || '<p>No lost questions in this view.</p>'}</div><div class="drawer-actions"><a class="button" href="/app/questions/" data-route="questions">Open Questions${icon("right")}</a></div><details><summary>Definition${icon("down")}</summary><p>A lost question has at least one answer naming a competitor without Acme. The same question can also have wins on other dates or engines.</p></details>`,
+  );
 }
 function openPage(path) {
   const own = path.startsWith("/");
@@ -1090,8 +1101,40 @@ function openMilestone(id) {
   const rows = trafficData.rows.filter(v => v.campaign === event.campaign), c = trafficMetrics(rows);
   detail(event.title, `${date(event.date).toUpperCase()} · EVENT`, `<div class="traffic-event-post"><span>${esc(sourceLabel(event.source))} · Post</span><p>${esc(event.post)}</p></div><div class="drawer-stats"><div><span>Tagged visits</span><strong>${c.referrals}</strong></div><div><span>Leads</span><strong>${c.leads}</strong></div></div><p>Visits tagged to this campaign within the selected filters. The chart shows all matching visits; timing alone does not establish impact.</p>${sessionsHTML(rows)}`);
 }
+function metricBreakdownHTML(series, key, label, valueFormatter = fmt) {
+  const rows = series.map((row) => ({ date: row.date, value: Number(row[key] || 0) }));
+  const max = Math.max(1, ...rows.map((row) => row.value));
+  const total = rows.reduce((sum, row) => sum + row.value, 0);
+  const average = rows.length ? total / rows.length : 0;
+  const peak = rows.slice().sort((a, b) => b.value - a.value)[0] || { date: "", value: 0 };
+  const top = rows.slice().sort((a, b) => b.value - a.value).slice(0, 5);
+  return `<div class="analytics-snapshot">
+    <div class="analytics-kpis">
+      <div><span>Total</span><strong>${valueFormatter(total)}</strong></div>
+      <div><span>Daily average</span><strong>${valueFormatter(average)}</strong></div>
+      <div><span>Peak day</span><strong>${valueFormatter(peak.value)}</strong><small>${peak.date ? date(peak.date) : "—"}</small></div>
+    </div>
+    <div class="analytics-bars" role="img" aria-label="${esc(label)} by day">
+      ${rows.map((row) => `<span style="--bar:${Math.max(4, row.value / max * 100)}%" title="${date(row.date)} · ${valueFormatter(row.value)}"><i></i></span>`).join("")}
+    </div>
+    <div class="analytics-top">
+      <div class="analytics-top-head"><strong>Top days</strong><span>${esc(label)}</span></div>
+      ${top.map((row) => `<button data-context-start="${row.date}" data-context-end="${row.date}"><span>${date(row.date)}</span><strong>${valueFormatter(row.value)}</strong>${icon("right")}</button>`).join("")}
+    </div>
+  </div>`;
+}
+
 function openTrafficNumbers() {
-  detail(TRAFFIC_METRICS[state.metric], `${date(trafficData.start)} – ${date(trafficData.end)} · ${sourceLabel(state.source)} · ${countryLabel(state.country)}`, trafficTableHTML(trafficData, state.metric, TRAFFIC_METRICS[state.metric], $('#compare-toggle').checked));
+  detail(
+    TRAFFIC_METRICS[state.metric],
+    `${date(trafficData.start)} – ${date(trafficData.end)} · ${sourceLabel(state.source)} · ${countryLabel(state.country)}`,
+    metricBreakdownHTML(
+      trafficData.series,
+      state.metric,
+      TRAFFIC_METRICS[state.metric],
+      (value) => fmt(Math.round(value)),
+    ),
+  );
 }
 function exportTraffic() {
   const rows = [ ['Acme · Acme · Website traffic'], ['Period', trafficData.start, trafficData.end], ['Source', sourceLabel(state.source)], ['Country', countryLabel(state.country)], ['Device', state.device || 'All devices'], [], ['Date', 'Visits', 'Visitors', 'Page views', 'Leads'] ];
@@ -1161,8 +1204,13 @@ const actions = {
   "chart-data": () => currentView === "traffic" ? openTrafficNumbers() :
     detail(
       LABELS[state.metric],
-      "CHART DATA",
-      `<p>${date(data.start)} – ${date(data.end)}, 2026. ${state.engine ? engine(state.engine).name : "All AI engines"} · ${state.topic || "All topics"}. Daily values before chart grouping.</p><button class="button" data-action="export">${icon("download")}Export report</button><table class="data-table"><thead><tr><th>Date</th><th>${LABELS[state.metric]}</th>${$("#compare-toggle").checked ? "<th>Compared with</th><th>Value</th>" : ""}</tr></thead><tbody>${data.series.map((d) => `<tr><td>${date(d.date)}</td><td>${format(d[state.metric], state.metric)}</td>${$("#compare-toggle").checked ? `<td>${date(new Date(Date.parse(d.date + "T00:00:00Z") - state.days * 86400000).toISOString().slice(0, 10))}</td><td>${format(d.previous[state.metric], state.metric)}</td>` : ""}</tr>`).join("")}</tbody></table>`,
+      `${date(data.start)} – ${date(data.end)} · ${state.engine ? engine(state.engine).name : "All engines"}`,
+      metricBreakdownHTML(
+        data.series,
+        state.metric,
+        LABELS[state.metric],
+        (value) => state.metric === "visibility" ? `${Number(value).toFixed(1)}%` : fmt(Math.round(value)),
+      ) + `<div class="drawer-actions"><button class="button ghost" data-action="export">${icon("download")}Export report</button></div>`,
     ),
   engines: () =>
     detail(
@@ -1248,6 +1296,41 @@ document.addEventListener("click", (event) => {
   }
   if (b.dataset.growthStart) {
     beginImprovement(b.dataset.growthStart);
+    return;
+  }
+  if (b.dataset.questionPreset) {
+    const form = $("#question-form");
+    if (form) {
+      form.elements.question.value = b.dataset.questionPreset;
+      form.elements.topic.value = b.dataset.questionTopic || "Discovery";
+      form.elements.question.focus();
+    }
+    return;
+  }
+  if (b.dataset.chatDraft) {
+    const panel = $("#detail [data-chat-draft-panel]");
+    if (panel) {
+      panel.hidden = false;
+      panel.scrollIntoView({
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "nearest",
+      });
+    }
+    b.setAttribute("aria-pressed", "true");
+    return;
+  }
+  if (b.dataset.chatStep !== undefined) {
+    const action = ACTIONS.find((a) => a.id === b.dataset.workAction);
+    if (!action || shipped.includes(action.id)) return;
+    if (!growthWork[action.id]) {
+      saveGrowth(startWork(growthWork, action, baselineFor(action, data, state)));
+    }
+    const stepIndex = Number(b.dataset.chatStep);
+    const complete = growthWork[action.id]?.checked.includes(stepIndex) || false;
+    if (saveGrowth(checkStep(growthWork, action, stepIndex, !complete))) {
+      openAction(action.id, true);
+      toast(!complete ? "Action completed." : "Action reopened.");
+    }
     return;
   }
   if (b.dataset.growthReview) {
