@@ -1,7 +1,7 @@
 import { select } from "./app/lib/model.js";
 import { ACTIONS, ENGINES, QUESTIONS } from "./app/lib/data.js";
 import { initializeOrbit, enhance, number, animate, openDialog, closeDialog } from "./app/lib/ui.js";
-import { mountGlobe } from "./assets/globe.js?v=20260921-4";
+import { mountGlobe } from "./assets/globe.js?v=20260922-1";
 
 const $ = (s) => document.querySelector(s);
 const icon = (name) =>
@@ -222,9 +222,7 @@ const BUYER_QUESTION_IDS = ["q1", "q3", "q5", "q7", "q8", "q9"];
 function answerForEngine(q, record, engineId) {
   const base = record?.mention ? q.excerpt : q.missing;
   const variants = {
-    chatgpt: record?.mention
-      ? `Acme ${base}`
-      : base,
+    chatgpt: base,
     claude: record?.mention
       ? `is worth considering here. ${base}`
       : `For this question, the strongest answer would compare the trade-offs explicitly. ${base}`,
@@ -274,7 +272,7 @@ function renderQuestions() {
         question = button.dataset.question;
         trackKobbe("product_question_click", { question, engine: engine || "all" });
         renderQuestions();
-        $("[data-question="" + question + ""]")?.focus({ preventScroll: true });
+        $(`[data-question="${question}"]`)?.focus({ preventScroll: true });
         motion($("#sample-answer"));
       }),
     );
@@ -450,7 +448,9 @@ function showActionSuccess(visual) {
   if (!visual || visual.classList.contains("show-success")) return;
   visual.classList.add("show-success");
   const success = visual.querySelector(".action-success");
-  if (!success || paused || reduced.matches) return;
+  if (!success) return;
+  success.setAttribute("aria-hidden", "false");
+  if (paused || reduced.matches) return;
 
   motionAnimate(
     success,
@@ -494,6 +494,7 @@ function syncActionChecklist({ animateResolution = true } = {}) {
   clearTimeout(visual._successTimer);
   if (!resolved) {
     visual.classList.remove("show-success");
+    visual.querySelector(".action-success")?.setAttribute("aria-hidden", "true");
     return;
   }
 
