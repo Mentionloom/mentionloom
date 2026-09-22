@@ -374,9 +374,32 @@ function methodNotAllowed(allow) {
 
 function errorResponse(error) {
   if (error instanceof InfraError) {
-    const message = error.status >= 500 ? 'Service temporarily unavailable.' : error.message;
-    return json({ ok: false, error: message }, error.status);
+    const upstreamCode = error.details?.error_code || error.details?.code || null;
+    const upstreamMessage = String(error.message || '').toLowerCase();
+
+    if (error.status >= 500) {
+      const emailDeliveryFailure =
+        upstreamMessage.includes('confirmation email') ||
+        upstreamMessage.includes('smtp') ||
+        upstreamMessage.includes('sending email') ||
+        upstreamMessage.includes('send email');
+
+      return json({
+        ok: false,
+        error: emailDeliveryFailure
+          ? 'Could not send the confirmation email. Check Supabase SMTP settings.'
+          : 'Service temporarily unavailable.',
+        ...(upstreamCode ? { code: String(upstreamCode) } : {}),
+      }, error.status);
+    }
+
+    return json({
+      ok: false,
+      error: error.message,
+      ...(upstreamCode ? { code: String(upstreamCode) } : {}),
+    }, error.status);
   }
+
   console.error('Mentionloom Worker request failed:', error?.name || 'Error');
   return json({ ok: false, error: 'Service temporarily unavailable.' }, 500);
 }
