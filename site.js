@@ -1285,6 +1285,17 @@ function playInsightCardMotion(card) {
   else if (card.classList.contains("audience-card")) playCompetitiveCard(card);
 }
 
+// One four-beat score for all three onboarding illustrations. Literal timings
+// avoid the editorial entrance multiplier changing one panel's pace.
+const APPROACH_SCORE = { start: 400, beat: 850, work: 750, settle: 280 };
+const approachBeat = (index) => APPROACH_SCORE.start + index * APPROACH_SCORE.beat;
+const approachComplete = (index) => approachBeat(index) + APPROACH_SCORE.work;
+
+function approachReveal(el, delay, duration = APPROACH_SCORE.settle) {
+  if (!el) return;
+  return storyAnimate(el, [{ opacity: 0 }, { opacity: 1 }], duration, { delay, fill: "backwards", easing: "ease-out" });
+}
+
 function playCompanyLoading(step) {
   const rows = [...step.querySelectorAll(".company-intel-row")];
   const timers = [];
@@ -1300,10 +1311,10 @@ function playCompanyLoading(step) {
   document.addEventListener("visibilitychange", onVisibilityChange);
   rows.forEach((row, index) => {
     row.dataset.state = "pending";
-    timers.push(setTimeout(() => { row.dataset.state = "loading"; }, 400 + index * 850));
-    timers.push(setTimeout(() => { row.dataset.state = "complete"; }, 1150 + index * 850));
+    timers.push(setTimeout(() => { row.dataset.state = "loading"; }, approachBeat(index)));
+    timers.push(setTimeout(() => { row.dataset.state = "complete"; }, approachComplete(index)));
   });
-  timers.push(setTimeout(finish, 1150 + (rows.length - 1) * 850));
+  timers.push(setTimeout(finish, approachComplete(rows.length - 1)));
 }
 
 function playApproachCardMotion(step) {
@@ -1314,8 +1325,7 @@ function playApproachCardMotion(step) {
     return;
   }
 
-  // Same editorial cadence as the insight cards: label -> title -> body,
-  // followed by a fast data-build pass inside a completely stable shell.
+  // Shared introduction, then four coordinated work/completion beats.
   motionEnter(step.querySelector(".step-number"), 25, 4, 300, 1);
   motionEnter(step.querySelector("h3"), 90, 8, 430, 0.998);
   motionEnter(step.querySelector(":scope > p"), 170, 5, 360, 1);
@@ -1325,19 +1335,18 @@ function playApproachCardMotion(step) {
   } else if (step.classList.contains("clearer-step-questions")) {
     const rows = [...step.querySelectorAll(".generated-question")];
     rows.forEach((row, index) =>
-      motionEnter(row, 390 + index * 105, 5, 400, 1),
+      approachReveal(row, approachBeat(index)),
     );
 
     [...step.querySelectorAll(".question-check")].forEach((check, index) =>
-      motionAnimate(
+      storyAnimate(
         check,
         [
-          { opacity: 0.28, transform: "scale(.92)" },
-          { opacity: 1, transform: "scale(1.04)", offset: 0.68 },
-          { opacity: 1, transform: "scale(1)" },
+          { opacity: 0 },
+          { opacity: 1 },
         ],
-        420,
-        { delay: 520 + index * 105, fill: "both" },
+        APPROACH_SCORE.settle,
+        { delay: approachComplete(index === 2 ? 3 : index), fill: "both", easing: "ease-out" },
       ),
     );
 
@@ -1345,38 +1354,41 @@ function playApproachCardMotion(step) {
     if (selection && rows.length === 3) {
       const y2 = rows[1].offsetTop - rows[0].offsetTop;
       const y3 = rows[2].offsetTop - rows[0].offsetTop;
-      motionAnimate(
+      const duration = approachComplete(3) - approachBeat(0);
+      storyAnimate(
         selection,
         [
           { transform: "translateY(0)", offset: 0 },
-          { transform: `translateY(${y2}px)`, offset: 0.5 },
+          { transform: "translateY(0)", offset: (approachBeat(1) - approachBeat(0)) / duration, easing: "cubic-bezier(.25,1,.5,1)" },
+          { transform: `translateY(${y2}px)`, offset: (approachComplete(1) - approachBeat(0)) / duration },
+          { transform: `translateY(${y2}px)`, offset: (approachBeat(3) - approachBeat(0)) / duration, easing: "cubic-bezier(.25,1,.5,1)" },
           { transform: `translateY(${y3}px)`, offset: 1 },
         ],
-        1500,
-        { delay: 420, fill: "both" },
+        duration,
+        { delay: approachBeat(0), fill: "both", easing: "linear" },
       );
     }
   } else if (step.classList.contains("clearer-step-action")) {
-    motionEnter(step.querySelector(".gap-header"), 260, 4, 340, 1);
+    approachReveal(step.querySelector(".gap-header"), approachBeat(0));
 
     const rankRows = [...step.querySelectorAll(".mini-rank-row")];
     rankRows.forEach((row, index) =>
-      motionEnter(row, 390 + index * 110, 5, 400, 1),
+      approachReveal(row, approachBeat(index)),
     );
 
     [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) => {
       fill.style.transformOrigin = "left center";
-      motionAnimate(
+      storyAnimate(
         fill,
         [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-        1300,
-        { delay: 500 + index * 120, fill: "backwards" },
+        APPROACH_SCORE.work,
+        { delay: approachComplete(index), fill: "backwards" },
       );
     });
 
-    motionEnter(step.querySelector(".brief-build"), 760, 7, 460, 1);
-    motionEnter(step.querySelector(".brief-kicker"), 850, 3, 320, 1);
-    motionEnter(step.querySelector(".brief-build > strong"), 930, 4, 380, 1);
+    approachReveal(step.querySelector(".brief-build"), approachBeat(3), APPROACH_SCORE.work);
+    approachReveal(step.querySelector(".brief-kicker"), approachBeat(3), APPROACH_SCORE.work);
+    approachReveal(step.querySelector(".brief-build > strong"), approachComplete(3));
   }
 }
 
@@ -1407,20 +1419,27 @@ try {
       insightObserver.observe(card);
     });
 
+    const approachCards = [...document.querySelectorAll("#approach .clearer-step")];
     const approachObserver = new IntersectionObserver(
       (entries, observer) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
-          observer.unobserve(entry.target);
-          entry.target.classList.add("card-visible");
-          playApproachCardMotion(entry.target);
+          // Side-by-side panels share one trigger; stacked panels keep the
+          // same score without using up their animation below the viewport.
+          const cards = matchMedia("(min-width: 761px)").matches
+            ? approachCards : [entry.target.closest(".clearer-step")];
+          cards.forEach((card) => {
+            observer.unobserve(card.querySelector(".step-visual"));
+            card.classList.add("card-visible");
+            playApproachCardMotion(card);
+          });
         }
       },
-      { threshold: 0.24, rootMargin: "0px 0px -6% 0px" },
+      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
     );
-    document.querySelectorAll("#approach .clearer-step").forEach((card) => {
+    approachCards.forEach((card) => {
       card.classList.add("motion-card-armed");
-      approachObserver.observe(card);
+      approachObserver.observe(card.querySelector(".step-visual"));
     });
   }
 
