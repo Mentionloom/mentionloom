@@ -48,7 +48,7 @@ import {
   recommendedAddon,
 } from "./lib/addons.js";
 import { addonURL, addonFromPath } from "./lib/addons.js";
-import { addonRowHTML, addonDetailHTML, addonDemoHTML } from "./lib/addons-view.js?v=20260922-2";
+import { addonRowHTML, addonDetailHTML, addonDemoHTML } from "./lib/addons-view.js?v=20260922-3";
 
 import {
   VIEWS,
