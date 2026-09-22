@@ -70,3 +70,9 @@ test('Cloudflare backend helpers accept injected runtime bindings', async () => 
   assert.match(providers, /configureProviderEnv/);
   assert.match(providers, /runtimeEnv/);
 });
+
+
+test('Supabase auth requests mirror client API-key authorization headers', async () => {
+  const supabase = await read('lib/supabase.js');
+  assert.match(supabase, /Authorization:\s*\x60Bearer \$\{token \|\| key\}\x60/);
+});
