@@ -517,35 +517,84 @@ function render(initialReport, animateChart = false) {
     `/app/?days=30${engine ? "&engine=" + engine : ""}${story === "questions" ? "#questions" : story === "opportunities" ? "#actions" : ""}`;
 }
 function setStory(next) {
+  if (next === story) return;
+
+  const previousStory = story;
+  const outgoing = $(`#story-panel-${previousStory}`);
+  const incoming = $(`#story-panel-${next}`);
   story = next;
-  document.querySelectorAll("[data-story]").forEach((b) => {
-    const active = b.dataset.story === next;
-    b.classList.toggle("active", active);
-    b.setAttribute("aria-selected", active);
-    b.tabIndex = active ? 0 : -1;
+
+  document.querySelectorAll("[data-story]").forEach((button) => {
+    const active = button.dataset.story === next;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", active);
+    button.tabIndex = active ? 0 : -1;
   });
-  document
-    .querySelectorAll(".story-panel")
-    .forEach((p) => (p.hidden = p.id !== `story-panel-${next}`));
 
   const context = PRODUCT_CONTEXT[next];
-  if (context) {
+  const heading = $(".product-context-heading");
+  const applyContext = () => {
+    if (!context) return;
     $("#product-context-eyebrow").textContent = context.eyebrow;
     $("#product-context-title").innerHTML = context.title;
     $("#product-context-copy").textContent = context.copy;
-    if (ready && !paused && !reduced.matches) {
-      microReveal($("#product-context-eyebrow"), 0, 380, 1, 0.35);
-      microReveal($("#product-context-title"), 70, 520, 1, 0.3);
-      microReveal($("#product-context-copy"), 140, 440, 1, 0.35);
-    }
+  };
+
+  if (!ready || paused || reduced.matches || !outgoing || !incoming) {
+    if (outgoing) outgoing.hidden = true;
+    if (incoming) incoming.hidden = false;
+    applyContext();
+  } else {
+    const stage = $(".product-stage");
+    const transitionId = Number(stage?.dataset.storyTransition || 0) + 1;
+    if (stage) stage.dataset.storyTransition = String(transitionId);
+
+    heading?.getAnimations().forEach((animation) => animation.cancel());
+    const headingOut = heading
+      ? animate(heading, [{ opacity: 1 }, { opacity: 0.62 }], 140, {
+          easing: "ease-out",
+          fill: "forwards",
+        })
+      : null;
+
+    Promise.resolve(headingOut?.finished)
+      .catch(() => {})
+      .then(() => {
+        if (stage && Number(stage.dataset.storyTransition) !== transitionId) return;
+        applyContext();
+        if (heading) {
+          animate(heading, [{ opacity: 0.62 }, { opacity: 1 }], 260, {
+            easing: LANDING_EASE,
+            fill: "forwards",
+          });
+        }
+      });
+
+    outgoing.getAnimations().forEach((animation) => animation.cancel());
+    incoming.getAnimations().forEach((animation) => animation.cancel());
+    const panelOut = animate(outgoing, [{ opacity: 1 }, { opacity: 0 }], 160, {
+      easing: "ease-out",
+      fill: "forwards",
+    });
+
+    Promise.resolve(panelOut?.finished)
+      .catch(() => {})
+      .then(() => {
+        if (stage && Number(stage.dataset.storyTransition) !== transitionId) return;
+        outgoing.hidden = true;
+        outgoing.style.removeProperty("opacity");
+        incoming.hidden = false;
+        animate(incoming, [{ opacity: 0 }, { opacity: 1 }], 300, {
+          easing: LANDING_EASE,
+          fill: "forwards",
+        });
+        if (next === "visibility") requestAnimationFrame(() => chart(false));
+      });
   }
 
   $("#scoped-demo").href =
     `/app/?days=30${engine ? "&engine=" + engine : ""}${story === "questions" ? "#questions" : story === "opportunities" ? "#actions" : ""}`;
-  if (next === "visibility") chart();
-  if (next === "questions") renderQuestions();
-  if (next === "opportunities") render(report);
-  motion($(`#story-panel-${next}`));
+
   if (ready) window.OrbitMotion.indicator($(".story-nav"));
 }
 // Product tabs retain Orbit's visual/keyboard contract and use dedicated panels.
@@ -581,7 +630,9 @@ document.querySelectorAll("[data-engine]").forEach((b) => {
       : "All engines",
   );
   b.addEventListener("click", () => {
-    engine = b.dataset.engine;
+    const nextEngine = b.dataset.engine;
+    if (nextEngine === engine) return;
+    engine = nextEngine;
     trackKobbe("product_engine_click", { engine: engine || "all", view: story });
     document.querySelectorAll("[data-engine]").forEach((x) => {
       x.classList.toggle("active", x === b);
@@ -772,15 +823,11 @@ function playProductMotion() {
   });
   microReveal(stage.querySelector(".stage-bottom .text-link"), 740, 340, 0.99, 0.42);
 
-  // Build the data itself: roll the metric, draw the chart, grow ranked bars.
-  setTimeout(() => {
-    if (!stage.isConnected) return;
-    render(report, true);
-  }, 170);
-
+  // Data is already rendered before the card enters view. Avoid a second state
+  // change here; entrance motion only reveals the existing structure.
   setTimeout(() => {
     stage.dataset.motionState = "complete";
-  }, 1550);
+  }, 1050);
 }
 
 const insightMotionPlayed = new WeakSet();
