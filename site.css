@@ -4471,3 +4471,25 @@
   line-height:1.05;
   white-space:nowrap;
 }
+
+
+/* 2026-09-22 final motion polish */
+.marketing-app .brand-footer-logo,
+.marketing-app .brand-footer-logo img {
+  animation:none !important;
+  transition:none !important;
+  transform:none !important;
+}
+.marketing-app .brand-footer-logo {
+  margin-top:62px;
+}
+
+/* Keep the resolved opportunity layout stable while its inner state changes. */
+.marketing-app #insights .action-visual,
+.marketing-app #insights .action-task,
+.marketing-app #insights .action-success {
+  box-sizing:border-box;
+}
+.marketing-app .action-success-brands {
+  isolation:isolate;
+}
