@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="/app/components/orbit/runtime/extras.css" />
     <link rel="stylesheet" href="/app/tokens.css" />
 
-    <link rel="stylesheet" href="/app/app.css?v=20260922-3" />
+    <link rel="stylesheet" href="/app/app.css?v=20260922-4" />
     <link rel="stylesheet" href="/app/foundation.css?v=20260922-3" />
     <link rel="stylesheet" href="/app/pages.css" />
     <link rel="stylesheet" href="/app/growth.css?v=20260922-3" />
@@ -42,6 +42,17 @@
   </head>
   <body class="discovery-app">
     <a class="skip-link" href="#main">Skip to dashboard</a>
+    <aside id="waitlist-cta" class="early-access-strip" aria-label="Early access">
+      <div class="early-access-strip-inner">
+        <span class="early-access-strip-status"><i></i><strong>Early access</strong></span>
+        <span class="early-access-strip-copy">Turn recommendation gaps into measurable improvements.</span>
+        <span class="early-access-strip-demo">Demo workspace · Acme sample data</span>
+        <button class="button primary" type="button" data-join="app">
+          Join early access
+          <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg>
+        </button>
+      </div>
+    </aside>
     <header class="app-header">
       <div class="header-inner">
         <button
@@ -90,17 +101,7 @@
         >
       </div>
     </nav>
-    <aside id="waitlist-cta" class="early-access-strip" aria-label="Early access">
-      <div class="early-access-strip-inner">
-        <span class="early-access-strip-status"><i></i><strong>Early access</strong></span>
-        <span class="early-access-strip-copy">Turn recommendation gaps into measurable improvements.</span>
-        <span class="early-access-strip-demo">Demo workspace · Acme sample data</span>
-        <button class="button" type="button" data-join="app">
-          Join early access
-          <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg>
-        </button>
-      </div>
-    </aside>
+
     <main id="main" tabindex="-1">
       <div class="workspace-heading">
         <div>
