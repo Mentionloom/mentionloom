@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { copyFile, cp, mkdir, rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { ADDONS } from "./app/lib/addons.js";
 import { VIEWS } from "./app/lib/navigation.js";
 import { marketingAssets } from "./scripts/marketing-assets.mjs";
@@ -46,7 +47,6 @@ const files = [
   "app/lib/model.js",
   "app/lib/traffic.js",
   "app/lib/traffic-view.js",
-  "app/traffic.css",
   "app/lib/intelligence.js",
   "app/lib/fluid-orb.js",
   "app/lib/ui.js",
@@ -133,4 +133,26 @@ for (const page of [...Object.keys(VIEWS), "sources"]) {
 for (const addon of ADDONS) {
   await mkdir(new URL(`app/addons/${addon.id}/`, output), { recursive: true });
   await copyFile(new URL("app/index.html", import.meta.url), new URL(`app/addons/${addon.id}/index.html`, output));
+}
+
+// Version the shared waitlist on every static route so Cloudflare/browser caches
+// cannot combine a new modal with the old script or stylesheet after deployment.
+const waitlistHash = createHash("sha256");
+for (const file of ["waitlist.js", "waitlist.css"]) {
+  waitlistHash.update(await readFile(new URL(file, output)));
+}
+const waitlistVersion = waitlistHash.digest("hex").slice(0, 12);
+const htmlFiles = [
+  ...files.filter((file) => file.endsWith(".html")),
+  ...[...Object.keys(VIEWS), "sources"].map((page) => `app/${page}/index.html`),
+  ...ADDONS.map((addon) => `app/addons/${addon.id}/index.html`),
+];
+for (const file of new Set(htmlFiles)) {
+  const url = new URL(file, output);
+  const html = await readFile(url, "utf8");
+  const updated = html.replace(
+    /((?:src|href)=["'])\/waitlist\.(css|js)(?:\?[^"']*)?(["'])/g,
+    (_, prefix, extension, quote) => `${prefix}/waitlist.${extension}?v=${waitlistVersion}${quote}`,
+  );
+  if (updated !== html) await writeFile(url, updated);
 }
