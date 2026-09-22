@@ -297,7 +297,7 @@ function render(initialReport, animateChart = false) {
   $("#visibility-delta").classList.toggle("negative", delta < 0);
   chart(animateChart);
   $("#competitor-rows").innerHTML = report.competitors
-    .filter((c) => !c.self && c.name !== "Monday")
+    .filter((c) => c.name !== "Monday")
     .map(
       (c) =>
         `<div class="competitor-row ${c.self ? "self" : ""}" data-share="${c.share.toFixed(1)}%" style="--share:${animateChart ? "0%" : c.share.toFixed(1) + "%"}"><span>${c.self ? '<span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>' : logo(c.name.toLowerCase())}${c.name}${c.self ? " <small>you</small>" : ""}</span><b>${c.share.toFixed(1)}%</b></div>`,
