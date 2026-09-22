@@ -405,7 +405,7 @@ function renderQuestions() {
     ? visible
         .map(
           (q) =>
-            `<tr><td><button class="question-link" data-question="${esc(q.id)}">${esc(q.text)}</button></td><td><span class="badge neutral">${esc(q.topic)}</span></td><td>${q.pending ? '<span class="small-label">Pending</span>' : pct(q.visibility)}</td><td>${q.pending ? '<span class="small-label">No samples</span>' : engineCoverage(q)}</td><td><button class="icon-button" data-question="${esc(q.id)}" aria-label="Explore ${esc(q.text)}">${icon("right")}</button></td></tr>`,
+            `<tr class="question-table-row"><td><button class="question-link" data-question="${esc(q.id)}">${esc(q.text)}</button></td><td><span class="question-intent">${esc(q.topic)}</span></td><td>${q.pending ? '<span class="small-label">Pending</span>' : `<span class="mention-rate-tag ${q.visibility < 40 ? "gap" : q.visibility >= 60 ? "strong" : "mid"}">${pct(q.visibility)}</span>`}</td><td>${q.pending ? '<span class="small-label">No samples</span>' : engineCoverage(q)}</td><td><button class="icon-button question-open" data-question="${esc(q.id)}" aria-label="Explore ${esc(q.text)}">${icon("right")}</button></td></tr>`,
         )
         .join("")
     : `<tr><td colspan="5">${empty("No questions match this view", "Try another search or change the coverage filter.")}</td></tr>`;
@@ -443,15 +443,18 @@ function renderActions() {
       );
 }
 function engineCoverage(question) {
-  return `<span class="engine-coverage">${data.engines
-    .map((e) => {
-      const rows = question.rows.filter((r) => r.engine === e.id),
-        rate = rows.length
-          ? (rows.filter((r) => r.mention).length / rows.length) * 100
-          : 0;
-      return `<span title="${e.name}: ${pct(rate)}" aria-label="${e.name}: ${pct(rate)}" class="${rate < 40 ? "gap" : rate >= 60 ? "strong" : ""}"><img src="/assets/brands/${e.id}.svg" width="15" height="15" alt=""><span>${Math.round(rate)}%</span></span>`;
-    })
-    .join("")}</span>`;
+  const coverage = data.engines.map((e) => {
+    const rows = question.rows.filter((r) => r.engine === e.id);
+    const rate = rows.length
+      ? (rows.filter((r) => r.mention).length / rows.length) * 100
+      : 0;
+    return { ...e, rate };
+  });
+  const shown = coverage.slice(0, 4);
+  const hidden = coverage.slice(4);
+  return `<span class="engine-coverage">${shown
+    .map((e) => `<span title="${e.name}: ${pct(e.rate)}" aria-label="${e.name}: ${pct(e.rate)}" class="${e.rate < 40 ? "gap" : e.rate >= 60 ? "strong" : "mid"}"><img src="/assets/brands/${e.id}.svg" width="14" height="14" alt=""><span>${Math.round(e.rate)}%</span></span>`)
+    .join("")}${hidden.length ? `<span class="engine-more" title="${hidden.map(e => `${e.name} ${Math.round(e.rate)}%`).join(" · ")}">+${hidden.length}</span>` : ""}</span>`;
 }
 function stat(label, value, suffix = "") {
   return `<div><span>${label}</span><strong>${value}${suffix ? `<small>${suffix}</small>` : ""}</strong></div>`;
