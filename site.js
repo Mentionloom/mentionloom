@@ -670,24 +670,52 @@ function animateMetricText(el, value, duration = 3000, delay = 0) {
 
   setTimeout(() => {
     if (!el.isConnected) return;
-    if (window.OrbitNumbers) {
-      window.OrbitNumbers.set(el, target, {
-        kind: "number",
-        initial: true,
-        duration,
-      });
-      return;
-    }
+    const formatted = format(target);
+    el.getAnimations({ subtree: true }).forEach((animation) => animation.cancel());
+    el.replaceChildren();
+    el.classList.add("rolling-number");
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", formatted);
 
-    const started = performance.now();
-    const fallback = (now) => {
-      const progress = Math.min(1, (now - started) / duration);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = format(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(fallback);
-    };
-    el.textContent = "0";
-    requestAnimationFrame(fallback);
+    [...formatted].forEach((character, index) => {
+      if (!/\d/.test(character)) {
+        const punctuation = document.createElement("span");
+        punctuation.className = "number-punctuation";
+        punctuation.setAttribute("aria-hidden", "true");
+        punctuation.textContent = character;
+        el.append(punctuation);
+        return;
+      }
+
+      const digit = document.createElement("span");
+      digit.className = "number-digit";
+      digit.setAttribute("aria-hidden", "true");
+      const track = document.createElement("span");
+      track.className = "number-track";
+      const targetDigit = Number(character);
+      for (let number = 0; number <= targetDigit; number++) {
+        const cell = document.createElement("span");
+        cell.textContent = number;
+        track.append(cell);
+      }
+      const distance = targetDigit * 1.2;
+      digit.append(track);
+      el.append(digit);
+
+      animate(
+        track,
+        [
+          { transform: "translateY(0)" },
+          { transform: `translateY(-${distance}em)` },
+        ],
+        duration,
+        {
+          delay: index * 90,
+          easing: LANDING_EASE,
+          fill: "forwards",
+        },
+      );
+    });
   }, delay);
 }
 
