@@ -1,6 +1,6 @@
 import { createFilters } from "./lib/filters.js";
 import { TRAFFIC_SOURCES, SOURCE_GROUPS, COUNTRIES, DEVICES, TRAFFIC_METRICS, MILESTONES, sourceLabel, countryLabel, parseTrafficState, selectTraffic, trafficMetrics, funnelRows } from "./lib/traffic.js";
-import { usageHTML, funnelHTML, sourcesHTML, locationsHTML, devicesHTML, pagesHTML, journeysHTML, journeys, sessionsHTML, trafficTableHTML } from "./lib/traffic-view.js";
+import { usageHTML, funnelHTML, sourcesHTML, sourcesTableHTML, locationsHTML, devicesHTML, pagesHTML, journeysHTML, journeys, sessionsHTML, trafficTableHTML } from "./lib/traffic-view.js?v=20260922-4";
 import { END, answers, ENGINES, QUESTIONS, TOPICS, ACTIONS, CRAWLERS } from "./lib/data.js";
 import { select, parseState, fmt, pct, csv, dates } from "./lib/model.js";
 import { recommendationEvidence } from "./lib/intelligence.js";
@@ -1065,6 +1065,12 @@ function renderTraffic() {
   }).join('');
   $('#traffic-usage').innerHTML = usageHTML(trafficData);
   $('#traffic-engines').innerHTML = sourcesHTML(trafficData);
+  const hiddenSources = Math.max(0, trafficData.sources.length - 4);
+  const sourceMore = $('#traffic-source-more');
+  if (sourceMore) {
+    sourceMore.textContent = hiddenSources ? `+${hiddenSources}` : '';
+    sourceMore.hidden = hiddenSources === 0;
+  }
   $('#traffic-funnel').innerHTML = funnelHTML(trafficData);
   $('#traffic-funnel-total').textContent = `${pct(c.referrals ? c.leads / c.referrals * 100 : 0)} visit-to-lead conversion`;
   $('#traffic-locations').innerHTML = locationsHTML(trafficData, locationView, 3);
@@ -1188,7 +1194,7 @@ const actions = {
   export: exportReport,
   "clear-filters": () => update({ engine: "", topic: "" }),
   "traffic-clear": () => update({ source: '', country: '', device: '' }),
-  "traffic-sources": () => detail('Sources', 'VISITS', sourcesHTML(trafficData, Infinity)),
+  "traffic-sources": () => detail('Sources', 'VISIT SOURCES', sourcesTableHTML(trafficData)),
   "traffic-locations": () => detail('Locations', 'VISITS', locationsHTML(trafficData, locationView, Infinity)),
   "traffic-devices": () => detail('Devices', 'VISITS', devicesHTML(trafficData, deviceView, Infinity)),
   "traffic-pages": () => detail('Pages', trafficPageView === 'all' ? 'PAGE VIEWS' : 'VISITS', pagesHTML(trafficData, trafficPageView, Infinity)),
