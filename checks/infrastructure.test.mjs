@@ -50,10 +50,12 @@ test('Cloudflare Worker owns API routing and scheduled queue execution', async (
   assert.match(worker, /CRON_SECRET/);
   assert.match(worker, /async scheduled\(/);
   assert.match(worker, /\/api\/auth\/sign-up/);
+  assert.match(worker, /\/auth\/confirm/);
+  assert.match(worker, /\/auth\/v1\/verify/);
   assert.match(worker, /\/api\/workspaces/);
   assert.match(worker, /\/api\/costs/);
   assert.match(config, /main\s*=\s*"\.\/src\/worker\.js"/);
   assert.match(config, /binding\s*=\s*"ASSETS"/);
-  assert.match(config, /run_worker_first\s*=\s*\["\/api\/\*"\]/);
+  assert.match(config, /run_worker_first\s*=\s*\["\/api\/\*",\s*"\/auth\/confirm"\]/);
   assert.match(config, /crons\s*=\s*\["\*\/5 \* \* \* \*"\]/);
 });
