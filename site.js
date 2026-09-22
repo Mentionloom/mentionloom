@@ -750,7 +750,9 @@ document.querySelectorAll("#faq details").forEach((details, index) => {
   });
 });
 
-const LANDING_EASE = "cubic-bezier(.16, 1, .3, 1)";
+const LANDING_EASE =
+  getComputedStyle(document.documentElement).getPropertyValue("--ease-out").trim() ||
+  "cubic-bezier(.22, 1, .36, 1)";
 function motionAnimate(el, frames, duration = 320, extra = {}) {
   return animate(el, frames, Math.round(duration * 1.25), {
     easing: LANDING_EASE,
@@ -1276,51 +1278,53 @@ function playApproachCardMotion(step) {
     return;
   }
 
-  motionEnter(step.querySelector(".step-number"), 80, 4, 620, 1);
-  motionEnter(step.querySelector("h3"), 180, 6, 760, 1);
-  motionEnter(step.querySelector(":scope > p"), 320, 4, 720, 1);
+  // Same editorial cadence as the insight cards: label -> title -> body,
+  // followed by a fast data-build pass inside a completely stable shell.
+  motionEnter(step.querySelector(".step-number"), 25, 4, 300, 1);
+  motionEnter(step.querySelector("h3"), 90, 8, 430, 0.998);
+  motionEnter(step.querySelector(":scope > p"), 170, 5, 360, 1);
 
   if (step.classList.contains("clearer-step-company")) {
-    motionEnter(step.querySelector(".mini-product-heading"), 220, 4, 680, 1);
+    motionEnter(step.querySelector(".mini-product-heading"), 260, 4, 340, 1);
 
     const progress = step.querySelector(".company-progress > span");
     if (progress) {
+      progress.style.transformOrigin = "left center";
       motionAnimate(
         progress,
         [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-        2800,
-        { delay: 260, fill: "backwards" },
+        1300,
+        { delay: 320, fill: "backwards" },
       );
     }
 
     const rows = [...step.querySelectorAll(".company-intel-row")];
     rows.forEach((row, index) =>
-      motionEnter(row, 420 + index * 560, 6, 820, 1),
+      motionEnter(row, 390 + index * 90, 5, 380, 1),
     );
 
     setTimeout(() => {
       const label = step.querySelector("[data-company-status] span");
       if (label) window.OrbitMotion.feedback(label, "Ready");
-    }, 3000);
+    }, 1180);
   } else if (step.classList.contains("clearer-step-questions")) {
-    motionEnter(step.querySelector(".question-generator-head"), 220, 4, 680, 1);
-    motionEnter(step.querySelector(".generated-questions"), 360, 6, 760, 1);
+    motionEnter(step.querySelector(".question-generator-head"), 260, 4, 340, 1);
 
     const rows = [...step.querySelectorAll(".generated-question")];
     rows.forEach((row, index) =>
-      motionEnter(row, 520 + index * 620, 5, 760, 1),
+      motionEnter(row, 390 + index * 105, 5, 400, 1),
     );
 
     [...step.querySelectorAll(".question-check")].forEach((check, index) =>
       motionAnimate(
         check,
         [
-          { opacity: 0.16, transform: "scale(.88)" },
-          { opacity: 1, transform: "scale(1.06)", offset: 0.72 },
+          { opacity: 0.28, transform: "scale(.92)" },
+          { opacity: 1, transform: "scale(1.04)", offset: 0.68 },
           { opacity: 1, transform: "scale(1)" },
         ],
-        760,
-        { delay: 900 + index * 620, fill: "both" },
+        420,
+        { delay: 520 + index * 105, fill: "both" },
       ),
     );
 
@@ -1335,30 +1339,31 @@ function playApproachCardMotion(step) {
           { transform: `translateY(${y2}px)`, offset: 0.5 },
           { transform: `translateY(${y3}px)`, offset: 1 },
         ],
-        3000,
+        1500,
         { delay: 420, fill: "both" },
       );
     }
   } else if (step.classList.contains("clearer-step-action")) {
-    motionEnter(step.querySelector(".gap-header"), 260, 4, 720, 1);
+    motionEnter(step.querySelector(".gap-header"), 260, 4, 340, 1);
 
     const rankRows = [...step.querySelectorAll(".mini-rank-row")];
     rankRows.forEach((row, index) =>
-      motionEnter(row, 520 + index * 620, 5, 820, 1),
+      motionEnter(row, 390 + index * 110, 5, 400, 1),
     );
 
-    [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) =>
+    [...step.querySelectorAll(".mini-rank-fill")].forEach((fill, index) => {
+      fill.style.transformOrigin = "left center";
       motionAnimate(
         fill,
         [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-        1800,
-        { delay: 900 + index * 360, fill: "backwards" },
-      ),
-    );
+        1300,
+        { delay: 500 + index * 120, fill: "backwards" },
+      );
+    });
 
-    motionEnter(step.querySelector(".brief-build"), 2200, 8, 900, 1);
-    motionEnter(step.querySelector(".brief-kicker"), 2420, 3, 680, 1);
-    motionEnter(step.querySelector(".brief-build > strong"), 2640, 5, 820, 1);
+    motionEnter(step.querySelector(".brief-build"), 760, 7, 460, 1);
+    motionEnter(step.querySelector(".brief-kicker"), 850, 3, 320, 1);
+    motionEnter(step.querySelector(".brief-build > strong"), 930, 4, 380, 1);
   }
 }
 
