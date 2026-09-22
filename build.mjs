@@ -48,6 +48,7 @@ const files = [
   "app/lib/traffic-view.js",
   "app/traffic.css",
   "app/lib/intelligence.js",
+  "app/lib/fluid-orb.js",
   "app/lib/ui.js",
   "app/lib/filters.js",
   "app/lib/charts.js",
