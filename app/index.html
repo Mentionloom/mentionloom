@@ -29,15 +29,15 @@
     <link rel="stylesheet" href="/app/components/orbit/runtime/extras.css" />
     <link rel="stylesheet" href="/app/tokens.css" />
 
-    <link rel="stylesheet" href="/app/app.css" />
-    <link rel="stylesheet" href="/app/foundation.css" />
+    <link rel="stylesheet" href="/app/app.css?v=20260922-2" />
+    <link rel="stylesheet" href="/app/foundation.css?v=20260922-2" />
     <link rel="stylesheet" href="/app/pages.css" />
-    <link rel="stylesheet" href="/app/growth.css?v=20260922-1" />
+    <link rel="stylesheet" href="/app/growth.css?v=20260922-2" />
     <link rel="stylesheet" href="/app/addons.css" />
     <link rel="stylesheet" href="/app/density.css" />
     <link rel="stylesheet" href="/app/traffic.css" />
-    <link rel="stylesheet" href="/waitlist.css?v=20260921-3" />
-    <script type="module" src="/app/app.js?v=20260922-1"></script>
+    <link rel="stylesheet" href="/waitlist.css?v=20260922-2" />
+    <script type="module" src="/app/app.js?v=20260922-2"></script>
     <script src="/waitlist.js?v=20260921-3" defer></script>
   </head>
   <body class="discovery-app">
@@ -90,6 +90,17 @@
         >
       </div>
     </nav>
+    <aside id="waitlist-cta" class="early-access-strip" aria-label="Early access">
+      <div class="early-access-strip-inner">
+        <span class="early-access-strip-status"><i></i><strong>Early access</strong></span>
+        <span class="early-access-strip-copy">Turn recommendation gaps into measurable improvements.</span>
+        <span class="early-access-strip-demo">Demo workspace · Acme sample data</span>
+        <button class="button" type="button" data-join="app">
+          Join early access
+          <svg class="icon" aria-hidden="true"><use href="/assets/icons/lucide.svg#i-arrow" /></svg>
+        </button>
+      </div>
+    </aside>
     <main id="main" tabindex="-1">
       <div class="workspace-heading">
         <div>
@@ -142,7 +153,6 @@
         </div>
         <div id="filter-chips" class="filter-chips"></div>
       </div>
-      <section id="recommendation-summary" aria-label="Recommendation intelligence" hidden></section>
       <div id="report-core">
         <div id="traffic-metrics" class="metrics" role="group" aria-label="Website metrics" hidden></div>
         <div class="metrics" id="discovery-metrics" role="group" aria-label="AI discovery metrics">
@@ -222,7 +232,7 @@
                   class="button ghost"
                   data-action="chart-data"
                 >
-                  View daily numbers
+                  Explore breakdown
                 </button>
               </div>
             </div>
@@ -264,6 +274,7 @@
           ></aside>
         </div>
       </div>
+      <section id="recommendation-summary" aria-label="Recommendation intelligence" hidden></section>
       <div
         id="growth-path"
         class="growth-path"
@@ -709,31 +720,7 @@
     <div id="tour-shade" aria-hidden="true" hidden><div></div><div></div><div></div><div></div><span class="tour-frame"></span></div>
     <aside id="demo-tour" class="demo-tour" role="region" aria-label="Guided demo" hidden></aside>
     <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
-    <aside id="waitlist-cta" class="waitlist-cta" aria-label="Join the waitlist">
-      <button
-        class="waitlist-cta-close"
-        id="waitlist-cta-close"
-        type="button"
-        aria-label="Dismiss waitlist invitation"
-      >
-        <svg class="icon" aria-hidden="true">
-          <use href="/assets/icons/lucide.svg#i-close" />
-        </svg>
-      </button>
-      <span class="waitlist-cta-eyebrow">Early access</span>
-      <p class="waitlist-cta-copy">
-        This is a demo workspace.
-        <button class="link-button" type="button" data-action="demo-info">
-          How this demo works
-        </button>
-      </p>
-      <button class="button primary" type="button" data-join="app">
-        Join the waitlist
-        <svg class="icon" aria-hidden="true">
-          <use href="/assets/icons/lucide.svg#i-arrow" />
-        </svg>
-      </button>
-    </aside>
+
     <div
       id="filter-status"
       class="sr-only"
@@ -762,6 +749,11 @@
       <h2 id="join-title" tabindex="-1">Get Mentionloom<br />early.</h2>
       <p id="join-description">See where AI recommends your brand—and what to improve.</p>
       <div data-waitlist-stage="signup">
+        <div class="waitlist-value-row" aria-label="What early access includes">
+          <span>Find lost questions</span>
+          <span>Inspect the evidence</span>
+          <span>Re-measure changes</span>
+        </div>
         <form id="join-form">
           <label for="email">Your email</label
           ><input
