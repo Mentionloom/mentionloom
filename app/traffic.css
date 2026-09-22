@@ -65,3 +65,207 @@
   .discovery-app[data-current-view=traffic] .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .discovery-app[data-current-view=traffic] .date-label { grid-column: 1/-1; grid-row: 3; text-align: left; }
 }
+
+
+/* 2026-09-22 — richer traffic marks and source table */
+.discovery-app .country-flag {
+  display:inline-flex;
+  width:28px;
+  height:28px;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:linear-gradient(145deg,#fff,#f7f8fa);
+  box-shadow:0 1px 2px rgba(16,24,40,.04);
+  font-size:17px;
+  line-height:1;
+}
+.discovery-app .traffic-mark {
+  display:inline-grid;
+  width:28px;
+  height:28px;
+  place-items:center;
+  flex:0 0 auto;
+  border:1px solid var(--border);
+  border-radius:9px;
+  color:var(--text);
+  background:linear-gradient(145deg,#fff,#f7f8fa);
+  box-shadow:0 1px 2px rgba(16,24,40,.04);
+}
+.discovery-app .traffic-mark svg {
+  width:16px;
+  height:16px;
+}
+.discovery-app .traffic-mark-mobile { background:linear-gradient(145deg,#fff,#f2f6ff); }
+.discovery-app .traffic-mark-tablet { background:linear-gradient(145deg,#fff,#f7f3ff); }
+.discovery-app .traffic-mark-pricing { background:linear-gradient(145deg,#fff,#fff7ed); }
+.discovery-app .traffic-mark-product { background:linear-gradient(145deg,#fff,#eef9f5); }
+.discovery-app .traffic-mark-guide { background:linear-gradient(145deg,#fff,#f5f3ff); }
+.discovery-app .traffic-mark-success { background:linear-gradient(145deg,#fff,#effaf3); }
+
+.discovery-app .traffic-source-row .rank-name {
+  display:grid;
+  gap:1px;
+}
+.discovery-app .traffic-source-row .rank-name small {
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.2;
+}
+.discovery-app .traffic-share {
+  min-width:46px;
+  text-align:right;
+  color:var(--muted);
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+}
+.discovery-app .traffic-view-all {
+  gap:7px;
+}
+.discovery-app .traffic-more-tag {
+  display:inline-flex;
+  align-items:center;
+  min-height:20px;
+  padding:1px 7px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--background-subtle);
+  color:var(--muted);
+  font-size:10px;
+  line-height:1;
+}
+
+.discovery-app .source-table {
+  display:grid;
+  gap:0;
+  border-top:1px solid var(--border);
+}
+.discovery-app .source-table-head,
+.discovery-app .source-table-row {
+  display:grid;
+  grid-template-columns:minmax(170px,1.5fr) 88px 64px 68px minmax(120px,1fr) 18px;
+  align-items:center;
+  gap:12px;
+}
+.discovery-app .source-table-head {
+  min-height:40px;
+  color:var(--muted);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.045em;
+}
+.discovery-app .source-table-row {
+  min-height:58px;
+  padding:8px 0;
+  border-top:1px solid var(--border);
+  text-align:left;
+  background:transparent;
+  border-radius:0;
+}
+.discovery-app .source-table-row:hover {
+  background:linear-gradient(90deg,transparent,var(--background-subtle) 8%,var(--background-subtle) 92%,transparent);
+}
+.discovery-app .source-table-name {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.discovery-app .source-table-name > span:last-child {
+  min-width:0;
+}
+.discovery-app .source-table-name strong,
+.discovery-app .source-table-name small {
+  display:block;
+}
+.discovery-app .source-table-name strong {
+  overflow:hidden;
+  color:var(--text);
+  font-size:12px;
+  font-weight:500;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.discovery-app .source-table-name small {
+  margin-top:2px;
+  color:var(--muted);
+  font-size:10px;
+}
+.discovery-app .source-table-type {
+  justify-self:start;
+  padding:3px 7px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--background-subtle);
+  color:var(--muted);
+  font-size:10px;
+}
+.discovery-app .source-table-visits,
+.discovery-app .source-table-share {
+  justify-self:end;
+  font-size:12px;
+  font-variant-numeric:tabular-nums;
+}
+.discovery-app .source-table-visits {
+  color:var(--text);
+  font-weight:500;
+}
+.discovery-app .source-table-share {
+  color:var(--muted);
+}
+.discovery-app .source-table-entry {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  color:var(--muted);
+  font-size:11px;
+}
+.discovery-app .source-table-entry .traffic-mark {
+  width:24px;
+  height:24px;
+  border-radius:8px;
+}
+.discovery-app .source-table-entry .traffic-mark svg {
+  width:14px;
+  height:14px;
+}
+.discovery-app .source-table-entry > span:last-child {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.discovery-app .source-table-row > .icon {
+  width:14px;
+  height:14px;
+  color:var(--muted);
+  opacity:.5;
+}
+@media(max-width:680px){
+  .discovery-app .source-table-head {
+    display:none;
+  }
+  .discovery-app .source-table-row {
+    grid-template-columns:minmax(0,1fr) auto 18px;
+    gap:8px;
+  }
+  .discovery-app .source-table-type,
+  .discovery-app .source-table-entry {
+    display:none;
+  }
+  .discovery-app .source-table-visits {
+    grid-column:2;
+  }
+  .discovery-app .source-table-share {
+    grid-column:2;
+    color:var(--muted);
+    font-size:10px;
+    margin-top:24px;
+  }
+  .discovery-app .source-table-row > .icon {
+    grid-column:3;
+    grid-row:1;
+  }
+}
