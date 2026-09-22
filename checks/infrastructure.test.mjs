@@ -49,6 +49,7 @@ test('Cloudflare Worker owns API routing and scheduled queue execution', async (
 
   assert.match(worker, /CRON_SECRET/);
   assert.match(worker, /async scheduled\(/);
+  assert.match(worker, /configureRuntime\(env\)/);
   assert.match(worker, /\/api\/auth\/sign-up/);
   assert.match(worker, /\/auth\/confirm/);
   assert.match(worker, /\/auth\/v1\/verify/);
@@ -58,4 +59,14 @@ test('Cloudflare Worker owns API routing and scheduled queue execution', async (
   assert.match(config, /binding\s*=\s*"ASSETS"/);
   assert.match(config, /run_worker_first\s*=\s*\["\/api\/\*",\s*"\/auth\/confirm"\]/);
   assert.match(config, /crons\s*=\s*\["\*\/5 \* \* \* \*"\]/);
+});
+
+
+test('Cloudflare backend helpers accept injected runtime bindings', async () => {
+  const supabase = await read('lib/supabase.js');
+  const providers = await read('lib/provider-secrets.js');
+  assert.match(supabase, /configureSupabaseEnv/);
+  assert.match(supabase, /runtimeEnv/);
+  assert.match(providers, /configureProviderEnv/);
+  assert.match(providers, /runtimeEnv/);
 });
