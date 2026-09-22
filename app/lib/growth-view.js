@@ -18,7 +18,7 @@ export function nextMoveHTML(items, work) {
     leader = evidence.competitors[0],
     brand = { Asana: "asana", Notion: "notion", ClickUp: "clickup" }[leader?.name];
   return `<div class="agent-header">
-      <div class="agent-identity"><span class="agent-orb" aria-hidden="true"><span></span></span><strong>Mentionloom AI</strong><span class="badge neutral">Preview</span></div>
+      <div class="agent-identity"><span class="agent-orb" data-fluid-orb data-color="#8FB8F4" aria-hidden="true"><canvas></canvas></span><strong>Mentionloom AI</strong><span class="badge neutral">Preview</span></div>
       <span class="agent-status">${icon(record ? "list-todo" : "circlecheck")}${record ? `${count} / ${next.steps.length} steps complete` : "Plan ready"}</span>
     </div>
     <div class="agent-heading card-heading"><h2>${esc(next.title.replace(/\.$/, ""))}</h2><button class="button" data-growth-start="${next.id}">${record ? "Continue plan" : "Start plan"}${icon("right")}</button></div>
