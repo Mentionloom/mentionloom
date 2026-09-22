@@ -24,7 +24,7 @@ function trackKobbe(name, props = {}) {
 }
 let engine = "",
   story = "visibility",
-  question = "q2",
+  question = "q5",
   paused = new URLSearchParams(location.search).has("reduce"),
   ready = false;
 let report = select({ days: 30, engine, topic: "" });
@@ -199,30 +199,92 @@ function chart(animateChart = false) {
   });
   inspect(report.series.length - 1);
 }
+const PRODUCT_CONTEXT = {
+  visibility: {
+    eyebrow: "RECOMMENDATION SHARE",
+    title: "See who makes<br />the shortlist.",
+    copy: "Measure where Acme appears across your monitored buyer questions and which competitors show up instead.",
+  },
+  questions: {
+    eyebrow: "BUYER QUESTIONS",
+    title: "Find the questions<br />worth winning.",
+    copy: "Rank monitored buyer questions by recommendation share and inspect the answer each engine gives.",
+  },
+  opportunities: {
+    eyebrow: "NEXT MOVES",
+    title: "Turn weak answers<br />into work.",
+    copy: "Prioritize evidence gaps by recommendation share and open the most useful content opportunities first.",
+  },
+};
+
+const BUYER_QUESTION_IDS = ["q1", "q3", "q5", "q7", "q8", "q9"];
+
+function answerForEngine(q, record, engineId) {
+  const base = record?.mention ? q.excerpt : q.missing;
+  const variants = {
+    chatgpt: record?.mention
+      ? `Acme ${base}`
+      : base,
+    claude: record?.mention
+      ? `Acme is worth considering here. ${base}`
+      : `For this question, the strongest answer would compare the trade-offs explicitly. ${base}`,
+    perplexity: record?.mention
+      ? `The available sources support Acme as an option. ${base}`
+      : `The cited evidence currently points elsewhere. ${base}`,
+    gemini: record?.mention
+      ? `For teams evaluating this workflow, Acme can fit. ${base}`
+      : `A practical comparison should focus on setup, fit, and cost. ${base}`,
+    grok: record?.mention
+      ? `Acme makes the cut for this use case. ${base}`
+      : `Acme is not making this shortlist yet. ${base}`,
+  };
+  return variants[engineId] || base;
+}
+
 function renderQuestions() {
-  const ids = ["q2", "q1", "q6", "q8"];
-  $("#question-rows").innerHTML = ids
-    .map((id) => {
-      const q = report.questions.find((q) => q.id === id);
-      return `<button class="question-row" data-question="${id}" aria-pressed="${id === question}" aria-controls="sample-answer"><span>${q.text}</span><span>${q.visibility.toFixed(0)}%</span></button>`;
-    })
+  const candidates = report.questions
+    .filter((q) => BUYER_QUESTION_IDS.includes(q.id))
+    .sort((a, b) => a.visibility - b.visibility)
+    .slice(0, 4);
+
+  if (!candidates.some((q) => q.id === question)) question = candidates[0]?.id || report.questions[0]?.id;
+
+  $("#question-rows").innerHTML = candidates
+    .map(
+      (q) =>
+        `<button class="question-row" data-question="${q.id}" aria-pressed="${q.id === question}" aria-controls="sample-answer"><span>${q.text}</span><span>${q.visibility.toFixed(0)}%</span></button>`,
+    )
     .join("");
-  const q = report.questions.find((q) => q.id === question),
-    record = q.rows.filter((r) => r.engine === (engine || "chatgpt")).at(-1),
-    e = ENGINES.find((e) => e.id === record.engine);
+
+  const q = report.questions.find((entry) => entry.id === question) || candidates[0];
+  if (!q) return;
+
+  const activeEngine = engine || "chatgpt";
+  const record = q.rows.filter((row) => row.engine === activeEngine).at(-1) || q.rows.at(-1);
+  const e = ENGINES.find((entry) => entry.id === (record?.engine || activeEngine));
+  const answer = answerForEngine(q, record, e?.id || activeEngine);
+
   $("#sample-answer").innerHTML =
-    `<div class="card-label">${logo(e.id)}<span>${e.name} · Answer</span></div><p>${record.mention ? "<mark>Acme</mark> " + q.excerpt : q.missing}</p><div class="citation-pill">${icon("link")} ${record.cited ? "acme.work" + q.page : record.external}</div><span class="badge ${record.mention ? "green" : "neutral"}">${record.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record.date} · Monitored prompt response.</p>`;
+    `<div class="card-label">${logo(e?.id || "chatgpt")}<span>${e?.name || "ChatGPT"} · Answer</span></div><p>${record?.mention ? "<mark>Acme</mark> " : ""}${answer}</p><div class="citation-pill">${icon("link")} ${record?.cited ? "acme.work" + q.page : record?.external || "External source"}</div><span class="badge ${record?.mention ? "green" : "neutral"}">${record?.mention ? "Acme mentioned" : "Acme not mentioned"}</span><p class="answer-note">${record?.date || report.end} · Monitored prompt response.</p>`;
+
   $("#question-rows")
     .querySelectorAll("button")
-    .forEach((b) =>
-      b.addEventListener("click", () => {
-        question = b.dataset.question;
+    .forEach((button) =>
+      button.addEventListener("click", () => {
+        question = button.dataset.question;
         trackKobbe("product_question_click", { question, engine: engine || "all" });
         renderQuestions();
-        $(`[data-question="${question}"]`).focus({ preventScroll: true });
+        $("[data-question="" + question + ""]")?.focus({ preventScroll: true });
         motion($("#sample-answer"));
       }),
     );
+
+  if (ready && story === "questions" && !paused && !reduced.matches) {
+    microRevealMany($("#question-rows").querySelectorAll(".question-row"), 0, 90, {
+      duration: 420,
+      opacity: 0.35,
+    });
+  }
 }
 function render(initialReport, animateChart = false) {
   report = initialReport || select({ days: 30, engine, topic: "" });
@@ -237,7 +299,7 @@ function render(initialReport, animateChart = false) {
   $("#visibility-delta").classList.toggle("negative", delta < 0);
   chart(animateChart);
   $("#competitor-rows").innerHTML = report.competitors
-    .filter((c) => c.name !== "Monday")
+    .filter((c) => !c.self && c.name !== "Monday")
     .map(
       (c) =>
         `<div class="competitor-row ${c.self ? "self" : ""}" data-share="${c.share.toFixed(1)}%" style="--share:${animateChart ? "0%" : c.share.toFixed(1) + "%"}"><span>${c.self ? '<span class="acme-mark" aria-hidden="true"><img src="/assets/brands/acme.svg" width="32" height="32" alt=""></span>' : logo(c.name.toLowerCase())}${c.name}${c.self ? " <small>you</small>" : ""}</span><b>${c.share.toFixed(1)}%</b></div>`,
@@ -262,18 +324,35 @@ function render(initialReport, animateChart = false) {
     );
   }
   renderQuestions();
-  $("#opportunity-rows").innerHTML = ACTIONS.map((a) => {
-    const q = report.questions.find((q) => q.id === a.question);
-    return `<details class="opportunity-item"><summary><div><span>${a.label} · ${q.visibility.toFixed(0)}% visibility</span>${a.title}</div>${icon("plus")}</summary><p>${a.body}</p></details>`;
-  }).join("");
-  $("#opportunity-rows").querySelectorAll("details").forEach((details, index) => {
+  const opportunityItems = ACTIONS.map((action) => ({
+    action,
+    question: report.questions.find((q) => q.id === action.question),
+  }))
+    .filter((item) => item.question)
+    .sort((a, b) => a.question.visibility - b.question.visibility);
+
+  $("#opportunity-rows").innerHTML = opportunityItems
+    .map(
+      ({ action, question }) =>
+        `<details class="opportunity-item" data-opportunity="${action.id}"><summary><div><span>${action.label} · ${question.visibility.toFixed(0)}% visibility</span><strong>${action.title}</strong><small>${question.text}</small></div>${icon("plus")}</summary><p>${action.body}</p></details>`,
+    )
+    .join("");
+
+  $("#opportunity-rows").querySelectorAll("details").forEach((details) => {
     details.addEventListener("toggle", () => {
       trackKobbe(details.open ? "product_opportunity_open" : "product_opportunity_close", {
-        opportunity: ACTIONS[index]?.id || ACTIONS[index]?.label || String(index + 1),
+        opportunity: details.dataset.opportunity,
         engine: engine || "all",
       });
     });
   });
+
+  if (ready && story === "opportunities" && !paused && !reduced.matches) {
+    microRevealMany($("#opportunity-rows").querySelectorAll(".opportunity-item"), 0, 95, {
+      duration: 440,
+      opacity: 0.35,
+    });
+  }
   const scopeStatus = $("#scope-status");
   if (scopeStatus)
     scopeStatus.textContent =
@@ -293,9 +372,24 @@ function setStory(next) {
   document
     .querySelectorAll(".story-panel")
     .forEach((p) => (p.hidden = p.id !== `story-panel-${next}`));
+
+  const context = PRODUCT_CONTEXT[next];
+  if (context) {
+    $("#product-context-eyebrow").textContent = context.eyebrow;
+    $("#product-context-title").innerHTML = context.title;
+    $("#product-context-copy").textContent = context.copy;
+    if (ready && !paused && !reduced.matches) {
+      microReveal($("#product-context-eyebrow"), 0, 380, 1, 0.35);
+      microReveal($("#product-context-title"), 70, 520, 1, 0.3);
+      microReveal($("#product-context-copy"), 140, 440, 1, 0.35);
+    }
+  }
+
   $("#scoped-demo").href =
     `/app/?days=30${engine ? "&engine=" + engine : ""}${story === "questions" ? "#questions" : story === "opportunities" ? "#actions" : ""}`;
   if (next === "visibility") chart();
+  if (next === "questions") renderQuestions();
+  if (next === "opportunities") render(report);
   motion($(`#story-panel-${next}`));
   if (ready) window.OrbitMotion.indicator($(".story-nav"));
 }
