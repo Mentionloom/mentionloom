@@ -893,29 +893,35 @@
   }
 }
 .discovery-app .opportunity-evidence {
-  margin-top: var(--space-5);
-  border-top: 1px solid var(--border);
+  display:grid;
+  gap:var(--space-4);
+  margin-top:var(--space-6);
+  padding-top:var(--space-5);
+  border-top:1px solid var(--border);
 }
-.discovery-app .opportunity-evidence > summary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 56px;
-  cursor: pointer;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  list-style: none;
+.discovery-app .opportunity-evidence-header {
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:var(--space-4);
 }
-.discovery-app .opportunity-evidence > summary::-webkit-details-marker {
-  display: none;
+.discovery-app .opportunity-evidence-header > div {
+  display:grid;
+  gap:4px;
 }
-.discovery-app .opportunity-evidence > summary > .icon {
-  margin-left: auto;
-  width: 16px;
-  height: 16px;
+.discovery-app .opportunity-evidence-header h2 {
+  margin:0;
+  color:var(--text);
+  font-size:var(--text-lg);
+  font-weight:500;
+  letter-spacing:-.35px;
 }
-.discovery-app .opportunity-evidence[open] > summary > .icon {
-  transform: rotate(180deg);
+.discovery-app .opportunity-evidence .gap-chart {
+  margin:0;
+}
+.discovery-app .opportunity-evidence #gap-rows {
+  display:grid;
+  gap:var(--space-2);
 }
 .discovery-app .overview-grid {
   align-items: start;
