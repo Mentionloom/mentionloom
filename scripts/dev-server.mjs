@@ -33,6 +33,9 @@ const allowed = new Set([
   "site.css",
   "product-portal.css",
   "app/index.html",
+  "app/demo.html",
+  "app/product.js",
+  "app/launch-entry.css",
   "app/app.css",
   "app/pages.css",
   "app/growth.css",
@@ -124,10 +127,10 @@ createServer(async (req, res) => {
   const file =
     pathname === "/"
       ? "index.html"
-      : /^\/app(?:\/(?:overview|visibility|traffic|questions|opportunities|addons(?:\/[a-z-]+)?|sources))?\/?$/.test(
-            pathname,
-          )
-        ? "app/index.html"
+      : pathname === "/app/demo" || pathname === "/app/demo/"
+        ? "app/demo.html"
+        : /^\/app(?:\/.*)?\/?$/.test(pathname)
+          ? "app/index.html"
         : pathname.slice(1);
   if (
     !allowed.has(file) &&
@@ -153,6 +156,6 @@ createServer(async (req, res) => {
   }
 }).listen(4323, "127.0.0.1", () =>
   console.log(
-    `Mentionloom at http://127.0.0.1:4323 (${mock ? "isolated test storage; no production signups" : "connected private storage"})`,
+    `Mentionloom static preview at http://127.0.0.1:4323 (${mock ? "isolated waitlist test storage" : "waitlist API only"}; use Wrangler for authenticated product APIs)`,
   ),
 );

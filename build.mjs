@@ -10,7 +10,7 @@ const output = new URL("./dist/", import.meta.url);
 // Fail the deployment before publishing static assets if a browser entry point
 // contains invalid JavaScript. The static-asset build copies these files verbatim,
 // so syntax errors would otherwise deploy successfully and only fail in browsers.
-for (const entry of ["site.js", "waitlist.js", "app/app.js"]) {
+for (const entry of ["site.js", "waitlist.js", "app/app.js", "app/product.js"]) {
   execFileSync(process.execPath, ["--check", new URL(entry, import.meta.url).pathname], {
     stdio: "inherit",
   });
@@ -30,6 +30,8 @@ const files = [
   "product-portal.css",
   "site.js",
   "app/index.html",
+  "app/product.js",
+  "app/launch-entry.css",
   "app/app.css",
   "app/pages.css",
   "app/growth.css",
@@ -122,13 +124,17 @@ console.log(
 );
 
 // Retain a static entry for bookmarked Sources URLs; the app routes it to Overview.
-for (const page of [...Object.keys(VIEWS), "sources"]) {
+for (const page of [...Object.keys(VIEWS), "sources", "sign-in", "sign-up", "forgot-password", "reset-password", "onboarding", "addons"]) {
   await mkdir(new URL(`app/${page}/`, output), { recursive: true });
   await copyFile(
     new URL("app/index.html", import.meta.url),
     new URL(`app/${page}/index.html`, output),
   );
 }
+
+// The old interactive dashboard is retained as an explicitly labelled public demo.
+await mkdir(new URL("app/demo/", output), { recursive: true });
+await copyFile(new URL("app/demo.html", import.meta.url), new URL("app/demo/index.html", output));
 
 for (const addon of ADDONS) {
   await mkdir(new URL(`app/addons/${addon.id}/`, output), { recursive: true });
@@ -142,9 +148,15 @@ for (const file of ["waitlist.js", "waitlist.css"]) {
   waitlistHash.update(await readFile(new URL(file, output)));
 }
 const waitlistVersion = waitlistHash.digest("hex").slice(0, 12);
+const launchHash = createHash("sha256");
+for (const file of ["app/product.js", "app/launch-entry.css"]) {
+  launchHash.update(await readFile(new URL(file, output)));
+}
+const launchVersion = launchHash.digest("hex").slice(0, 12);
 const htmlFiles = [
   ...files.filter((file) => file.endsWith(".html")),
-  ...[...Object.keys(VIEWS), "sources"].map((page) => `app/${page}/index.html`),
+  ...[...Object.keys(VIEWS), "sources", "sign-in", "sign-up", "forgot-password", "reset-password", "onboarding", "addons"].map((page) => `app/${page}/index.html`),
+  "app/demo/index.html",
   ...ADDONS.map((addon) => `app/addons/${addon.id}/index.html`),
 ];
 for (const file of new Set(htmlFiles)) {
@@ -154,5 +166,8 @@ for (const file of new Set(htmlFiles)) {
     /((?:src|href)=["'])\/waitlist\.(css|js)(?:\?[^"']*)?(["'])/g,
     (_, prefix, extension, quote) => `${prefix}/waitlist.${extension}?v=${waitlistVersion}${quote}`,
   );
-  if (updated !== html) await writeFile(url, updated);
+  const versionedLaunch = updated
+    .replace(/(href=["'])\/app\/launch-entry\.css(?:\?[^"']*)?(["'])/g, `$1/app/launch-entry.css?v=${launchVersion}$2`)
+    .replace(/(src=["'])\/app\/product\.js(?:\?[^"']*)?(["'])/g, `$1/app/product.js?v=${launchVersion}$2`);
+  if (versionedLaunch !== html) await writeFile(url, versionedLaunch);
 }

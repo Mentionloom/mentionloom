@@ -1,9 +1,12 @@
-import { randomUUID } from 'node:crypto';
-import { authRequest, configureSupabaseEnv, InfraError } from '../lib/supabase.js';
+import { authRequest, configureSupabaseEnv, InfraError, rpc, serviceRequest } from '../lib/supabase.js';
 import { createWorkspace, listWorkspaces, requireWorkspaceMember } from '../lib/workspaces.js';
 import { monthlyCost } from '../lib/cost-ledger.js';
 import { claimJobs, completeJob, failOrRetryJob } from '../lib/queue.js';
 import { configureProviderEnv, providerConfiguration } from '../lib/provider-secrets.js';
+import { analyzeCompanyWebsite, generateBuyerQuestions } from '../lib/onboarding.js';
+import { ensurePrimaryWorkspace, readCompany, readProductData, saveCompanyDraft, saveQuestionDraft } from '../lib/launch-store.js';
+import { OPENAI_MODEL, PERPLEXITY_MODEL } from '../lib/launch-domain.js';
+import { executeProbeJob, failProbe, updateRunStatus } from '../lib/probe-runner.js';
 
 const ACCESS_COOKIE = 'ml_access';
 const REFRESH_COOKIE = 'ml_refresh';
@@ -119,8 +122,9 @@ function validateCredentials(email, password) {
   return { email: normalizedEmail, password };
 }
 
-async function signUp(email, password) {
-  return authRequest('/auth/v1/signup', {
+async function signUp(email, password, redirectTo) {
+  const redirectQuery = redirectTo ? `?redirect_to=${encodeURIComponent(redirectTo)}` : '';
+  return authRequest(`/auth/v1/signup${redirectQuery}`, {
     method: 'POST',
     body: validateCredentials(email, password),
   });
@@ -167,7 +171,7 @@ async function handleAuthConfirm(request) {
   const next = safeNextPath(url.searchParams.get('next'));
 
   if (!tokenHash || !EMAIL_OTP_TYPES.has(type)) {
-    return redirectResponse('/?auth=confirmation-missing');
+    return redirectResponse('/app/sign-in/?auth=confirmation-missing');
   }
 
   try {
@@ -186,7 +190,7 @@ async function handleAuthConfirm(request) {
     return redirectResponse(next, sessionCookies(session, request));
   } catch (error) {
     if (error instanceof InfraError && [400, 401, 403, 422].includes(error.status)) {
-      return redirectResponse('/?auth=confirmation-error');
+      return redirectResponse('/app/sign-in/?auth=confirmation-error');
     }
     throw error;
   }
@@ -203,7 +207,7 @@ async function getUser(request) {
 
   if (access) {
     try {
-      return { user: await fetchUser(access), cookies: [] };
+      return { user: await fetchUser(access), cookies: [], accessToken: access };
     } catch (error) {
       if (!(error instanceof InfraError) || ![401, 403].includes(error.status)) throw error;
     }
@@ -219,6 +223,7 @@ async function getUser(request) {
     return {
       user: await fetchUser(session.access_token),
       cookies: sessionCookies(session, request),
+      accessToken: session.access_token,
     };
   } catch (error) {
     if (error instanceof InfraError && [400, 401, 403].includes(error.status)) {
@@ -238,7 +243,8 @@ async function handleSignUp(request) {
   if (request.method !== 'POST') return methodNotAllowed('POST');
   requireSameOrigin(request);
   const body = await jsonBody(request, 4096);
-  const result = await signUp(body.email, body.password);
+  const redirectTo = `${new URL(request.url).origin}/auth/confirm?next=${encodeURIComponent('/app/onboarding/')}`;
+  const result = await signUp(body.email, body.password, redirectTo);
   const cookies = result?.access_token ? sessionCookies(result, request) : [];
 
   return json({
@@ -246,6 +252,38 @@ async function handleSignUp(request) {
     user: result?.user ? { id: result.user.id, email: result.user.email } : null,
     needsEmailConfirmation: !result?.access_token,
   }, 200, {}, cookies);
+}
+
+async function handlePasswordReset(request) {
+  if (request.method !== 'POST') return methodNotAllowed('POST');
+  requireSameOrigin(request);
+  const body = await jsonBody(request, 4096);
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) || email.length > 254) {
+    throw new InfraError(400, 'Enter a valid email address.');
+  }
+  const redirectTo = `${new URL(request.url).origin}/auth/confirm?next=${encodeURIComponent('/app/reset-password/')}`;
+  await authRequest(`/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+    method: 'POST',
+    body: { email },
+  });
+  return json({ ok: true });
+}
+
+async function handlePasswordUpdate(request) {
+  if (request.method !== 'PUT') return methodNotAllowed('PUT');
+  requireSameOrigin(request);
+  const body = await jsonBody(request, 4096);
+  const session = await requireUser(request);
+  if (typeof body.password !== 'string' || body.password.length < 10 || body.password.length > 128) {
+    throw new InfraError(400, 'Password must be between 10 and 128 characters.');
+  }
+  await authRequest('/auth/v1/user', {
+    method: 'PUT',
+    body: { password: body.password },
+    token: session.accessToken,
+  });
+  return json({ ok: true }, 200, {}, session.cookies);
 }
 
 async function handleSignIn(request) {
@@ -295,9 +333,11 @@ async function handleWorkspaces(request) {
   const session = await requireUser(request);
 
   if (request.method === 'GET') {
+    const workspace = await ensurePrimaryWorkspace(session.user);
     return json({
       ok: true,
       workspaces: await listWorkspaces(session.user.id),
+      workspace,
     }, 200, {}, session.cookies);
   }
 
@@ -309,6 +349,93 @@ async function handleWorkspaces(request) {
   }
 
   return methodNotAllowed('GET, POST');
+}
+
+async function productContext(request) {
+  const session = await requireUser(request);
+  const workspace = await ensurePrimaryWorkspace(session.user);
+  return { session, workspace };
+}
+
+async function handleProduct(request) {
+  if (request.method !== 'GET') return methodNotAllowed('GET');
+  const { session, workspace } = await productContext(request);
+  const data = await readProductData(workspace);
+  return json({ ok: true, workspace, data }, 200, {}, session.cookies);
+}
+
+async function handleWebsiteAnalyze(request) {
+  if (request.method !== 'POST') return methodNotAllowed('POST');
+  requireSameOrigin(request);
+  const body = await jsonBody(request, 4096);
+  const { session, workspace } = await productContext(request);
+  const result = await analyzeCompanyWebsite({ workspaceId: workspace.id, website: body.website });
+  const company = await saveCompanyDraft(workspace.id, result.company);
+  return json({ ok: true, company }, 200, {}, session.cookies);
+}
+
+async function handleCompanyProfile(request) {
+  if (!['GET','PUT'].includes(request.method)) return methodNotAllowed('GET, PUT');
+  const { session, workspace } = await productContext(request);
+  if (request.method === 'GET') {
+    return json({ ok: true, company: await readCompany(workspace.id) }, 200, {}, session.cookies);
+  }
+  requireSameOrigin(request);
+  const body = await jsonBody(request, 16_384);
+  const company = await saveCompanyDraft(workspace.id, body.company || body, { confirmed: Boolean(body.confirmed) });
+  return json({ ok: true, company }, 200, {}, session.cookies);
+}
+
+async function handleOnboardingQuestions(request) {
+  if (!['GET','POST','PUT'].includes(request.method)) return methodNotAllowed('GET, POST, PUT');
+  const { session, workspace } = await productContext(request);
+  if (request.method === 'GET') {
+    const data = await readProductData(workspace);
+    return json({ ok: true, questions: data.questions }, 200, {}, session.cookies);
+  }
+  requireSameOrigin(request);
+  const body = await jsonBody(request, 24_000);
+  if (request.method === 'POST') {
+    if (!workspace.onboarding_profile_confirmed_at) {
+      throw new InfraError(409, 'Confirm the company profile before generating buyer questions.');
+    }
+    const company = await readCompany(workspace.id);
+    if (!company) throw new InfraError(409, 'Analyze and confirm your company profile first.');
+    const questions = await generateBuyerQuestions({ workspaceId: workspace.id, company });
+    const saved = await saveQuestionDraft(workspace.id, questions, false);
+    await serviceRequest(`/rest/v1/workspaces?id=eq.${encodeURIComponent(workspace.id)}`, {
+      method: 'PATCH', body: { onboarding_step: 'questions' }, prefer: 'return=minimal',
+    });
+    return json({ ok: true, questions: saved }, 200, {}, session.cookies);
+  }
+  const questions = await saveQuestionDraft(workspace.id, body.questions, Boolean(body.approve));
+  return json({ ok: true, questions, approved: Boolean(body.approve) }, 200, {}, session.cookies);
+}
+
+async function handleStartRun(request) {
+  if (request.method !== 'POST') return methodNotAllowed('POST');
+  requireSameOrigin(request);
+  const { session, workspace } = await productContext(request);
+  const configured = providerConfiguration();
+  if (!configured.openai || !configured.perplexity) {
+    throw new InfraError(503, 'Add the OpenAI and Perplexity API keys to the Cloudflare Worker before starting an analysis.');
+  }
+  const existing = await serviceRequest(
+    `/rest/v1/probe_runs?select=id,status&workspace_id=eq.${encodeURIComponent(workspace.id)}&status=in.(queued,running)&limit=1`,
+  );
+  if (existing?.[0]) return json({ ok: true, runId: existing[0].id, alreadyRunning: true }, 200, {}, session.cookies);
+  const company = await readCompany(workspace.id);
+  if (!company) throw new InfraError(409, 'Confirm your company profile before starting an analysis.');
+  const result = await rpc('create_baseline_run', {
+    p_workspace_id: workspace.id,
+    p_region: company.profile?.markets?.[0] || company.market || 'United States',
+    p_language: company.profile?.languages?.[0] || company.language || 'English',
+    p_openai_model: OPENAI_MODEL,
+    p_perplexity_model: PERPLEXITY_MODEL,
+  });
+  const runId = Array.isArray(result) ? result[0] : result;
+  if (!runId) throw new InfraError(503, 'The first analysis could not be queued. Please try again.');
+  return json({ ok: true, runId }, 202, {}, session.cookies);
 }
 
 async function handleCosts(request) {
@@ -333,29 +460,35 @@ async function executeJob(job) {
         configured: providerConfiguration(),
         checkedAt: new Date().toISOString(),
       };
+    case 'probe_execute': {
+      const result = await executeProbeJob(job);
+      await updateRunStatus(job.payload?.runId);
+      return result;
+    }
     default:
       throw new Error(`No worker handler registered for job kind: ${job.kind}`);
   }
 }
 
 async function processQueue(limit = 8) {
-  const workerId = `cloudflare:${randomUUID()}`;
+  const workerId = `cloudflare:${crypto.randomUUID()}`;
   const jobs = await claimJobs(workerId, Math.min(Math.max(Number(limit) || 1, 1), 20));
-  const outcomes = [];
-
-  for (const job of jobs) {
+  const outcomes = await Promise.all(jobs.map(async (job) => {
     try {
       const result = await executeJob(job);
       await completeJob(job, result);
-      outcomes.push({ id: job.id, status: 'completed' });
+      return { id: job.id, status: 'completed' };
     } catch (error) {
       await failOrRetryJob(job, error);
-      outcomes.push({
+      if (Number(job.attempts) >= Number(job.max_attempts)) {
+        await failProbe(job.payload?.probeId, error).catch(() => {});
+      }
+      return {
         id: job.id,
         status: Number(job.attempts) >= Number(job.max_attempts) ? 'failed' : 'queued',
-      });
+      };
     }
-  }
+  }));
 
   return { claimed: jobs.length, outcomes };
 }
@@ -370,6 +503,54 @@ async function handleWorker(request, env) {
 
 function methodNotAllowed(allow) {
   return json({ ok: false, error: 'Method not allowed.' }, 405, { Allow: allow });
+}
+
+function isProductDocumentRoute(path) {
+  if (path !== '/app' && !path.startsWith('/app/')) return false;
+  if (path === '/app/demo' || path.startsWith('/app/demo/')) return false;
+  const relative = path.slice('/app/'.length);
+  return !relative.split('/').some((segment) => segment.includes('.'));
+}
+
+async function protectProductPage(request, env) {
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/+$/, '') || '/app';
+  const session = await getUser(request);
+  const publicAuthPage = ['/app/sign-in','/app/sign-up','/app/forgot-password'].includes(path);
+  const resetPage = path === '/app/reset-password';
+  if (!session.user) {
+    if (publicAuthPage) return envAsset(request, env, session.cookies);
+    return redirectResponse(`/app/sign-in/?next=${encodeURIComponent(path + url.search)}`, session.cookies);
+  }
+
+  if (resetPage) return envAsset(request, env, session.cookies);
+  if (publicAuthPage) {
+    const workspace = await ensurePrimaryWorkspace(session.user);
+    return redirectResponse(workspace.onboarding_step === 'complete' ? '/app/overview/' : '/app/onboarding/', session.cookies);
+  }
+
+  const workspace = await ensurePrimaryWorkspace(session.user);
+  if (path !== '/app/onboarding' && workspace.onboarding_step !== 'complete') {
+    return redirectResponse('/app/onboarding/', session.cookies);
+  }
+  if (path === '/app' && workspace.onboarding_step === 'complete') {
+    return redirectResponse('/app/overview/', session.cookies);
+  }
+  if (!['/app/overview','/app/questions','/app/opportunities','/app/onboarding'].includes(path)) {
+    return redirectResponse('/app/overview/', session.cookies);
+  }
+  if (path === '/app/onboarding' && workspace.onboarding_step === 'complete') {
+    return redirectResponse('/app/overview/', session.cookies);
+  }
+  return envAsset(request, env, session.cookies);
+}
+
+async function envAsset(request, env, cookies = []) {
+  const response = await env.ASSETS.fetch(request);
+  const headers = new Headers(response.headers);
+  headers.set('Cache-Control', 'private, no-store');
+  for (const value of cookies) headers.append('Set-Cookie', value);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
 function errorResponse(error) {
@@ -414,13 +595,21 @@ async function handleApi(request, env) {
         ok: true,
         databaseConfigured: Boolean(env.SUPABASE_URL && (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)),
         workerConfigured: Boolean(env.SUPABASE_URL && (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)),
+        providers: { openai: Boolean(env.OPENAI_API_KEY), perplexity: Boolean(env.PERPLEXITY_API_KEY) },
       });
     }
     if (path === '/api/auth/sign-up') return await handleSignUp(request);
     if (path === '/api/auth/sign-in') return await handleSignIn(request);
     if (path === '/api/auth/sign-out') return await handleSignOut(request);
     if (path === '/api/auth/session') return await handleSession(request);
+    if (path === '/api/auth/password-reset') return await handlePasswordReset(request);
+    if (path === '/api/auth/password-update') return await handlePasswordUpdate(request);
     if (path === '/api/workspaces') return await handleWorkspaces(request);
+    if (path === '/api/product') return await handleProduct(request);
+    if (path === '/api/onboarding/analyze') return await handleWebsiteAnalyze(request);
+    if (path === '/api/onboarding/profile') return await handleCompanyProfile(request);
+    if (path === '/api/onboarding/questions') return await handleOnboardingQuestions(request);
+    if (path === '/api/analysis/run') return await handleStartRun(request);
     if (path === '/api/costs') return await handleCosts(request);
     if (path === '/api/worker') return await handleWorker(request, env);
 
@@ -438,6 +627,7 @@ export default {
     try {
       if (path === '/auth/confirm') return await handleAuthConfirm(request);
       if (path.startsWith('/api/')) return handleApi(request, env);
+      if (isProductDocumentRoute(path)) return protectProductPage(request, env);
       return env.ASSETS.fetch(request);
     } catch (error) {
       return errorResponse(error);

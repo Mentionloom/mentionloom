@@ -45,9 +45,9 @@ test("stored add-on state is normalized and removable", () => {
 
 import { addonFromPath, addonURL, checkoutURL } from '../app/lib/addons.js';
 import { resolveView } from '../app/lib/navigation.js';
-test('product URLs resolve independently of dashboard metrics', () => {
+test('catalogue detail links stay separate from the launch workspace', () => {
   for (const addon of ADDONS) {
-    assert.equal(resolveView({ pathname: addonURL(addon.id), search: '?metric=referrals' }), 'addons');
+    assert.equal(resolveView({ pathname: addonURL(addon.id), search: '?metric=referrals' }), 'overview');
     assert.equal(addonFromPath(addonURL(addon.id)), addon);
     assert.equal(addonFromPath(addonURL(addon.id).slice(0,-1)), addon);
   }

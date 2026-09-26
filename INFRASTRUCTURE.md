@@ -1,109 +1,73 @@
-# Mentionloom infrastructure foundation
+# Mentionloom launch infrastructure
 
-Mentionloom's production foundation is Cloudflare Workers + Supabase. The existing Acme workspace is still illustrative until live provider probes replace `app/lib/data.js`.
+The authenticated Mentionloom product runs on Cloudflare Workers + Static Assets and Supabase Auth/Postgres. The older Acme sample dashboard is isolated at `/app/demo/`.
 
-## Runtime decisions
+## Runtime and data boundary
 
-- **Application/runtime:** Cloudflare Worker + Static Assets.
-- **Auth + Postgres:** Supabase.
-- **Sessions:** Supabase access/refresh tokens stored in secure HTTP-only cookies by the Cloudflare Worker.
-- **Application data access:** server-side through Supabase using a backend secret key. Customer tables have RLS enabled and no browser-facing policies.
-- **Workspaces:** `users → workspace_members → workspaces`, with `owner/admin/member/viewer` roles.
-- **Queue:** Postgres `jobs` table with atomic `FOR UPDATE SKIP LOCKED` claiming, retries and stale-lease recovery. Cloudflare Cron invokes the Worker's `scheduled()` handler every five minutes.
-- **Provider secrets:** OpenAI, Claude, Gemini and Perplexity keys remain Worker secrets.
-- **Cost ledger:** provider/runtime charges are attributable to workspace, run and probe in micro-USD.
+- Supabase access and refresh tokens live in HTTP-only, SameSite=Lax cookies set by the Cloudflare Worker.
+- Product data uses the server-only Supabase secret key. It is never included in browser assets.
+- The session selects the workspace. The browser cannot submit an owner id or choose another tenant's workspace.
+- RLS reads are constrained by `workspace_members`; trusted workspace bootstrap, onboarding, and baseline RPCs are executable only by `service_role`.
+- Provider keys remain server-only Cloudflare Worker secrets.
+- Postgres `jobs` plus a one-minute Cloudflare Cron trigger run independent provider probes with retries.
+- `cost_ledger` stores token counts, search calls, provider request ids, and micro-USD amounts per run/probe.
 
-## Supabase status
+## Database setup
 
-The `mentionloom` Supabase project exists in the Mentionloom organization in `eu-west-1`.
+Apply migrations in order:
 
-`db/migrations/001_foundation.sql` has been applied. It creates the multi-tenant and measurement schema, queue and `cost_ledger`.
+1. `db/migrations/001_foundation.sql`
+2. `db/migrations/20260926171942_launch_onboarding_rls.sql`
+3. `db/migrations/20260926172037_private_rls_helper.sql`
 
-The security-definer auth trigger is not callable by public, anonymous or normal authenticated roles. RLS-with-no-policy notices are intentional because browser clients do not read application tables directly.
+The launch migrations add persisted onboarding state, service-role-only bootstrap/question/run RPCs, and membership-scoped read policies across every product table. The membership lookup lives in a non-exposed `private` schema. Product writes go through the authenticated Worker using its server-only key. Apply both migrations before routing customer traffic to the authenticated app.
 
-## Cloudflare configuration
+After applying it, run the Supabase security advisors and review any remaining notices against the membership policies. The auth user trigger and launch RPCs are revoked from `public`, `anon`, and `authenticated`.
 
-The project URL and publishable key are non-secret values in `wrangler.toml`.
+## Cloudflare secrets and Supabase Auth
 
-Required Worker secret:
+Required Worker secrets:
 
 ```text
 SUPABASE_SECRET_KEY
-```
-
-Optional manual queue endpoint secret:
-
-```text
-CRON_SECRET
-```
-
-Legacy `SUPABASE_SERVICE_ROLE_KEY` remains supported temporarily. Prefer `SUPABASE_SECRET_KEY`.
-
-Later provider secrets:
-
-```text
 OPENAI_API_KEY
-ANTHROPIC_API_KEY
-GEMINI_API_KEY
 PERPLEXITY_API_KEY
 ```
 
-Never expose backend/provider secrets in HTML, client JS, analytics, static build output or Git.
+`SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are non-secret Worker vars. `CRON_SECRET` is optional and only protects the manual `/api/worker` endpoint.
 
-## Auth endpoints
+Enable email/password authentication and email delivery in Supabase Auth. Set the Supabase Site URL to the Cloudflare host and allow that host's `/auth/confirm` URL. Use a token-hash link in the email templates so the Worker can verify it server-side: signup confirmation should link to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/app/onboarding/`; password recovery should use the same path with `type=recovery&next=/app/reset-password/`. When email confirmation is enabled, signup shows a check-your-email state. Password recovery returns through the same callback to `/app/reset-password/`.
 
-- `POST /api/auth/sign-up` — body `{ email, password }`
-- `POST /api/auth/sign-in` — body `{ email, password }`
-- `POST /api/auth/sign-out`
+`npm run dev` is a static visual preview and waitlist server; it does not run Supabase-backed product APIs. For the authenticated flow, use `npx wrangler dev` after creating `.dev.vars` from `.dev.vars.example`. Never commit local secrets.
+
+## Product and auth API
+
+- `POST /api/auth/sign-up`, `POST /api/auth/sign-in`, `POST /api/auth/sign-out`
 - `GET /api/auth/session`
+- `POST /api/auth/password-reset`, `PUT /api/auth/password-update`
+- `GET /api/product` returns the server-selected workspace and current product data.
+- `POST /api/onboarding/analyze` fetches a public HTTPS company page and extracts a structured profile.
+- `GET|PUT /api/onboarding/profile` reads or confirms the editable profile.
+- `GET|POST|PUT /api/onboarding/questions` reads, generates, saves, and approves 20–25 staged questions.
+- `POST /api/analysis/run` queues a two-provider baseline.
+- `GET /api/costs?workspaceId=<uuid>&month=YYYY-MM` reads owner/admin cost totals.
 
-Supabase may require email verification. When enabled, sign-up returns `needsEmailConfirmation: true` until confirmation.
+The Worker runs before `/app/*` document routes. Signed-out visitors go to sign-in; authenticated workspaces resume onboarding until approved questions exist. The public `/app/demo/` path is deliberately separate.
 
-## Workspace endpoints
+## Provider execution
 
-- `GET /api/workspaces`
-- `POST /api/workspaces`
-- `GET /api/costs?workspaceId=<uuid>&month=YYYY-MM`
+Each approved question creates one OpenAI Responses web-search probe and one Perplexity Agent API Sonar probe. Responses, request ids, usage, citations, and deterministic mention states are stored in Postgres. Job retries apply independently; a run is marked partial when some probes fail and others finish.
 
-Every future workspace-scoped API must verify membership before reading or writing customer data.
+Perplexity returns billed request cost in its usage payload. OpenAI cost calculation uses the dated model, cache, and web-search rates in `lib/launch-domain.js`; update the rates when provider pricing changes.
 
-## Queue
+## Production smoke test
 
-The Cloudflare Worker has a native `scheduled()` handler. `/api/worker` is an optional manual drain endpoint and is disabled unless `CRON_SECRET` is configured.
-
-The queue:
-- claims a bounded batch;
-- leases jobs to a worker id;
-- retries failures with exponential backoff;
-- recovers leases stale for 15 minutes;
-- supports dedupe keys.
-
-The initial handler only supports `provider_config_check`. Provider probing should be implemented as queued jobs rather than long browser requests.
-
-## Cost ledger
-
-Call `recordCost()` after each billable provider request. Store provider/model, token counts, search calls, runtime where useful, exact or estimated micro-USD cost, run/probe ids, and provider request id.
-
-`external_id` is unique per provider to avoid double-booking a retried provider charge.
-
-## Gate 1
-
-Infrastructure is considered operational only when the Cloudflare production runtime passes:
+After applying both migrations, setting secrets, and configuring email delivery, verify:
 
 ```text
-/api/health
-databaseConfigured: true
-workerConfigured: true
-
-sign up
-→ sign in
-→ create workspace
-→ reload session
-→ read workspace
+sign up → email confirmation (if enabled) → workspace bootstrap
+→ website analysis → profile confirmation → approve questions
+→ run baseline → observe answers, citations, costs and overview
 ```
 
-Do not call the product data pipeline real before this gate passes.
-
-## Launch boundary
-
-The database and runtime foundation can be real while the product UI is still demo data. Keep Demo Workspace explicit until authenticated app reads and live probes are connected.
+Run the Supabase advisors and test isolation with two users/workspaces before launch. Local tests verify domain rules and static assets but cannot replace those authenticated production checks.

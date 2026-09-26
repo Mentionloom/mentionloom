@@ -2,9 +2,9 @@
 
 Mentionloom is an **AI Recommendation Intelligence** product concept for understanding where a brand appears in AI answers, which buyer questions it is missing, what evidence sits behind those answers, and what the team should improve next.
 
-This repository contains the public marketing site, an interactive sample product workspace, the methodology page, a working early-access waitlist, and an experimental add-on marketplace.
+This repository contains the public marketing site, a separate illustrative workspace demo, the authenticated Mentionloom product entry path, a working early-access waitlist, and an experimental add-on catalogue.
 
-> **Data boundary:** the product workspace still uses illustrative sample data. The waitlist and Supabase database foundation are real. Cloudflare is the primary runtime; authenticated product APIs become operational once the required Worker secrets are configured. This does not make the sample dashboard live.
+> **Data boundary:** `/app/overview/`, `/app/questions/`, and `/app/opportunities/` are authenticated and read workspace data from Supabase through the Cloudflare Worker. `/app/demo/` is the explicitly illustrative Acme workspace. The authenticated path requires the launch database migration and Worker secrets described below.
 
 ## Product surfaces
 
@@ -18,18 +18,17 @@ The landing experience uses local provider marks, a bundled Cobe globe, generate
 
 ### Product workspace
 
-The standalone demo lives under `/app/` and currently exposes six primary views:
+The authenticated product routes are:
 
 | Route | Purpose |
 | --- | --- |
-| `/app/overview/` | Contextual KPIs, trends, engine/competitor position, and the recommended next move |
-| `/app/visibility/` | Mention rate, citations, engine rankings, competitor rankings, and sampled answer evidence |
-| `/app/traffic/` | Website visits, visitors, page views, leads, source/country/device breakdowns, journeys, and funnel stages |
-| `/app/questions/` | Buyer-question coverage, search, sample answers, and browser-local pending questions |
-| `/app/opportunities/` | Visibility gaps, improvement plans, saved baselines, progress, shipping state, and measurement review |
-| `/app/addons/` | Experimental add-on catalogue for content, monitoring, reporting, and attribution workflows |
+| `/app/sign-up/`, `/app/sign-in/` | Email/password authentication with confirmation and password recovery |
+| `/app/onboarding/` | Website analysis, editable company profile, and generated/approved buyer questions |
+| `/app/overview/` | Real recommendation/mention results, provider coverage, citations, competitor context, question stages, and last-run status |
+| `/app/questions/` | Approved buyer questions with measured answer status |
+| `/app/opportunities/` | Evidence-backed opportunities; stays empty until the data model has a supported recommendation |
 
-Each add-on also receives a direct route at `/app/addons/<product>/`.
+`/app/visibility/`, `/app/traffic/`, `/app/addons/`, and add-on detail paths redirect to the launch overview. The earlier dashboard and catalogue remain available at `/app/demo/`; their deterministic sample data is never used by the authenticated pages.
 
 `/app/sources/` is retained as a legacy/bookmarked route and resolves back into the current app flow rather than acting as a separate primary view.
 
@@ -37,17 +36,16 @@ Date and product filters are encoded in the URL so refresh, browser history, dee
 
 ## What is real vs illustrative
 
-The dashboard fixture is deterministic and ends on **September 9, 2026**.
+The public demo fixture is deterministic and ends on **September 9, 2026**.
 
-The demo does **not** currently:
+The authenticated launch product does **not** currently:
 
-- query live AI providers when a question is added;
-- install analytics or a website collector when setup is saved;
-- change sample measurements when an improvement is marked shipped;
+- include AI referral attribution or website-traffic collection;
+- create model-generated opportunities before evidence exists;
 - activate paid add-ons or Stripe subscriptions;
 - infer real revenue from sample traffic.
 
-Question additions, setup plans, add-on state, and improvement progress are stored locally in the browser.
+The public `/app/demo/` retains the earlier local-only sample behavior. Workspace setup, approved questions, provider probes, answers, citations, classifications, run status, and costs in authenticated product pages use the server API and Supabase.
 
 Traffic is modelled separately from answer sampling. The sample traffic layer includes LLM referrals, IDE sources, social, search, email, direct traffic, country/device context, page journeys, and lead events. This separation is intentional: a website visit is not treated as an AI recommendation.
 
@@ -136,7 +134,9 @@ No runtime CDN request is required for those assets.
 
 ### App
 
-- `app/index.html` — shared static shell for all app routes.
+- `app/index.html` — authenticated product shell copied to product routes.
+- `app/demo.html` — earlier Acme fixture, built only to `/app/demo/`.
+- `app/product.js`, `app/launch-entry.css` — authentication, onboarding, and real-data workspace views.
 - `app/app.js` — main composition, routing coordination, dialogs, search, tour, and interactions.
 - `app/lib/navigation.js` — canonical app routes, URL state, and legacy route handling.
 - `app/lib/data.js` — deterministic answer/session fixtures.
@@ -157,7 +157,7 @@ No runtime CDN request is required for those assets.
 
 ### Product infrastructure foundation
 
-The first real multi-tenant foundation lives in `db/migrations/001_foundation.sql` and `INFRASTRUCTURE.md`.
+The multi-tenant foundation lives in `db/migrations/001_foundation.sql`; the launch path and workspace-scoped RLS live in `db/migrations/20260926171942_launch_onboarding_rls.sql` and `db/migrations/20260926172037_private_rls_helper.sql`.
 
 It introduces:
 
@@ -169,7 +169,7 @@ It introduces:
 
 Browser clients do not receive the Supabase secret/service-role key or provider credentials. Workspace APIs verify membership server-side before returning customer data.
 
-This is intentionally a foundation, not a fake cutover: `app/lib/data.js` remains the sample source until live probe execution and authenticated product reads are wired in.
+`app/lib/data.js` remains the deterministic sample source for `/app/demo/` only. Product API reads choose the workspace from the authenticated Supabase session; provider credentials and the Supabase secret key stay in Worker bindings.
 
 ## Local development
 
@@ -184,6 +184,8 @@ Run the development server:
 ```sh
 npm run dev
 ```
+
+This is a static visual preview plus the local waitlist API. It does not run the authenticated product backend. For signup, onboarding, and analysis, run `npx wrangler dev` after creating `.dev.vars` from `.dev.vars.example` and applying the database migrations.
 
 For an isolated waitlist flow that does not touch production storage:
 
@@ -220,7 +222,7 @@ Primary production deployment:
 - **Build:** `npm run build`
 - **Deploy:** `npx wrangler deploy`
 
-`wrangler.toml` binds `dist/` as static assets, routes `/api/*` through `src/worker.js`, and schedules the Postgres-backed queue every five minutes.
+`wrangler.toml` binds `dist/` as static assets, routes `/api/*`, `/auth/confirm`, and `/app/*` through `src/worker.js`, and schedules the Postgres-backed queue every minute.
 
 ### Deployment caveat
 
