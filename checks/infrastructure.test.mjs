@@ -27,6 +27,21 @@ test('foundation migration contains tenant, measurement, queue and cost entities
   assert.match(sql, /revoke all on function public\.handle_new_auth_user\(\)/i);
 });
 
+test('launch migration scopes authenticated reads to workspace members and locks trusted RPCs', async () => {
+  const sql = await read('db/migrations/20260926171942_launch_onboarding_rls.sql');
+  assert.match(sql, /function public\.is_workspace_member\(p_workspace_id uuid\)/i);
+  assert.match(sql, /using \(public\.is_workspace_member\(workspace_id\)\)/i);
+  assert.match(sql, /revoke all on function public\.ensure_workspace_for_user\(uuid, text\) from public, anon, authenticated/i);
+  assert.match(sql, /grant execute on function public\.ensure_workspace_for_user\(uuid, text\) to service_role/i);
+  assert.match(sql, /save_onboarding_questions/);
+  assert.match(sql, /create_baseline_run/);
+  assert.doesNotMatch(sql, /create policy[^;]+for\s+(?:all|insert|update|delete)\s+to authenticated/i);
+  assert.match(sql, /All writes go through the authenticated Worker/);
+  const helper = await read('db/migrations/20260926172037_private_rls_helper.sql');
+  assert.match(helper, /function private\.is_workspace_member\(p_workspace_id uuid\)/i);
+  assert.match(helper, /drop function public\.is_workspace_member\(uuid\)/i);
+});
+
 test('server credential contract includes Supabase and AI providers', async () => {
   const env = await read('.env.example');
   for (const name of [
@@ -55,10 +70,14 @@ test('Cloudflare Worker owns API routing and scheduled queue execution', async (
   assert.match(worker, /\/auth\/v1\/verify/);
   assert.match(worker, /\/api\/workspaces/);
   assert.match(worker, /\/api\/costs/);
+  assert.match(worker, /\/api\/product/);
+  assert.match(worker, /\/api\/onboarding\/analyze/);
+  assert.match(worker, /\/api\/analysis\/run/);
+  assert.match(worker, /protectProductPage/);
   assert.match(config, /main\s*=\s*"\.\/src\/worker\.js"/);
   assert.match(config, /binding\s*=\s*"ASSETS"/);
-  assert.match(config, /run_worker_first\s*=\s*\["\/api\/\*",\s*"\/auth\/confirm"\]/);
-  assert.match(config, /crons\s*=\s*\["\*\/5 \* \* \* \*"\]/);
+  assert.match(config, /run_worker_first\s*=\s*\["\/api\/\*",\s*"\/auth\/confirm",\s*"\/app",\s*"\/app\/\*"\]/);
+  assert.match(config, /crons\s*=\s*\["\* \* \* \* \*"\]/);
 });
 
 

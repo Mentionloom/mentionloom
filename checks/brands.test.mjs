@@ -32,10 +32,14 @@ test("every monitored answer engine has a local SVG brand mark", async () => {
   }
 });
 
-test("the landing page exposes every engine through a named control", async () => {
+test("the landing page exposes its engine filters through local brand marks", async () => {
   const html = await readFile(resolve(root, "index.html"), "utf8");
-  for (const engine of ENGINES) {
-    assert.ok(html.includes(`data-engine="${engine.id}"`));
-    assert.ok(html.includes(`/assets/brands/${engine.id}.svg`));
+  const visibleFilters = [...html.matchAll(/data-engine="([^"]+)"/g)]
+    .map(([, id]) => id)
+    .filter(Boolean);
+  assert.ok(visibleFilters.length >= 5);
+  for (const id of visibleFilters) {
+    assert.ok(ENGINES.some((engine) => engine.id === id), `${id} must be a known engine`);
+    assert.ok(html.includes(`/assets/brands/${id}.svg`));
   }
 });

@@ -41,13 +41,25 @@ test("the production build ships the complete installed Orbit runtime and font a
     );
   }
   const html = (await read("dist/app/index.html")).toString();
+  assert.match(html, /\/app\/product\.js\?v=/);
+  assert.doesNotMatch(html, /Acme|class="badge demo-badge"|data-demo/);
+  const demo = (await read("dist/app/demo/index.html")).toString();
+  assert.match(demo, /Acme/);
   for (const [, href] of html.matchAll(/<link\b[^>]*href="([^"]+)"/g)) {
     if (!href.startsWith("http"))
       await readFile(
         href.startsWith("/")
-          ? resolve(root, "dist", href.slice(1))
-          : resolve(root, "dist/app", href),
+          ? resolve(root, "dist", href.slice(1).split("?")[0])
+          : resolve(root, "dist/app", href.split("?")[0]),
       );
+  }
+});
+
+test("auth and onboarding routes resolve to the authenticated product shell", async () => {
+  for (const page of ["sign-in", "sign-up", "forgot-password", "reset-password", "onboarding"]) {
+    const html = (await read(`dist/app/${page}/index.html`)).toString();
+    assert.match(html, /launch-main/);
+    assert.match(html, /\/app\/product\.js\?v=/);
   }
 });
 
